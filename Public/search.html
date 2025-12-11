@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Search</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      background-color: #0f0f0f;
+      color: #fff;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      position: sticky;
+      top: 0;
+      background: #0f0f0f;
+      border-bottom: 1px solid #303030;
+      z-index: 100;
+      padding: 0 24px;
+    }
+
+    .header-content {
+      max-width: 1096px;
+      margin: 0 auto;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: #ff0000;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    /* Search Bar */
+    .search-container {
+      flex: 1;
+      max-width: 640px;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-form {
+      display: flex;
+      flex: 1;
+    }
+
+    .search-input {
+      flex: 1;
+      height: 40px;
+      background: #121212;
+      border: 1px solid #303030;
+      border-right: none;
+      border-radius: 20px 0 0 20px;
+      padding: 0 16px;
+      color: #fff;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .search-input:focus {
+      border-color: #1c62b9;
+    }
+
+    .search-button {
+      width: 64px;
+      height: 40px;
+      background: #303030;
+      border: 1px solid #303030;
+      border-radius: 0 20px 20px 0;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .search-button:hover {
+      background: #3f3f3f;
+    }
+
+    /* Filter Section */
+    .filter-section {
+      background: #0f0f0f;
+      border-bottom: 1px solid #303030;
+      padding: 12px 0;
+      position: sticky;
+      top: 56px;
+      z-index: 99;
+    }
+
+    .filter-container {
+      max-width: 1096px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .filter-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    .filter-chip {
+      background: #272727;
+      border: 1px solid #3f3f3f;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 14px;
+      color: #f1f1f1;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .filter-chip:hover {
+      background: #3f3f3f;
+      border-color: #525252;
+    }
+
+    .filter-chip.active {
+      background: #f1f1f1;
+      color: #0f0f0f;
+      border-color: #f1f1f1;
+    }
+
+    .filter-icon {
+      font-size: 16px;
+    }
+
+    /* Main Layout */
+    .main-container {
+      max-width: 1096px;
+      margin: 0 auto;
+      padding: 24px;
+      display: flex;
+      gap: 24px;
+      min-height: calc(100vh - 200px);
+    }
+
+    /* Sidebar Filters */
+    .sidebar {
+      width: 240px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-section {
+      padding: 12px 0;
+      border-bottom: 1px solid #303030;
+    }
+
+    .sidebar-title {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 12px;
+      color: #aaa;
+      text-transform: uppercase;
+    }
+
+    .sidebar-option {
+      display: flex;
+      align-items: center;
+      padding: 8px 0;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .sidebar-option:hover {
+      background: #272727;
+      margin: 0 -12px;
+      padding: 8px 12px;
+    }
+
+    .sidebar-checkbox {
+      width: 18px;
+      height: 18px;
+      margin-right: 12px;
+    }
+
+    .sidebar-label {
+      font-size: 14px;
+      color: #f1f1f1;
+    }
+
+    /* Results Section */
+    .results-section {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .results-info {
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #303030;
+    }
+
+    .results-count {
+      font-size: 14px;
+      color: #aaa;
+    }
+
+    .results-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-height: 500px;
+    }
+
+    /* Channel Result Card */
+    .channel-result {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 16px;
+      background: #181818;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .channel-result:hover {
+      background: #272727;
+    }
+
+    .channel-avatar {
+      width: 136px;
+      height: 136px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #303030;
+      flex-shrink: 0;
+    }
+
+    .channel-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .channel-name {
+      font-size: 24px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .verified-badge {
+      width: 20px;
+      height: 20px;
+      background: #aaa;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .channel-handle {
+      font-size: 14px;
+      color: #aaa;
+      margin-bottom: 4px;
+    }
+
+    .channel-stats {
+      font-size: 14px;
+      color: #aaa;
+      margin-bottom: 12px;
+    }
+
+    .channel-description {
+      font-size: 14px;
+      color: #aaa;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .subscribe-btn {
+      background: #fff;
+      color: #0f0f0f;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 18px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .subscribe-btn:hover {
+      background: #d9d9d9;
+    }
+
+    /* Video Result Card */
+    .video-result {
+      display: flex;
+      gap: 16px;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      padding: 8px;
+      margin: -8px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .video-result:hover {
+      background: #272727;
+    }
+
+    .video-thumbnail-wrapper {
+      position: relative;
+      flex-shrink: 0;
+      width: 360px;
+    }
+
+    .video-thumbnail {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      border-radius: 12px;
+      background: #272727;
+    }
+
+    .video-duration {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      padding: 3px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .video-info {
+      flex: 1;
+      min-width: 0;
+      padding: 4px 0;
+    }
+
+    .video-title {
+      font-size: 18px;
+      font-weight: 400;
+      line-height: 1.3;
+      margin-bottom: 8px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .video-metadata {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: #aaa;
+    }
+
+    .video-metadata span::after {
+      content: '•';
+      margin: 0 4px;
+    }
+
+    .video-metadata span:last-child::after {
+      content: '';
+    }
+
+    .video-channel-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .video-channel-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #303030;
+      object-fit: cover;
+    }
+
+    .video-channel-name {
+      font-size: 13px;
+      color: #aaa;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+    }
+
+    .video-channel-name:hover {
+      color: #fff;
+    }
+
+    .video-description {
+      font-size: 13px;
+      color: #aaa;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Loading State */
+    .loading-container {
+      display: flex;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid #303030;
+      border-top-color: #ff0000;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Skeleton Loading */
+    .skeleton-container {
+      width: 100%;
+    }
+
+    .skeleton-video {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .skeleton-thumbnail {
+      width: 360px;
+      aspect-ratio: 16/9;
+      background: #272727;
+      border-radius: 12px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .skeleton-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 4px 0;
+    }
+
+    .skeleton-title {
+      height: 20px;
+      background: #272727;
+      border-radius: 4px;
+      width: 90%;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .skeleton-meta {
+      height: 14px;
+      background: #272727;
+      border-radius: 4px;
+      width: 60%;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .skeleton-desc {
+      height: 14px;
+      background: #272727;
+      border-radius: 4px;
+      width: 80%;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* No Results */
+    .no-results {
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .no-results-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+
+    .no-results-text {
+      font-size: 18px;
+      color: #aaa;
+      margin-bottom: 8px;
+    }
+
+    .no-results-suggestion {
+      font-size: 14px;
+      color: #717171;
+    }
+
+    /* End Message */
+    .end-message {
+      text-align: center;
+      padding: 40px;
+      color: #717171;
+      font-size: 14px;
+    }
+
+    /* Loading indicator at bottom */
+    .loading-more {
+      text-align: center;
+      padding: 30px;
+      color: #aaa;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 900px) {
+      .sidebar {
+        display: none;
+      }
+
+      .video-thumbnail-wrapper {
+        width: 240px;
+      }
+
+      .video-title {
+        font-size: 16px;
+      }
+
+      .skeleton-thumbnail {
+        width: 240px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .header-content {
+        padding: 0 16px;
+      }
+
+      .logo span {
+        display: none;
+      }
+
+      .main-container {
+        padding: 16px;
+      }
+
+      .video-result {
+        flex-direction: column;
+      }
+
+      .video-thumbnail-wrapper {
+        width: 100%;
+      }
+
+      .skeleton-video {
+        flex-direction: column;
+      }
+
+      .skeleton-thumbnail {
+        width: 100%;
+      }
+
+      .channel-result {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .filter-section {
+        top: 56px;
+      }
+    }
+
+    /* Playlist Result Card */
+    .playlist-result {
+      display: flex;
+      gap: 16px;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      padding: 8px;
+      margin: -8px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .playlist-result:hover {
+      background: #272727;
+    }
+
+    .playlist-thumbnail-wrapper {
+      position: relative;
+      flex-shrink: 0;
+      width: 360px;
+    }
+
+    .playlist-thumbnail {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      border-radius: 12px;
+      background: #272727;
+    }
+
+    .playlist-overlay {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 40%;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0 12px 12px 0;
+    }
+
+    .playlist-count {
+      font-size: 14px;
+      font-weight: 500;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .playlist-icon {
+      font-size: 24px;
+    }
+
+    /* Hidden class */
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <a href="/" class="logo">
+        <div class="logo-icon">▶</div>
+        <span>YouTube</span>
+      </a>
+      <div class="search-container">
+        <form class="search-form" id="search-form">
+          <input 
+            type="text" 
+            class="search-input" 
+            id="search-input" 
+            placeholder="Search"
+            autocomplete="off"
+          >
+          <button type="submit" class="search-button">
+            🔍
+          </button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <!-- Filter Chips -->
+  <div class="filter-section">
+    <div class="filter-container" id="filter-chips">
+      <div class="filter-chip active" data-filter="all">
+        All
+      </div>
+      <div class="filter-chip" data-filter="video">
+        <span class="filter-icon">🎬</span>
+        Videos
+      </div>
+      <div class="filter-chip" data-filter="channel">
+        <span class="filter-icon">👤</span>
+        Channels
+      </div>
+      <div class="filter-chip" data-filter="playlist">
+        <span class="filter-icon">📝</span>
+        Playlists
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <!-- Upload Date -->
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Upload Date</h3>
+        <div class="sidebar-option" data-filter="hour">
+          <input type="radio" name="upload" class="sidebar-checkbox">
+          <label class="sidebar-label">Last hour</label>
+        </div>
+        <div class="sidebar-option" data-filter="today">
+          <input type="radio" name="upload" class="sidebar-checkbox">
+          <label class="sidebar-label">Today</label>
+        </div>
+        <div class="sidebar-option" data-filter="week">
+          <input type="radio" name="upload" class="sidebar-checkbox">
+          <label class="sidebar-label">This week</label>
+        </div>
+        <div class="sidebar-option" data-filter="month">
+          <input type="radio" name="upload" class="sidebar-checkbox">
+          <label class="sidebar-label">This month</label>
+        </div>
+        <div class="sidebar-option" data-filter="year">
+          <input type="radio" name="upload" class="sidebar-checkbox">
+          <label class="sidebar-label">This year</label>
+        </div>
+      </div>
+
+      <!-- Duration -->
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Duration</h3>
+        <div class="sidebar-option" data-filter="short">
+          <input type="radio" name="duration" class="sidebar-checkbox">
+          <label class="sidebar-label">Under 4 minutes</label>
+        </div>
+        <div class="sidebar-option" data-filter="medium">
+          <input type="radio" name="duration" class="sidebar-checkbox">
+          <label class="sidebar-label">4-20 minutes</label>
+        </div>
+        <div class="sidebar-option" data-filter="long">
+          <input type="radio" name="duration" class="sidebar-checkbox">
+          <label class="sidebar-label">Over 20 minutes</label>
+        </div>
+      </div>
+
+      <!-- Sort By -->
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">Sort By</h3>
+        <div class="sidebar-option" data-sort="relevance">
+          <input type="radio" name="sort" class="sidebar-checkbox" checked>
+          <label class="sidebar-label">Relevance</label>
+        </div>
+        <div class="sidebar-option" data-sort="date">
+          <input type="radio" name="sort" class="sidebar-checkbox">
+          <label class="sidebar-label">Upload date</label>
+        </div>
+        <div class="sidebar-option" data-sort="views">
+          <input type="radio" name="sort" class="sidebar-checkbox">
+          <label class="sidebar-label">View count</label>
+        </div>
+        <div class="sidebar-option" data-sort="rating">
+          <input type="radio" name="sort" class="sidebar-checkbox">
+          <label class="sidebar-label">Rating</label>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Results Section -->
+    <section class="results-section">
+      <!-- Results Info -->
+      <div class="results-info" id="results-info">
+        <div class="results-count"></div>
+      </div>
+
+      <!-- Results Container -->
+      <div class="results-container" id="results-container">
+        <!-- Results will be inserted here -->
+      </div>
+
+      <!-- Loading indicator -->
+      <div class="loading-more hidden" id="loading-more">
+        <div class="spinner"></div>
+        <p>Loading more results...</p>
+      </div>
+
+      <!-- End Message -->
+      <div class="end-message hidden" id="end-message">
+        No more results to load
+      </div>
+
+      <!-- No Results -->
+      <div class="no-results hidden" id="no-results">
+        <div class="no-results-icon">🔍</div>
+        <div class="no-results-text">No results found</div>
+        <div class="no-results-suggestion">Try different keywords or remove filters</div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // API Configuration
+    const API_BASE = 'https://44e82681-1c15-4803-a487-7535567081d2-00-2kmxvme7ph1cx.sisko.replit.dev/api';
+
+    // State
+    let currentQuery = '';
+    let currentFilter = 'all';
+    let currentSort = 'relevance';
+    let currentResults = [];
+    let isLoading = false;
+    let hasMore = true;
+    let currentStart = 1;
+    let currentEnd = 20;
+    const BATCH_SIZE = 20;
+    let totalCached = 0;
+    let lastScrollCheck = 0;
+
+    // Get query from URL
+    function getQueryFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('q') || '';
+    }
+
+    // Update URL
+    function updateURL(query) {
+      const url = new URL(window.location);
+      if (query) {
+        url.searchParams.set('q', query);
+      } else {
+        url.searchParams.delete('q');
+      }
+      window.history.pushState({}, '', url);
+    }
+
+    // Fix thumbnail URLs
+    function fixThumbnailUrl(url) {
+      if (!url) return 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 9"><rect fill="%23272727" width="16" height="9"/></svg>';
+      if (url.startsWith('//')) return 'https:' + url;
+      return url;
+    }
+
+    // Format view count
+    function formatViews(views) {
+      if (!views) return '';
+      const match = views.match(/[\d,]+/);
+      if (!match) return views;
+      
+      const num = parseInt(match[0].replace(/,/g, ''));
+      if (num >= 1000000000) return (num / 1000000000).toFixed(1) + 'B views';
+      if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M views';
+      if (num >= 1000) return (num / 1000).toFixed(1) + 'K views';
+      return num + ' views';
+    }
+
+    // Escape HTML
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Extract @handle from various sources and return local URL
+    function getChannelUrl(channel) {
+      let handle = null;
+      
+      // 1. Check if URL contains @handle (from YouTube URL)
+      if (channel.url && channel.url.includes('@')) {
+        // Extract @handle from URL like "https://www.youtube.com/@MrBeast"
+        const match = channel.url.match(/@[\w-]+/);
+        if (match) {
+          handle = match[0];
+        }
+      }
+      
+      // 2. Check subscriberCount field (API sometimes puts handle here)
+      if (!handle && channel.subscriberCount && channel.subscriberCount.startsWith('@')) {
+        handle = channel.subscriberCount;
+      }
+      
+      // 3. Check handle field directly
+      if (!handle && channel.handle) {
+        handle = channel.handle.startsWith('@') ? channel.handle : '@' + channel.handle;
+      }
+      
+      // 4. If we found a handle, return local URL
+      if (handle) {
+        return '/' + handle;
+      }
+      
+      // 5. Fallback to channel ID
+      if (channel.id && channel.id !== 'N/A') {
+        return '/channel/' + channel.id;
+      }
+      
+      // 6. Last resort - create handle from name
+      if (channel.name) {
+        return '/@' + channel.name.replace(/\s+/g, '');
+      }
+      
+      return '#';
+    }
+
+    // Get display handle for channel
+    function getChannelHandle(channel) {
+      // Check subscriberCount first (API puts handle there sometimes)
+      if (channel.subscriberCount && channel.subscriberCount.startsWith('@')) {
+        return channel.subscriberCount;
+      }
+      
+      // Check handle field
+      if (channel.handle) {
+        return channel.handle.startsWith('@') ? channel.handle : '@' + channel.handle;
+      }
+      
+      // Extract from URL
+      if (channel.url && channel.url.includes('@')) {
+        const match = channel.url.match(/@[\w-]+/);
+        if (match) return match[0];
+      }
+      
+      return null;
+    }
+
+    // Get subscriber count text
+    function getSubscriberCount(channel) {
+      // videoCount field often contains the actual subscriber count
+      if (channel.videoCount && channel.videoCount.includes('subscriber')) {
+        return channel.videoCount;
+      }
+      
+      // subscriberCount might have actual count if it doesn't start with @
+      if (channel.subscriberCount && !channel.subscriberCount.startsWith('@')) {
+        return channel.subscriberCount;
+      }
+      
+      return null;
+    }
+
+    // Render channel result
+    function renderChannelResult(channel) {
+      const channelEl = document.createElement('a');
+      channelEl.className = 'channel-result';
+      channelEl.href = getChannelUrl(channel);
+      
+      const handleText = getChannelHandle(channel);
+      const subscriberText = getSubscriberCount(channel);
+      
+      channelEl.innerHTML = `
+        <img class="channel-avatar" src="${fixThumbnailUrl(channel.thumbnail)}" alt="${escapeHtml(channel.name)}">
+        <div class="channel-info">
+          <div class="channel-name">
+            ${escapeHtml(channel.name)}
+            <span class="verified-badge">✓</span>
+          </div>
+          ${handleText ? `<div class="channel-handle">${escapeHtml(handleText)}</div>` : ''}
+          ${subscriberText ? `<div class="channel-stats">${subscriberText}</div>` : ''}
+          ${channel.description ? `<div class="channel-description">${escapeHtml(channel.description)}</div>` : ''}
+          <button class="subscribe-btn" onclick="event.preventDefault(); event.stopPropagation();">Subscribe</button>
+        </div>
+      `;
+      
+      return channelEl;
+    }
+
+    // Render video result
+    function renderVideoResult(video) {
+      const videoEl = document.createElement('a');
+      videoEl.className = 'video-result';
+      videoEl.href = `/watch?v=${video.id}`;
+      
+      const channelUrl = video.channel ? getChannelUrl(video.channel) : '#';
+      
+      videoEl.innerHTML = `
+        <div class="video-thumbnail-wrapper">
+          <img class="video-thumbnail" src="${fixThumbnailUrl(video.thumbnail)}" alt="${escapeHtml(video.title)}" loading="lazy">
+          ${video.duration ? `<span class="video-duration">${video.duration}</span>` : ''}
+        </div>
+        <div class="video-info">
+          <h3 class="video-title">${escapeHtml(video.title)}</h3>
+          <div class="video-metadata">
+            ${video.views ? `<span>${formatViews(video.views)}</span>` : ''}
+            ${video.published ? `<span>${video.published}</span>` : ''}
+          </div>
+          ${video.channel ? `
+            <div class="video-channel-info">
+              ${video.channel.thumbnail ? `<img class="video-channel-avatar" src="${fixThumbnailUrl(video.channel.thumbnail)}" alt="${escapeHtml(video.channel.name)}">` : ''}
+              <a class="video-channel-name" href="${channelUrl}" onclick="event.stopPropagation();">
+                ${escapeHtml(video.channel.name)}
+              </a>
+            </div>
+          ` : ''}
+          ${video.description ? `<div class="video-description">${escapeHtml(video.description)}</div>` : ''}
+        </div>
+      `;
+      
+      return videoEl;
+    }
+
+    // Render playlist result
+    function renderPlaylistResult(playlist) {
+      const playlistEl = document.createElement('a');
+      playlistEl.className = 'playlist-result';
+      playlistEl.href = `/playlist?list=${playlist.id}`;
+      
+      const channelUrl = playlist.channel ? getChannelUrl(playlist.channel) : '#';
+      
+      playlistEl.innerHTML = `
+        <div class="playlist-thumbnail-wrapper">
+          <img class="playlist-thumbnail" src="${fixThumbnailUrl(playlist.thumbnail)}" alt="${escapeHtml(playlist.title)}" loading="lazy">
+          <div class="playlist-overlay">
+            <div class="playlist-count">${playlist.videoCount || '0'}</div>
+            <div class="playlist-icon">▶</div>
+          </div>
+        </div>
+        <div class="video-info">
+          <h3 class="video-title">${escapeHtml(playlist.title)}</h3>
+          ${playlist.channel ? `
+            <div class="video-channel-info">
+              <a class="video-channel-name" href="${channelUrl}" onclick="event.stopPropagation();">
+                ${escapeHtml(playlist.channel.name)}
+              </a>
+            </div>
+          ` : ''}
+          <div class="video-metadata">
+            <span>${playlist.videoCount || '0'} videos</span>
+            ${playlist.updated ? `<span>Updated ${playlist.updated}</span>` : ''}
+          </div>
+          ${playlist.description ? `<div class="video-description">${escapeHtml(playlist.description)}</div>` : ''}
+        </div>
+      `;
+      
+      return playlistEl;
+    }
+
+    // Render skeleton loading
+    function renderSkeleton() {
+      const skeleton = document.createElement('div');
+      skeleton.className = 'skeleton-container';
+      skeleton.innerHTML = `
+        <div class="skeleton-video">
+          <div class="skeleton-thumbnail"></div>
+          <div class="skeleton-info">
+            <div class="skeleton-title"></div>
+            <div class="skeleton-meta"></div>
+            <div class="skeleton-desc"></div>
+          </div>
+        </div>
+      `.repeat(3);
+      return skeleton;
+    }
+
+    // Display results
+    function displayResults(results, append = false) {
+      const container = document.getElementById('results-container');
+      const noResults = document.getElementById('no-results');
+      const endMessage = document.getElementById('end-message');
+      
+      if (!append) {
+        container.innerHTML = '';
+      }
+      
+      // Remove skeleton loaders
+      const skeletons = container.querySelectorAll('.skeleton-container');
+      skeletons.forEach(s => s.remove());
+      
+      if (results.length === 0 && !append && currentResults.length === 0) {
+        noResults.classList.remove('hidden');
+        endMessage.classList.add('hidden');
+        return;
+      }
+      
+      noResults.classList.add('hidden');
+      
+      results.forEach(result => {
+        let element;
+        
+        switch (result.type) {
+          case 'channel':
+            element = renderChannelResult(result);
+            break;
+          case 'video':
+            element = renderVideoResult(result);
+            break;
+          case 'playlist':
+            element = renderPlaylistResult(result);
+            break;
+          default:
+            if (result.id && result.title) {
+              element = renderVideoResult(result);
+            }
+        }
+        
+        if (element) {
+          container.appendChild(element);
+        }
+      });
+      
+      if (!hasMore) {
+        endMessage.classList.remove('hidden');
+      } else {
+        endMessage.classList.add('hidden');
+      }
+    }
+
+    // Load more results
+    async function loadMoreResults() {
+      if (!currentQuery || isLoading || !hasMore) {
+        return;
+      }
+      
+      console.log('Loading more:', { start: currentStart, end: currentEnd });
+      
+      isLoading = true;
+      
+      const loadingMore = document.getElementById('loading-more');
+      loadingMore.classList.remove('hidden');
+      
+      try {
+        let apiUrl = `${API_BASE}/search?q=${encodeURIComponent(currentQuery)}&start=${currentStart}&end=${currentEnd}`;
+        
+        if (currentFilter !== 'all') {
+          apiUrl += `&type=${currentFilter}`;
+        }
+        
+        if (currentSort !== 'relevance') {
+          apiUrl += `&sort=${currentSort}`;
+        }
+        
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        
+        if (data.success && data.results) {
+          let results = data.results;
+          
+          if (currentFilter !== 'all') {
+            results = results.filter(r => r.type === currentFilter);
+          }
+          
+          currentResults = [...currentResults, ...results];
+          displayResults(results, true);
+          
+          hasMore = data.hasMore !== undefined ? data.hasMore : results.length >= BATCH_SIZE;
+          
+          currentStart = currentEnd + 1;
+          currentEnd = currentStart + BATCH_SIZE - 1;
+          
+        } else {
+          throw new Error(data.error || 'Search failed');
+        }
+      } catch (error) {
+        console.error('Load more error:', error);
+        hasMore = false;
+      } finally {
+        isLoading = false;
+        loadingMore.classList.add('hidden');
+      }
+    }
+
+    // Initial search
+    async function performSearch(query) {
+      if (!query || isLoading) return;
+      
+      // Reset state
+      currentStart = 1;
+      currentEnd = BATCH_SIZE;
+      currentResults = [];
+      hasMore = true;
+      document.getElementById('end-message').classList.add('hidden');
+      
+      isLoading = true;
+      
+      const container = document.getElementById('results-container');
+      const resultsInfo = document.getElementById('results-info');
+      
+      container.innerHTML = '';
+      container.appendChild(renderSkeleton());
+      
+      try {
+        let apiUrl = `${API_BASE}/search?q=${encodeURIComponent(query)}&start=${currentStart}&end=${currentEnd}`;
+        
+        if (currentFilter !== 'all') {
+          apiUrl += `&type=${currentFilter}`;
+        }
+        
+        if (currentSort !== 'relevance') {
+          apiUrl += `&sort=${currentSort}`;
+        }
+        
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        
+        if (data.success && data.results) {
+          let results = data.results;
+          
+          if (currentFilter !== 'all') {
+            results = results.filter(r => r.type === currentFilter);
+          }
+          
+          currentResults = results;
+          
+          const totalText = data.totalCached ? 
+            `About ${data.totalCached.toLocaleString()} results` : 
+            `${results.length} results`;
+          resultsInfo.querySelector('.results-count').textContent = totalText;
+          
+          displayResults(results, false);
+          
+          hasMore = data.hasMore !== undefined ? data.hasMore : results.length >= BATCH_SIZE;
+          
+          currentStart = currentEnd + 1;
+          currentEnd = currentStart + BATCH_SIZE - 1;
+          
+        } else {
+          throw new Error(data.error || 'Search failed');
+        }
+      } catch (error) {
+        console.error('Search error:', error);
+        
+        const skeletons = container.querySelectorAll('.skeleton-container');
+        skeletons.forEach(s => s.remove());
+        
+        container.innerHTML = `
+          <div class="no-results">
+            <div class="no-results-icon">⚠️</div>
+            <div class="no-results-text">Something went wrong</div>
+            <div class="no-results-suggestion">${error.message}</div>
+          </div>
+        `;
+        hasMore = false;
+      } finally {
+        isLoading = false;
+      }
+    }
+
+    // Scroll handler
+    function checkScroll() {
+      if (!currentQuery || isLoading || !hasMore) return;
+      
+      const now = Date.now();
+      if (now - lastScrollCheck < 200) return;
+      lastScrollCheck = now;
+      
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      
+      const distanceFromBottom = documentHeight - (scrollTop + windowHeight);
+      
+      if (distanceFromBottom < 800) {
+        loadMoreResults();
+      }
+    }
+
+    // Search form submit
+    document.getElementById('search-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const query = document.getElementById('search-input').value.trim();
+      if (query && query !== currentQuery) {
+        currentQuery = query;
+        updateURL(query);
+        document.title = `${query} - YouTube Search`;
+        performSearch(query);
+      }
+    });
+
+    // Filter chips
+    document.getElementById('filter-chips').addEventListener('click', (e) => {
+      const chip = e.target.closest('.filter-chip');
+      if (!chip) return;
+      
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      
+      currentFilter = chip.dataset.filter;
+      
+      if (currentQuery) {
+        performSearch(currentQuery);
+      }
+    });
+
+    // Sidebar options
+    document.querySelectorAll('.sidebar-option').forEach(option => {
+      option.addEventListener('click', () => {
+        const checkbox = option.querySelector('.sidebar-checkbox');
+        if (checkbox.type === 'radio') {
+          checkbox.checked = true;
+        } else {
+          checkbox.checked = !checkbox.checked;
+        }
+        
+        if (option.dataset.sort) {
+          currentSort = option.dataset.sort;
+          if (currentQuery) {
+            performSearch(currentQuery);
+          }
+        }
+      });
+    });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      const query = getQueryFromURL();
+      if (query) {
+        currentQuery = query;
+        document.getElementById('search-input').value = query;
+        document.title = `${query} - YouTube Search`;
+        performSearch(query);
+      } else {
+        document.getElementById('results-info').querySelector('.results-count').textContent = 'Enter a search term to get started';
+      }
+      
+      // Scroll listeners
+      window.addEventListener('scroll', checkScroll);
+      window.addEventListener('resize', checkScroll);
+      
+      // Periodic check
+      setInterval(() => {
+        if (currentQuery && !isLoading && hasMore) {
+          checkScroll();
+        }
+      }, 1000);
+    });
+
+    // Browser navigation
+    window.addEventListener('popstate', () => {
+      const query = getQueryFromURL();
+      if (query !== currentQuery) {
+        currentQuery = query;
+        document.getElementById('search-input').value = query;
+        if (query) {
+          performSearch(query);
+        } else {
+          document.getElementById('results-container').innerHTML = '';
+          document.getElementById('results-info').querySelector('.results-count').textContent = 'Enter a search term to get started';
+        }
+      }
+    });
+  </script>
+</body>
+</html>
