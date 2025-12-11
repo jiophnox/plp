@@ -1,0 +1,274 @@
+import { Innertube, Log } from 'youtubei.js';
+
+// Disable youtubei.js warnings
+Log.setLevel(Log.Level.NONE);
+
+let ytInstance = null;
+
+async function initYouTube() {
+  if (ytInstance) return ytInstance;
+  ytInstance = await Innertube.create({ retrieve_player: false });
+  console.log('✅ YouTube instance initialized');
+  return ytInstance;
+}
+
+// Helper function to convert identifier to channel ID
+async function resolveChannelId(youtube, channelIdentifier) {
+  let channelId = channelIdentifier;
+
+  if (channelIdentifier.startsWith('@') || channelIdentifier.includes('youtube.com')) {
+    if (channelIdentifier.includes('youtube.com')) {
+      const handleMatch = channelIdentifier.match(/@([\w-]+)/);
+      const channelMatch = channelIdentifier.match(/channel\/([\w-]+)/);
+      channelIdentifier = handleMatch ? '@' + handleMatch[1] : (channelMatch ? channelMatch[1] : channelIdentifier);
+    }
+
+    if (channelIdentifier.startsWith('@')) {
+      const search = await youtube.search(channelIdentifier.substring(1), { type: 'channel' });
+      const channelResult = search.results.find(result => result.type === 'Channel');
+      if (!channelResult?.author?.id) return null;
+      channelId = channelResult.author.id;
+    }
+  }
+
+  return channelId;
+}
+
+/**
+ * Get all videos from a YouTube channel
+ * @param {string} channelIdentifier - Channel handle (@TED), name (ted), URL, or channel ID
+ * @param {object} options - Optional settings
+ * @param {string} options.sort - Sort order: 'newest' (default), 'oldest', 'popular'
+ * @param {number} options.limit - Max videos to fetch (default: Infinity = all)
+ * @returns {Promise<object>} - Channel info with all videos
+ */
+async function getChannelVideos(channelIdentifier, options = {}) {
+  const { sort = 'newest', limit = Infinity } = options;
+
+  try {
+    const youtube = await initYouTube();
+
+    // Normalize input - add @ if it's just a name without special characters
+    let normalizedIdentifier = channelIdentifier.trim();
+    if (!normalizedIdentifier.startsWith('@') && 
+        !normalizedIdentifier.includes('youtube.com') && 
+        !normalizedIdentifier.startsWith('UC')) {
+      normalizedIdentifier = '@' + normalizedIdentifier;
+    }
+
+    console.log(`🔍 Resolving channel: ${normalizedIdentifier}`);
+
+    // Resolve channel ID
+    const channelId = await resolveChannelId(youtube, normalizedIdentifier);
+    if (!channelId) {
+      return { success: false, error: 'Channel not found' };
+    }
+
+    console.log(`✅ Found channel ID: ${channelId}`);
+
+    // Get channel
+    const channel = await youtube.getChannel(channelId);
+    if (!channel) {
+      return { success: false, error: 'Channel not found' };
+    }
+
+    // Get videos tab
+    let videosTab = await channel.getVideos();
+
+    // Apply sorting if needed
+    const sortOptions = videosTab.filters || [];
+    console.log('Available sort options:', sortOptions.map(f => f.text || f.title).join(', '));
+
+    if (sort === 'popular' || sort === 'oldest') {
+      const sortFilter = sortOptions.find(f => {
+        const text = (f.text || f.title || '').toLowerCase();
+        if (sort === 'popular') return text.includes('popular');
+        if (sort === 'oldest') return text.includes('oldest') || text.includes('date added');
+        return false;
+      });
+
+      if (sortFilter) {
+        console.log(`📊 Applying sort: ${sortFilter.text || sortFilter.title}`);
+        videosTab = await videosTab.applyFilter(sortFilter);
+      }
+    }
+
+    const allVideos = [];
+    const seenIds = new Set(); // Prevent duplicates
+
+    // Universal video extractor - handles all possible structures
+    const extractVideos = (data) => {
+      const videos = [];
+
+      // Method 1: Direct videos array (most common)
+      if (data.videos && Array.isArray(data.videos)) {
+        for (const v of data.videos) {
+          if (v.id && !seenIds.has(v.id)) {
+            seenIds.add(v.id);
+            videos.push(formatVideo(v));
+          }
+        }
+      }
+
+      // Method 2: Contents array
+      if (data.contents) {
+        const contents = Array.isArray(data.contents) ? data.contents : [data.contents];
+        for (const content of contents) {
+          // Nested contents
+          if (content.contents && Array.isArray(content.contents)) {
+            for (const item of content.contents) {
+              const v = item.content || item;
+              if (v.id && !seenIds.has(v.id)) {
+                seenIds.add(v.id);
+                videos.push(formatVideo(v));
+              }
+            }
+          }
+        }
+      }
+
+      // Method 3: Current tab structure
+      if (data.current_tab?.content?.contents) {
+        for (const section of data.current_tab.content.contents) {
+          // RichGrid structure
+          if (section.contents) {
+            for (const item of section.contents) {
+              const v = item.content || item;
+              if (v.id && !seenIds.has(v.id)) {
+                seenIds.add(v.id);
+                videos.push(formatVideo(v));
+              }
+            }
+          }
+          // Items array
+          if (section.items) {
+            for (const item of section.items) {
+              const v = item.content || item;
+              if (v.id && !seenIds.has(v.id)) {
+                seenIds.add(v.id);
+                videos.push(formatVideo(v));
+              }
+            }
+          }
+        }
+      }
+
+      return videos;
+    };
+
+    // Format video object consistently
+    const formatVideo = (v) => ({
+      id: v.id,
+      title: v.title?.text || v.title?.toString() || v.headline?.text || 'Unknown',
+      thumbnail: getBestThumbnail(v.thumbnails),
+      duration: v.duration?.text || v.length?.text || formatDuration(v.duration?.seconds) || 'N/A',
+      views: v.view_count?.text || v.views?.text || v.short_view_count?.text || 'N/A',
+      published: v.published?.text || v.date?.text || 'N/A',
+      description: v.description_snippet?.text || v.description?.text || ''
+    });
+
+    // Get best quality thumbnail
+    const getBestThumbnail = (thumbnails) => {
+      if (!thumbnails || !Array.isArray(thumbnails)) return '';
+      // Sort by width and get the best one (usually hqdefault)
+      const sorted = [...thumbnails].sort((a, b) => (b.width || 0) - (a.width || 0));
+      return sorted[0]?.url || thumbnails[0]?.url || '';
+    };
+
+    // Format duration from seconds
+    const formatDuration = (seconds) => {
+      if (!seconds) return null;
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = seconds % 60;
+      if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+      return `${m}:${s.toString().padStart(2, '0')}`;
+    };
+
+    // Get first page
+    const firstPageVideos = extractVideos(videosTab);
+    allVideos.push(...firstPageVideos);
+    console.log(`📹 First page: ${firstPageVideos.length} videos`);
+
+    // Fetch ALL remaining pages
+    let pageCount = 1;
+    let consecutiveEmpty = 0;
+
+    while (videosTab.has_continuation && allVideos.length < limit) {
+      try {
+        videosTab = await videosTab.getContinuation();
+        const pageVideos = extractVideos(videosTab);
+
+        if (pageVideos.length === 0) {
+          consecutiveEmpty++;
+          if (consecutiveEmpty >= 3) {
+            console.log('⚠️ 3 consecutive empty pages, stopping');
+            break;
+          }
+        } else {
+          consecutiveEmpty = 0;
+          allVideos.push(...pageVideos);
+        }
+
+        pageCount++;
+
+        // Progress log every 5 pages
+        if (pageCount % 5 === 0) {
+          console.log(`📹 Page ${pageCount}: ${allVideos.length} total videos`);
+        }
+
+        // Safety limit - 1000 pages max (should be ~30,000 videos)
+        if (pageCount >= 1000) {
+          console.log('⚠️ Reached 1000 page limit');
+          break;
+        }
+
+      } catch (error) {
+        console.error(`❌ Error on page ${pageCount + 1}:`, error.message);
+        // Don't break immediately, try a few more times
+        consecutiveEmpty++;
+        if (consecutiveEmpty >= 3) break;
+      }
+    }
+
+    // Apply limit if specified
+    const finalVideos = limit < Infinity ? allVideos.slice(0, limit) : allVideos;
+
+    console.log(`\n✅ Complete! Total: ${finalVideos.length} videos from ${pageCount} pages`);
+
+    return {
+      success: true,
+      channel: {
+        name: channel.metadata?.title || 'Unknown',
+        id: channelId,
+        url: channel.metadata?.vanity_channel_url || `https://www.youtube.com/channel/${channelId}`,
+        thumbnail: channel.metadata?.thumbnail?.[0]?.url || '',
+        banner: channel.metadata?.banner?.[0]?.url || ''
+      },
+      totalVideos: finalVideos.length,
+      videos: finalVideos
+    };
+
+  } catch (error) {
+    console.error('❌ Error:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+// ============ TEST ============
+
+/*// Test with a channel that has many videos
+console.log('\n🎬 Testing with @TED (large channel)...\n');
+const tedResult = await getChannelVideos('@TED');
+console.log(`\nChannel: ${tedResult.channel?.name}`);
+console.log(`Total videos: ${tedResult.totalVideos}`);
+console.log('\nFirst 5 videos:');
+tedResult.videos?.slice(0, 5).forEach((v, i) => {
+  console.log(`  ${i + 1}. ${v.title} (${v.duration}) - ${v.views}`);
+});
+console.log('\nLast 5 videos:');
+tedResult.videos?.slice(-5).forEach((v, i) => {
+  console.log(`  ${tedResult.totalVideos - 4 + i}. ${v.title} (${v.duration}) - ${v.views}`);
+});
+*/
+export { getChannelVideos, resolveChannelId };
