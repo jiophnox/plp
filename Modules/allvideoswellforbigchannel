@@ -1,0 +1,209 @@
+import { Innertube, Log } from 'youtubei.js';
+
+// Disable youtubei.js warnings
+Log.setLevel(Log.Level.NONE);
+
+let ytInstance = null;
+
+async function initYouTube() {
+  if (ytInstance) return ytInstance;
+  ytInstance = await Innertube.create({ retrieve_player: false });
+  console.log('✅ YouTube instance initialized');
+  return ytInstance;
+}
+
+// Helper function to convert identifier to channel ID
+async function resolveChannelId(youtube, channelIdentifier) {
+  let channelId = channelIdentifier;
+
+  if (channelIdentifier.startsWith('@') || channelIdentifier.includes('youtube.com')) {
+    if (channelIdentifier.includes('youtube.com')) {
+      const handleMatch = channelIdentifier.match(/@([\w-]+)/);
+      const channelMatch = channelIdentifier.match(/channel\/([\w-]+)/);
+      channelIdentifier = handleMatch ? '@' + handleMatch[1] : (channelMatch ? channelMatch[1] : channelIdentifier);
+    }
+
+    if (channelIdentifier.startsWith('@')) {
+      const search = await youtube.search(channelIdentifier.substring(1), { type: 'channel' });
+      const channelResult = search.results.find(result => result.type === 'Channel');
+      if (!channelResult?.author?.id) return null;
+      channelId = channelResult.author.id;
+    }
+  }
+
+  return channelId;
+}
+
+/**
+ * Get videos from a YouTube channel
+ * @param {string} channelIdentifier - Channel handle (@TED), name (ted), URL, or channel ID
+ * @param {number|null} start - Start index (1-based), null for all videos
+ * @param {number|null} end - End index (1-based), null for all videos
+ * @returns {Promise<object>} - Channel info with videos
+ */
+async function getChannelVideos(channelIdentifier, start = null, end = null) {
+  try {
+    const youtube = await initYouTube();
+
+    // Normalize input
+    let normalizedIdentifier = channelIdentifier.trim();
+    if (!normalizedIdentifier.startsWith('@') && 
+        !normalizedIdentifier.includes('youtube.com') && 
+        !normalizedIdentifier.startsWith('UC')) {
+      normalizedIdentifier = '@' + normalizedIdentifier;
+    }
+
+    console.log(`🔍 Resolving channel: ${normalizedIdentifier}`);
+
+    // Resolve channel ID
+    const channelId = await resolveChannelId(youtube, normalizedIdentifier);
+    if (!channelId) {
+      return { success: false, error: 'Channel not found' };
+    }
+
+    console.log(`✅ Found channel ID: ${channelId}`);
+
+    // Get channel
+    const channel = await youtube.getChannel(channelId);
+    if (!channel) {
+      return { success: false, error: 'Channel not found' };
+    }
+
+    // Get videos tab
+    let videosTab = await channel.getVideos();
+
+    const allVideos = [];
+    const seenIds = new Set();
+
+    // Determine if we need range limiting
+    const hasRange = start !== null && end !== null;
+    // We need to fetch up to 'end' videos, then slice from start-1 to end
+    const maxToFetch = hasRange ? end : Infinity;
+
+    console.log(hasRange ? `📊 Fetching videos 1-${end} (will return ${start}-${end})` : '📊 Fetching ALL videos');
+
+    // Format video object
+    const formatVideo = (v) => ({
+      id: v.id,
+      title: v.title?.text || v.title?.toString() || 'Unknown',
+      thumbnail: v.thumbnails?.[0]?.url || '',
+      duration: v.duration?.text || 'N/A',
+      views: v.view_count?.text || v.short_view_count?.text || 'N/A',
+      published: v.published?.text || 'N/A',
+      description: v.description_snippet?.text || ''
+    });
+
+    // Extract videos from response
+    const extractVideos = (data) => {
+      const videos = [];
+
+      // Method 1: Direct videos array
+      if (data.videos && Array.isArray(data.videos)) {
+        for (const v of data.videos) {
+          if (v.id && !seenIds.has(v.id)) {
+            seenIds.add(v.id);
+            videos.push(formatVideo(v));
+          }
+        }
+      }
+
+      // Method 2: Current tab structure
+      if (data.current_tab?.content?.contents) {
+        for (const section of data.current_tab.content.contents) {
+          const items = section.contents || section.items || [];
+          for (const item of items) {
+            const v = item.content || item;
+            if (v.id && !seenIds.has(v.id)) {
+              seenIds.add(v.id);
+              videos.push(formatVideo(v));
+            }
+          }
+        }
+      }
+
+      return videos;
+    };
+
+    // Get first page
+    allVideos.push(...extractVideos(videosTab));
+    console.log(`📹 First page: ${allVideos.length} videos`);
+
+    // Check if we already have enough
+    if (allVideos.length >= maxToFetch) {
+      console.log(`✅ Got enough videos from first page`);
+    } else {
+      // Fetch more pages until we have enough
+      let pageCount = 1;
+      let consecutiveEmpty = 0;
+
+      while (videosTab.has_continuation && allVideos.length < maxToFetch) {
+        try {
+          videosTab = await videosTab.getContinuation();
+          const pageVideos = extractVideos(videosTab);
+
+          if (pageVideos.length === 0) {
+            consecutiveEmpty++;
+            if (consecutiveEmpty >= 3) break;
+          } else {
+            consecutiveEmpty = 0;
+            allVideos.push(...pageVideos);
+          }
+
+          pageCount++;
+
+          // Log progress
+          if (hasRange) {
+            console.log(`📹 Page ${pageCount}: ${allVideos.length}/${maxToFetch} videos`);
+          } else if (pageCount % 10 === 0) {
+            console.log(`📹 Page ${pageCount}: ${allVideos.length} total videos`);
+          }
+
+          // Safety limit
+          if (pageCount >= 1000) break;
+
+          // Stop early if we have enough for the range
+          if (allVideos.length >= maxToFetch) {
+            console.log(`✅ Reached target: ${allVideos.length} videos`);
+            break;
+          }
+
+        } catch (error) {
+          console.error(`❌ Error on page ${pageCount + 1}:`, error.message);
+          consecutiveEmpty++;
+          if (consecutiveEmpty >= 3) break;
+        }
+      }
+    }
+
+    // Apply range if specified (convert to 0-based index)
+    let finalVideos = allVideos;
+    if (hasRange) {
+      const startIndex = Math.max(0, start - 1); // Convert 1-based to 0-based
+      const endIndex = Math.min(allVideos.length, end);
+      finalVideos = allVideos.slice(startIndex, endIndex);
+      console.log(`📊 Sliced: [${startIndex}:${endIndex}] = ${finalVideos.length} videos`);
+    }
+
+    console.log(`✅ Complete! Returning ${finalVideos.length} videos`);
+
+    return {
+      success: true,
+      channel: {
+        name: channel.metadata?.title || 'Unknown',
+        id: channelId,
+        url: channel.metadata?.vanity_channel_url || `https://www.youtube.com/channel/${channelId}`,
+        thumbnail: channel.metadata?.thumbnail?.[0]?.url || '',
+        banner: channel.metadata?.banner?.[0]?.url || ''
+      },
+      range: hasRange ? { start, end, fetched: allVideos.length } : null,
+      totalVideos: finalVideos.length,
+      videos: finalVideos
+    };
+
+  } catch (error) {
+    console.error('❌ Error:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+export { getChannelVideos, resolveChannelId };
