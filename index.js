@@ -16,6 +16,11 @@ app.use(express.static(path.join(__dirname, 'Public')));
 app.use('/api/channel', channelRoutes);
 app.use('/api/search', searchRoutes);
 
+// Home page route (ROOT)
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'Public', 'index.html'));
+});
+
 // Watch page route
 app.get('/watch', (req, res) => {
   res.sendFile(path.join(__dirname, 'Public', 'watch.html'));
@@ -33,7 +38,7 @@ app.get('/shorts/:id', (req, res) => {
 // Catch-all for channel pages
 app.use((req, res, next) => {
   if (req.method === 'GET' && !req.path.startsWith('/api/')) {
-    res.sendFile(path.join(__dirname, 'Public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'Public', 'channelPage.html'));
   } else {
     next();
   }
