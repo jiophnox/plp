@@ -8,6 +8,9 @@ let ytInstance = null;
 // Cache for search results
 const searchCache = new Map();
 
+// Cache for video details (tags)
+const videoDetailsCache = new Map();
+
 // Generate random visitor data for fresh session
 function generateVisitorData() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
@@ -51,23 +54,174 @@ function initSearchCache(cacheKey) {
       isFetching: false,
       lastUpdate: Date.now(),
       error: null,
-      searchData: null // Store search data for continuation
+      searchData: null
     });
   }
   return searchCache.get(cacheKey);
 }
 
-// Format video result
-function formatVideo(item) {
+// Extract text from various YouTube text formats
+function extractText(field) {
+  if (!field) return null;
+  if (typeof field === 'string') return field;
+  if (field.text) return field.text;
+  if (field.runs) return field.runs.map(r => r.text).join('');
+  if (typeof field.toString === 'function' && field.toString() !== '[object Object]') {
+    return field.toString();
+  }
+  return null;
+}
+
+// Extract badges from video item
+function extractBadges(item) {
+  const badges = [];
+
+  if (item.badges && Array.isArray(item.badges)) {
+    for (const badge of item.badges) {
+      const label = extractText(badge.label) || extractText(badge.text) || badge.style;
+      if (label) badges.push(label);
+    }
+  }
+
+  if (item.owner_badges && Array.isArray(item.owner_badges)) {
+    for (const badge of item.owner_badges) {
+      const label = extractText(badge.label) || extractText(badge.text) || badge.style;
+      if (label) badges.push(label);
+    }
+  }
+
+  if (item.is_live || item.isLive) badges.push('LIVE');
+  if (item.is_upcoming || item.isUpcoming) badges.push('UPCOMING');
+  if (item.is_members_only || item.is_premium) badges.push('MEMBERS ONLY');
+  if (item.is_4k) badges.push('4K');
+  if (item.is_hdr) badges.push('HDR');
+  if (item.is_vr180 || item.is_vr) badges.push('VR');
+  if (item.is_360) badges.push('360°');
+
+  return [...new Set(badges)];
+}
+
+// Extract hashtags from title and description
+function extractHashtags(title, description) {
+  const hashtags = [];
+  const hashtagRegex = /#[\w\u0080-\uFFFF]+/g;
+
+  if (title) {
+    const titleTags = title.match(hashtagRegex);
+    if (titleTags) hashtags.push(...titleTags);
+  }
+
+  if (description) {
+    const descTags = description.match(hashtagRegex);
+    if (descTags) hashtags.push(...descTags);
+  }
+
+  return [...new Set(hashtags)];
+}
+
+/**
+ * Fetch full video details including tags
+ */
+async function getVideoTags(videoId) {
+  // Check cache first
+  if (videoDetailsCache.has(videoId)) {
+    const cached = videoDetailsCache.get(videoId);
+    if (Date.now() - cached.timestamp < 30 * 60 * 1000) { // 30 min cache
+      return cached.data;
+    }
+  }
+
+  try {
+    const youtube = await initYouTube();
+    const info = await youtube.getInfo(videoId);
+
+    const tags = [];
+    const keywords = [];
+    const category = null;
+
+    // Extract from basic_info
+    if (info.basic_info) {
+      if (info.basic_info.tags && Array.isArray(info.basic_info.tags)) {
+        tags.push(...info.basic_info.tags);
+      }
+      if (info.basic_info.keywords && Array.isArray(info.basic_info.keywords)) {
+        keywords.push(...info.basic_info.keywords);
+      }
+    }
+
+    // Extract from primary_info
+    if (info.primary_info) {
+      if (info.primary_info.super_title_link?.runs) {
+        for (const run of info.primary_info.super_title_link.runs) {
+          if (run.text && run.text.startsWith('#')) {
+            tags.push(run.text);
+          }
+        }
+      }
+    }
+
+    // Extract from secondary_info
+    if (info.secondary_info?.metadata?.rows) {
+      for (const row of info.secondary_info.metadata.rows) {
+        if (row.metadata_row_header?.content?.text === 'Tags') {
+          const tagText = row.contents?.map(c => extractText(c)).filter(Boolean);
+          if (tagText) tags.push(...tagText);
+        }
+      }
+    }
+
+    const result = {
+      tags: [...new Set(tags)],
+      keywords: [...new Set(keywords)],
+      category: info.basic_info?.category || null,
+      channelKeywords: info.basic_info?.channel_keywords || []
+    };
+
+    // Cache the result
+    videoDetailsCache.set(videoId, {
+      timestamp: Date.now(),
+      data: result
+    });
+
+    return result;
+
+  } catch (error) {
+    console.error(`Failed to get tags for ${videoId}:`, error.message);
+    return { tags: [], keywords: [], category: null, channelKeywords: [] };
+  }
+}
+
+/**
+ * Batch fetch tags for multiple videos
+ */
+async function batchGetVideoTags(videoIds, maxConcurrent = 3) {
+  const results = {};
+
+  // Process in batches to avoid rate limiting
+  for (let i = 0; i < videoIds.length; i += maxConcurrent) {
+    const batch = videoIds.slice(i, i + maxConcurrent);
+    const promises = batch.map(async (id) => {
+      results[id] = await getVideoTags(id);
+    });
+    await Promise.all(promises);
+
+    // Small delay between batches
+    if (i + maxConcurrent < videoIds.length) {
+      await new Promise(r => setTimeout(r, 100));
+    }
+  }
+
+  return results;
+}
+
+// Format video result with tags and labels
+function formatVideo(item, fullTags = null) {
   const videoId = item.id || item.video_id;
   if (!videoId) return null;
 
   let title = 'Unknown';
   if (item.title) {
-    if (typeof item.title === 'string') title = item.title;
-    else if (item.title.text) title = item.title.text;
-    else if (item.title.runs) title = item.title.runs.map(r => r.text).join('');
-    else if (typeof item.title.toString === 'function') title = item.title.toString();
+    title = extractText(item.title) || 'Unknown';
   }
 
   let thumbnail = '';
@@ -104,11 +258,34 @@ function formatVideo(item) {
   let channelName = 'Unknown';
   let channelId = null;
   let channelUrl = null;
+  let isVerified = false;
+  let isArtist = false;
+
   if (item.author) {
     channelName = item.author.name || item.author.title || 'Unknown';
     channelId = item.author.id || item.author.channel_id;
     channelUrl = item.author.url || (channelId ? `https://www.youtube.com/channel/${channelId}` : null);
+    isVerified = item.author.is_verified || item.author.isVerified || false;
+    isArtist = item.author.is_verified_artist || item.author.isVerifiedArtist || false;
   }
+
+  const description = item.description_snippet?.text || item.description?.text || '';
+
+  const badges = extractBadges(item);
+  const hashtags = extractHashtags(title, description);
+
+  // Merge with full tags if available
+  const tags = fullTags?.tags || [];
+  const keywords = fullTags?.keywords || [];
+  const category = fullTags?.category || null;
+
+  // Build allTags from all sources
+  const allTags = [...new Set([
+    ...badges,
+    ...hashtags,
+    ...tags,
+    ...keywords.slice(0, 10) // Limit keywords
+  ])].filter(Boolean);
 
   return {
     type: 'video',
@@ -119,12 +296,34 @@ function formatVideo(item) {
     views,
     published,
     url: `https://www.youtube.com/watch?v=${videoId}`,
-    description: item.description_snippet?.text || item.description?.text || '',
+    description,
+
     channel: {
       name: channelName,
       id: channelId,
       url: channelUrl,
-      thumbnail: item.author?.thumbnails?.[0]?.url || null
+      thumbnail: item.author?.thumbnails?.[0]?.url || null,
+      isVerified,
+      isArtist
+    },
+
+    metadata: {
+      badges,
+      hashtags,
+      tags,           // Full video tags (from getInfo)
+      keywords,       // Video keywords (from getInfo)
+      category,       // Video category
+      allTags,        // Combined unique tags
+
+      isLive: item.is_live || item.isLive || badges.includes('LIVE') || false,
+      isUpcoming: item.is_upcoming || badges.includes('UPCOMING') || false,
+      isShort: item.is_short || (item.duration?.seconds && item.duration.seconds <= 60) || false,
+      isPremium: item.is_premium || badges.includes('MEMBERS ONLY') || false,
+      is4K: item.is_4k || badges.includes('4K') || false,
+      isHDR: item.is_hdr || badges.includes('HDR') || false,
+
+      // Flag to indicate if full tags were fetched
+      hasFullTags: fullTags !== null
     }
   };
 }
@@ -146,27 +345,24 @@ function formatChannel(item) {
     thumbnail = item.thumbnails[item.thumbnails.length - 1]?.url;
   }
 
-  let subscriberCount = 'N/A';
-  if (item.subscriber_count?.text) subscriberCount = item.subscriber_count.text;
-  else if (item.video_count?.text) subscriberCount = item.video_count.text;
-
-  let videoCount = 'N/A';
-  if (item.video_count?.text) videoCount = item.video_count.text;
-
-  let description = '';
-  if (item.description_snippet?.text) description = item.description_snippet.text;
-  else if (item.description?.text) description = item.description.text;
+  const badges = extractBadges(item);
 
   return {
     type: 'channel',
     id: channelId,
     name,
     thumbnail,
-    subscriberCount,
-    videoCount,
-    description,
+    subscriberCount: item.subscriber_count?.text || 'N/A',
+    videoCount: item.video_count?.text || 'N/A',
+    description: item.description_snippet?.text || item.description?.text || '',
     url: item.author?.url || `https://www.youtube.com/channel/${channelId}`,
-    handle: item.author?.handle || null
+    handle: item.author?.handle || null,
+
+    metadata: {
+      badges,
+      isVerified: item.author?.is_verified || item.is_verified || false,
+      isArtist: item.author?.is_verified_artist || false
+    }
   };
 }
 
@@ -177,9 +373,7 @@ function formatPlaylist(item) {
 
   let title = 'Unknown';
   if (item.title) {
-    if (typeof item.title === 'string') title = item.title;
-    else if (item.title.text) title = item.title.text;
-    else if (item.title.runs) title = item.title.runs.map(r => r.text).join('');
+    title = extractText(item.title) || 'Unknown';
   }
 
   let thumbnail = null;
@@ -187,52 +381,42 @@ function formatPlaylist(item) {
     thumbnail = item.thumbnails[item.thumbnails.length - 1]?.url || item.thumbnails[0]?.url;
   }
 
-  let videoCount = 'N/A';
-  if (item.video_count?.text) videoCount = item.video_count.text;
-  else if (typeof item.video_count === 'number') videoCount = item.video_count.toString();
-
-  let channelName = 'Unknown';
-  let channelId = null;
-  if (item.author) {
-    channelName = item.author.name || 'Unknown';
-    channelId = item.author.id;
-  }
+  const badges = extractBadges(item);
 
   return {
     type: 'playlist',
     id: playlistId,
     title,
     thumbnail,
-    videoCount,
+    videoCount: item.video_count?.text || (typeof item.video_count === 'number' ? item.video_count.toString() : 'N/A'),
     url: `https://www.youtube.com/playlist?list=${playlistId}`,
     channel: {
-      name: channelName,
-      id: channelId,
-      url: channelId ? `https://www.youtube.com/channel/${channelId}` : null
-    }
+      name: item.author?.name || 'Unknown',
+      id: item.author?.id || null,
+      url: item.author?.id ? `https://www.youtube.com/channel/${item.author.id}` : null
+    },
+    metadata: { badges }
   };
 }
 
 // Format any search result item
-function formatSearchResult(item) {
+function formatSearchResult(item, fullTags = null) {
   if (!item) return null;
 
   const type = item.type;
 
   switch (type) {
     case 'Video':
-      return formatVideo(item);
+    case 'Movie':
+    case 'Show':
+      return formatVideo(item, fullTags);
     case 'Channel':
       return formatChannel(item);
     case 'Playlist':
       return formatPlaylist(item);
-    case 'Movie':
-      return formatVideo(item);
-    case 'Show':
-      return formatVideo(item);
     default:
       if (item.duration || item.view_count) {
-        return formatVideo(item);
+        return formatVideo(item, fullTags);
       }
       if (item.subscriber_count || item.author?.id === item.id) {
         return formatChannel(item);
@@ -250,8 +434,8 @@ function extractResults(searchData, seenIds) {
 
   if (!searchData) return results;
 
-  if (searchData.results && Array.isArray(searchData.results)) {
-    for (const item of searchData.results) {
+  const processItems = (items) => {
+    for (const item of items) {
       const id = item.id || item.author?.id || item.playlist_id;
       if (id && !seenIds.has(id)) {
         const formatted = formatSearchResult(item);
@@ -261,19 +445,14 @@ function extractResults(searchData, seenIds) {
         }
       }
     }
+  };
+
+  if (searchData.results && Array.isArray(searchData.results)) {
+    processItems(searchData.results);
   }
 
   if (searchData.contents && Array.isArray(searchData.contents)) {
-    for (const item of searchData.contents) {
-      const id = item.id || item.author?.id || item.playlist_id;
-      if (id && !seenIds.has(id)) {
-        const formatted = formatSearchResult(item);
-        if (formatted) {
-          seenIds.add(id);
-          results.push(formatted);
-        }
-      }
-    }
+    processItems(searchData.contents);
   }
 
   return results;
@@ -289,9 +468,9 @@ async function backgroundFetchSearch(cacheKey, query, searchFilters, youtube) {
 
   try {
     let searchData = cache.searchData;
-    let pageCount = Math.ceil(cache.results.length / 20); // Estimate current page
+    let pageCount = Math.ceil(cache.results.length / 20);
     const maxPages = 100;
-    const maxResults = 500; // Max results to cache
+    const maxResults = 500;
 
     while (
       cache.results.length < maxResults && 
@@ -304,10 +483,7 @@ async function backgroundFetchSearch(cacheKey, query, searchFilters, youtube) {
 
         const pageResults = extractResults(searchData, cache.seenIds);
 
-        if (pageResults.length === 0) {
-          console.log(`   [Background] No more results at page ${pageCount}`);
-          break;
-        }
+        if (pageResults.length === 0) break;
 
         cache.results.push(...pageResults);
         cache.searchData = searchData;
@@ -317,7 +493,6 @@ async function backgroundFetchSearch(cacheKey, query, searchFilters, youtube) {
           console.log(`   [Background] Page ${pageCount}: +${pageResults.length} (total: ${cache.results.length})`);
         }
 
-        // Rate limiting
         if (pageCount % 10 === 0) {
           await new Promise(r => setTimeout(r, 300));
         }
@@ -359,7 +534,15 @@ async function waitForResults(cacheKey, minResults, maxWaitMs = 10000) {
 
 /**
  * Search YouTube with background caching
- * Returns first 20 results immediately, continues fetching in background
+ * @param {string} query - Search query
+ * @param {object} options - Search options
+ * @param {string} options.type - 'all', 'video', 'channel', 'playlist'
+ * @param {string} options.sort - 'relevance', 'date', 'views', 'rating'
+ * @param {string} options.duration - 'short', 'medium', 'long'
+ * @param {string} options.uploadDate - 'hour', 'today', 'week', 'month', 'year'
+ * @param {number} options.start - Start index (1-based)
+ * @param {number} options.end - End index
+ * @param {boolean} options.fetchTags - Fetch full video tags (slower but complete)
  */
 async function search(query, options = {}) {
   try {
@@ -371,19 +554,19 @@ async function search(query, options = {}) {
       duration = null,
       uploadDate = null,
       start = null,
-      end = null
+      end = null,
+      fetchTags = false
     } = options;
 
-    console.log(`🔍 Searching: "${query}"`);
+    console.log(`🔍 Searching: "${query}"${fetchTags ? ' (with tags)' : ''}`);
 
     const hasRange = start !== null && end !== null;
-    const requestedEnd = hasRange ? end : 20; // Default 20 results
+    const requestedEnd = hasRange ? end : 20;
 
     if (hasRange) {
       console.log(`📊 Target: results ${start}-${end}`);
     }
 
-    // Build search filters
     const searchFilters = {};
 
     if (type && type !== 'all') {
@@ -412,30 +595,24 @@ async function search(query, options = {}) {
       searchFilters.upload_date = uploadDateMap[uploadDate.toLowerCase()];
     }
 
-    // Get or create cache
     const cacheKey = getCacheKey(query, options);
     let cache = searchCache.get(cacheKey);
 
-    // Check if cache exists and is fresh (5 minutes)
     if (cache && Date.now() - cache.lastUpdate < 5 * 60 * 1000) {
       console.log(`📦 Cache hit: ${cache.results.length} results cached`);
 
-      // If we need more than cached, wait or trigger background fetch
       if (cache.results.length < requestedEnd && !cache.isComplete && !cache.isFetching) {
         backgroundFetchSearch(cacheKey, query, searchFilters, youtube);
         await waitForResults(cacheKey, requestedEnd, 15000);
       }
 
     } else {
-      // Fresh search
       cache = initSearchCache(cacheKey);
 
       console.log(`🔄 Fetching fresh results...`);
 
-      // Execute initial search
       const searchData = await youtube.search(query, searchFilters);
 
-      // Extract first page
       const firstPageResults = extractResults(searchData, cache.seenIds);
       cache.results.push(...firstPageResults);
       cache.searchData = searchData;
@@ -443,7 +620,6 @@ async function search(query, options = {}) {
 
       console.log(`   First page: ${firstPageResults.length} results`);
 
-      // If first page isn't enough, get more pages immediately (up to requested amount)
       let pageCount = 1;
       while (
         cache.results.length < requestedEnd && 
@@ -467,7 +643,6 @@ async function search(query, options = {}) {
         }
       }
 
-      // Start background fetch for more results (don't await)
       if (cache.searchData?.has_continuation && !cache.isComplete) {
         backgroundFetchSearch(cacheKey, query, searchFilters, youtube);
       } else {
@@ -475,10 +650,8 @@ async function search(query, options = {}) {
       }
     }
 
-    // Get current cache state
     cache = searchCache.get(cacheKey);
 
-    // Apply range
     let finalResults = cache.results;
     if (hasRange) {
       const startIndex = Math.max(0, start - 1);
@@ -486,11 +659,48 @@ async function search(query, options = {}) {
       finalResults = cache.results.slice(startIndex, endIndex);
       console.log(`📊 Range [${start}:${end}] = ${finalResults.length} results`);
     } else {
-      // Default: return first 20
       finalResults = cache.results.slice(0, 20);
     }
 
-    // Categorize results
+    // Fetch full tags if requested
+    if (fetchTags) {
+      console.log(`🏷️  Fetching full tags for ${finalResults.filter(r => r.type === 'video').length} videos...`);
+
+      const videoIds = finalResults
+        .filter(r => r.type === 'video' && !r.metadata.hasFullTags)
+        .map(r => r.id);
+
+      if (videoIds.length > 0) {
+        const tagResults = await batchGetVideoTags(videoIds);
+
+        // Update results with full tags
+        finalResults = finalResults.map(result => {
+          if (result.type === 'video' && tagResults[result.id]) {
+            const fullTags = tagResults[result.id];
+            return {
+              ...result,
+              metadata: {
+                ...result.metadata,
+                tags: fullTags.tags,
+                keywords: fullTags.keywords,
+                category: fullTags.category,
+                allTags: [...new Set([
+                  ...result.metadata.badges,
+                  ...result.metadata.hashtags,
+                  ...fullTags.tags,
+                  ...fullTags.keywords.slice(0, 10)
+                ])].filter(Boolean),
+                hasFullTags: true
+              }
+            };
+          }
+          return result;
+        });
+
+        console.log(`✅ Tags fetched for ${videoIds.length} videos`);
+      }
+    }
+
     const videos = finalResults.filter(r => r.type === 'video');
     const channels = finalResults.filter(r => r.type === 'channel');
     const playlists = finalResults.filter(r => r.type === 'playlist');
@@ -518,6 +728,7 @@ async function search(query, options = {}) {
       cacheStatus,
       isComplete: cache.isComplete,
       hasMore: !cache.isComplete || cache.results.length > (end || 20),
+      tagsIncluded: fetchTags,
       results: finalResults,
       summary: {
         videos: videos.length,
@@ -554,6 +765,68 @@ async function searchChannels(query, options = {}) {
  */
 async function searchPlaylists(query, options = {}) {
   return search(query, { ...options, type: 'playlist' });
+}
+
+/**
+ * Search with full tags (convenience function)
+ */
+async function searchWithTags(query, options = {}) {
+  return search(query, { ...options, fetchTags: true });
+}
+
+/**
+ * Get full video info including tags
+ */
+async function getVideoInfo(videoId) {
+  try {
+    const youtube = await initYouTube();
+    const info = await youtube.getInfo(videoId);
+
+    const basicInfo = info.basic_info || {};
+
+    // Extract all available tags
+    const tags = basicInfo.tags || [];
+    const keywords = basicInfo.keywords || [];
+
+    // Get hashtags from title
+    const title = basicInfo.title || '';
+    const hashtags = extractHashtags(title, basicInfo.short_description || '');
+
+    return {
+      success: true,
+      video: {
+        id: videoId,
+        title: basicInfo.title || 'Unknown',
+        description: basicInfo.short_description || '',
+        thumbnail: basicInfo.thumbnail?.[0]?.url || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+        duration: basicInfo.duration || 0,
+        views: basicInfo.view_count || 0,
+        likes: basicInfo.like_count || 0,
+        published: basicInfo.publish_date || null,
+
+        channel: {
+          name: basicInfo.author || basicInfo.channel?.name || 'Unknown',
+          id: basicInfo.channel_id || basicInfo.channel?.id,
+          url: basicInfo.channel?.url
+        },
+
+        metadata: {
+          tags,
+          keywords,
+          hashtags,
+          category: basicInfo.category || null,
+          isLive: basicInfo.is_live || false,
+          isPrivate: basicInfo.is_private || false,
+          isFamilySafe: basicInfo.is_family_safe || true,
+          allTags: [...new Set([...tags, ...keywords, ...hashtags])].filter(Boolean)
+        }
+      }
+    };
+
+  } catch (error) {
+    console.error('❌ Get video info error:', error);
+    return { success: false, error: error.message };
+  }
 }
 
 /**
@@ -685,9 +958,50 @@ async function prefetchSearch(query, options = {}) {
     return true;
   }
 
-  // Start fresh search
   await search(query, { ...options, start: 1, end: 20 });
   return true;
+}
+
+/**
+ * Search by tag/keyword
+ */
+async function searchByTag(tag, options = {}) {
+  const cleanTag = tag.replace(/^#/, '');
+  return search(cleanTag, { ...options, type: 'video' });
+}
+
+/**
+ * Find videos with similar tags to a given video
+ */
+async function findRelatedByTags(videoId, options = {}) {
+  // First get the video's tags
+  const videoInfo = await getVideoInfo(videoId);
+
+  if (!videoInfo.success) {
+    return { success: false, error: 'Could not get video info' };
+  }
+
+  const allTags = videoInfo.video.metadata.allTags;
+
+  if (!allTags.length) {
+    return { success: false, error: 'No tags available for this video' };
+  }
+
+  // Use the most relevant tags (first 3-5)
+  const searchTags = allTags.slice(0, 5).join(' ');
+  console.log(`🔗 Finding related videos using tags: ${searchTags}`);
+
+  const results = await search(searchTags, { ...options, type: 'video' });
+
+  // Filter out the original video
+  if (results.success && results.videos) {
+    results.videos = results.videos.filter(v => v.id !== videoId);
+    results.results = results.results.filter(r => r.id !== videoId);
+    results.totalResults = results.results.length;
+    results.basedOnTags = allTags.slice(0, 5);
+  }
+
+  return results;
 }
 
 export {
@@ -695,9 +1009,14 @@ export {
   searchVideos,
   searchChannels,
   searchPlaylists,
+  searchWithTags,
+  getVideoInfo,
+  getVideoTags,
   getSearchSuggestions,
   getTrending,
   getSearchCacheStatus,
   clearSearchCache,
-  prefetchSearch
+  prefetchSearch,
+  searchByTag,
+  findRelatedByTags
 };
