@@ -20,31 +20,51 @@
 
     /* Header */
     .header {
-      position: sticky;
+      position: fixed;
       top: 0;
-      background: #0f0f0f;
-      border-bottom: 1px solid #303030;
-      z-index: 100;
-      padding: 0 24px;
-    }
-
-    .header-content {
-      max-width: 1096px;
-      margin: 0 auto;
+      left: 0;
+      right: 0;
       height: 56px;
+      background: #0f0f0f;
+      border-bottom: 1px solid #272727;
       display: flex;
       align-items: center;
-      gap: 24px;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 1000;
     }
 
-    .logo {
-      font-size: 20px;
-      font-weight: 700;
-      color: #fff;
-      text-decoration: none;
+    .header-left {
       display: flex;
       align-items: center;
       gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+
+    .menu-toggle:hover {
+      background: #272727;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+      color: #fff;
+      font-size: 20px;
+      font-weight: 700;
     }
 
     .logo-icon {
@@ -55,46 +75,58 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 16px;
     }
 
-    /* Search Bar */
+    /* Search Bar - Desktop */
+    .header-center {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      max-width: 600px;
+      padding: 0 16px;
+    }
+
     .search-container {
-      flex: 1;
-      max-width: 640px;
       display: flex;
-      align-items: center;
+      width: 100%;
+      max-width: 500px;
     }
 
-    .search-form {
-      display: flex;
+    .search-input-wrapper {
       flex: 1;
+      position: relative;
+      display: flex;
     }
 
     .search-input {
-      flex: 1;
+      width: 100%;
       height: 40px;
       background: #121212;
       border: 1px solid #303030;
-      border-right: none;
       border-radius: 20px 0 0 20px;
       padding: 0 16px;
-      color: #fff;
       font-size: 16px;
+      color: #fff;
       outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
 
     .search-input:focus {
       border-color: #1c62b9;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,.3);
     }
 
-    .search-button {
-      width: 64px;
+    .search-input::placeholder {
+      color: #888;
+    }
+
+    .search-btn {
       height: 40px;
-      background: #303030;
+      width: 64px;
+      background: #222;
       border: 1px solid #303030;
+      border-left: none;
       border-radius: 0 20px 20px 0;
-      color: #fff;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -102,39 +134,258 @@
       transition: background 0.2s;
     }
 
-    .search-button:hover {
-      background: #3f3f3f;
+    .search-btn:hover {
+      background: #333;
     }
 
-    /* Filter Section */
-    .filter-section {
+    .search-btn svg {
+      width: 24px;
+      height: 24px;
+      fill: #fff;
+    }
+
+    /* Header Right - Mobile Search Icon */
+    .header-right {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-shrink: 0;
+      min-width: 40px;
+    }
+
+    .mobile-search-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: #fff;
+      padding: 8px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .mobile-search-btn:hover {
+      background: #272727;
+    }
+
+    .mobile-search-btn svg {
+      width: 24px;
+      height: 24px;
+      fill: #fff;
+      display: block;
+    }
+
+    /* Mobile Search Bar */
+    .mobile-search-container {
+      display: none;
+      position: fixed;
+      top: 56px;
+      left: 0;
+      right: 0;
       background: #0f0f0f;
-      border-bottom: 1px solid #303030;
+      padding: 12px 16px;
+      border-bottom: 1px solid #272727;
+      z-index: 999;
+      animation: slideDown 0.2s ease;
+    }
+
+    .mobile-search-container.open {
+      display: block;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .mobile-search-wrapper {
+      display: flex;
+      gap: 8px;
+    }
+
+    .mobile-search-input {
+      flex: 1;
+      height: 40px;
+      background: #121212;
+      border: 1px solid #303030;
+      border-radius: 20px;
+      padding: 0 16px;
+      font-size: 16px;
+      color: #fff;
+      outline: none;
+    }
+
+    .mobile-search-input:focus {
+      border-color: #1c62b9;
+    }
+
+    .mobile-search-input::placeholder {
+      color: #888;
+    }
+
+    .mobile-search-submit {
+      height: 40px;
+      width: 40px;
+      background: #222;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+
+    .mobile-search-submit:hover {
+      background: #333;
+    }
+
+    .mobile-search-submit svg {
+      width: 20px;
+      height: 20px;
+      fill: #fff;
+    }
+
+    .mobile-search-close {
+      height: 40px;
+      width: 40px;
+      background: none;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 24px;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+
+    .mobile-search-close:hover {
+      background: #272727;
+    }
+
+    /* Left Menu */
+    .left-menu {
+      position: fixed;
+      top: 56px;
+      left: 0;
+      width: 150px;
+      height: calc(100vh - 56px);
+      background: #0f0f0f;
+      border-right: 1px solid #272727;
       padding: 12px 0;
+      overflow-y: auto;
+      z-index: 999;
+      transition: transform 0.3s ease;
+    }
+
+    .menu-overlay {
+      display: none;
+      position: fixed;
+      top: 56px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 998;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      color: #fff;
+      text-decoration: none;
+      font-size: 13px;
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+
+    .menu-item:hover {
+      background: #272727;
+    }
+
+    .menu-item.active {
+      background: #272727;
+    }
+
+    .menu-item-icon {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .menu-divider {
+      height: 1px;
+      background: #272727;
+      margin: 12px 0;
+    }
+
+    .menu-section-title {
+      padding: 8px 16px;
+      font-size: 11px;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Main Content Wrapper */
+    .main-wrapper {
+      margin-left: 150px;
+      padding-top: 56px;
+      min-height: 100vh;
+    }
+
+    /* Filter Bar - Sticky */
+    .filter-bar {
       position: sticky;
       top: 56px;
-      z-index: 99;
+      z-index: 100;
+      background: #0f0f0f;
+      border-bottom: 1px solid #272727;
+      padding: 12px 24px;
     }
 
-    .filter-container {
-      max-width: 1096px;
+    .filter-bar-content {
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 0 24px;
       display: flex;
-      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .filter-chips {
+      display: flex;
+      gap: 8px;
       overflow-x: auto;
       scrollbar-width: none;
+      flex: 1;
     }
 
-    .filter-container::-webkit-scrollbar {
+    .filter-chips::-webkit-scrollbar {
       display: none;
     }
 
     .filter-chip {
       background: #272727;
-      border: 1px solid #3f3f3f;
+      border: none;
       border-radius: 8px;
-      padding: 6px 12px;
+      padding: 8px 16px;
       font-size: 14px;
       color: #f1f1f1;
       cursor: pointer;
@@ -147,83 +398,182 @@
 
     .filter-chip:hover {
       background: #3f3f3f;
-      border-color: #525252;
     }
 
     .filter-chip.active {
       background: #f1f1f1;
       color: #0f0f0f;
-      border-color: #f1f1f1;
     }
 
-    .filter-icon {
+    .filter-chip-icon {
       font-size: 16px;
     }
 
-    /* Main Layout */
-    .main-container {
-      max-width: 1096px;
-      margin: 0 auto;
-      padding: 24px;
+    /* Filter Button */
+    .filter-toggle-btn {
       display: flex;
-      gap: 24px;
-      min-height: calc(100vh - 200px);
-    }
-
-    /* Sidebar Filters */
-    .sidebar {
-      width: 240px;
+      align-items: center;
+      gap: 8px;
+      background: #272727;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 14px;
+      color: #f1f1f1;
+      cursor: pointer;
+      transition: all 0.2s;
       flex-shrink: 0;
     }
 
-    .sidebar-section {
-      padding: 12px 0;
-      border-bottom: 1px solid #303030;
+    .filter-toggle-btn:hover {
+      background: #3f3f3f;
     }
 
-    .sidebar-title {
-      font-size: 14px;
+    .filter-toggle-btn.active {
+      background: #3ea6ff;
+      color: #0f0f0f;
+    }
+
+    .filter-toggle-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    /* Filter Panel */
+    .filter-panel {
+      display: none;
+      background: #181818;
+      border-bottom: 1px solid #272727;
+      padding: 20px 24px;
+      animation: slideDown 0.2s ease;
+    }
+
+    .filter-panel.open {
+      display: block;
+    }
+
+    .filter-panel-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 24px;
+    }
+
+    .filter-group {
+      min-width: 0;
+    }
+
+    .filter-group-title {
+      font-size: 12px;
       font-weight: 500;
-      margin-bottom: 12px;
       color: #aaa;
       text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #272727;
     }
 
-    .sidebar-option {
+    .filter-option {
       display: flex;
       align-items: center;
       padding: 8px 0;
       cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .sidebar-option:hover {
-      background: #272727;
-      margin: 0 -12px;
-      padding: 8px 12px;
-    }
-
-    .sidebar-checkbox {
-      width: 18px;
-      height: 18px;
-      margin-right: 12px;
-    }
-
-    .sidebar-label {
-      font-size: 14px;
+      transition: color 0.2s;
       color: #f1f1f1;
+      font-size: 14px;
     }
 
-    /* Results Section */
-    .results-section {
-      flex: 1;
-      min-width: 0;
+    .filter-option:hover {
+      color: #fff;
     }
 
+    .filter-option.active {
+      color: #3ea6ff;
+    }
+
+    .filter-option-radio {
+      width: 16px;
+      height: 16px;
+      border: 2px solid #717171;
+      border-radius: 50%;
+      margin-right: 12px;
+      position: relative;
+      flex-shrink: 0;
+      transition: border-color 0.2s;
+    }
+
+    .filter-option.active .filter-option-radio {
+      border-color: #3ea6ff;
+    }
+
+    .filter-option.active .filter-option-radio::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 8px;
+      height: 8px;
+      background: #3ea6ff;
+      border-radius: 50%;
+    }
+
+    .filter-actions {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding-top: 16px;
+      border-top: 1px solid #272727;
+      margin-top: 8px;
+    }
+
+    .filter-clear-btn {
+      background: none;
+      border: 1px solid #3ea6ff;
+      color: #3ea6ff;
+      padding: 8px 20px;
+      border-radius: 18px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-clear-btn:hover {
+      background: rgba(62, 166, 255, 0.1);
+    }
+
+    .filter-apply-btn {
+      background: #3ea6ff;
+      border: none;
+      color: #0f0f0f;
+      padding: 8px 20px;
+      border-radius: 18px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-apply-btn:hover {
+      background: #65b8ff;
+    }
+
+    /* Main Content */
+    .main-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* Results Info */
     .results-info {
-      margin-bottom: 16px;
+      margin-bottom: 20px;
       padding-bottom: 16px;
-      border-bottom: 1px solid #303030;
+      border-bottom: 1px solid #272727;
     }
 
     .results-count {
@@ -231,11 +581,43 @@
       color: #aaa;
     }
 
+    .active-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .active-filter-tag {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #272727;
+      padding: 4px 12px;
+      border-radius: 16px;
+      font-size: 12px;
+      color: #f1f1f1;
+    }
+
+    .active-filter-tag button {
+      background: none;
+      border: none;
+      color: #aaa;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .active-filter-tag button:hover {
+      color: #fff;
+    }
+
+    /* Results Container */
     .results-container {
       display: flex;
       flex-direction: column;
       gap: 16px;
-      min-height: 500px;
     }
 
     /* Channel Result Card */
@@ -271,7 +653,7 @@
     }
 
     .channel-name {
-      font-size: 24px;
+      font-size: 20px;
       font-weight: 500;
       margin-bottom: 8px;
       display: flex;
@@ -280,14 +662,14 @@
     }
 
     .verified-badge {
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
       background: #aaa;
       border-radius: 50%;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 12px;
+      font-size: 10px;
     }
 
     .channel-handle {
@@ -336,9 +718,9 @@
       cursor: pointer;
       text-decoration: none;
       color: inherit;
-      padding: 8px;
-      margin: -8px;
-      border-radius: 8px;
+      padding: 12px;
+      margin: -12px;
+      border-radius: 12px;
       transition: background 0.2s;
     }
 
@@ -381,26 +763,27 @@
     .video-title {
       font-size: 18px;
       font-weight: 400;
-      line-height: 1.3;
+      line-height: 1.4;
       margin-bottom: 8px;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
+      color: #f1f1f1;
     }
 
     .video-metadata {
       display: flex;
       align-items: center;
       gap: 4px;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
       font-size: 13px;
       color: #aaa;
     }
 
     .video-metadata span::after {
       content: '•';
-      margin: 0 4px;
+      margin: 0 6px;
     }
 
     .video-metadata span:last-child::after {
@@ -411,7 +794,7 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
     }
 
     .video-channel-avatar {
@@ -429,6 +812,7 @@
       align-items: center;
       gap: 4px;
       text-decoration: none;
+      transition: color 0.2s;
     }
 
     .video-channel-name:hover {
@@ -445,177 +829,6 @@
       overflow: hidden;
     }
 
-    /* Loading State */
-    .loading-container {
-      display: flex;
-      justify-content: center;
-      padding: 40px;
-    }
-
-    .spinner {
-      width: 48px;
-      height: 48px;
-      border: 4px solid #303030;
-      border-top-color: #ff0000;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* Skeleton Loading */
-    .skeleton-container {
-      width: 100%;
-    }
-
-    .skeleton-video {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-
-    .skeleton-thumbnail {
-      width: 360px;
-      aspect-ratio: 16/9;
-      background: #272727;
-      border-radius: 12px;
-      animation: pulse 1.5s ease-in-out infinite;
-    }
-
-    .skeleton-info {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      padding: 4px 0;
-    }
-
-    .skeleton-title {
-      height: 20px;
-      background: #272727;
-      border-radius: 4px;
-      width: 90%;
-      animation: pulse 1.5s ease-in-out infinite;
-    }
-
-    .skeleton-meta {
-      height: 14px;
-      background: #272727;
-      border-radius: 4px;
-      width: 60%;
-      animation: pulse 1.5s ease-in-out infinite;
-    }
-
-    .skeleton-desc {
-      height: 14px;
-      background: #272727;
-      border-radius: 4px;
-      width: 80%;
-      animation: pulse 1.5s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-
-    /* No Results */
-    .no-results {
-      text-align: center;
-      padding: 60px 20px;
-    }
-
-    .no-results-icon {
-      font-size: 64px;
-      margin-bottom: 16px;
-    }
-
-    .no-results-text {
-      font-size: 18px;
-      color: #aaa;
-      margin-bottom: 8px;
-    }
-
-    .no-results-suggestion {
-      font-size: 14px;
-      color: #717171;
-    }
-
-    /* End Message */
-    .end-message {
-      text-align: center;
-      padding: 40px;
-      color: #717171;
-      font-size: 14px;
-    }
-
-    /* Loading indicator at bottom */
-    .loading-more {
-      text-align: center;
-      padding: 30px;
-      color: #aaa;
-    }
-
-    /* Mobile Responsive */
-    @media (max-width: 900px) {
-      .sidebar {
-        display: none;
-      }
-
-      .video-thumbnail-wrapper {
-        width: 240px;
-      }
-
-      .video-title {
-        font-size: 16px;
-      }
-
-      .skeleton-thumbnail {
-        width: 240px;
-      }
-    }
-
-    @media (max-width: 640px) {
-      .header-content {
-        padding: 0 16px;
-      }
-
-      .logo span {
-        display: none;
-      }
-
-      .main-container {
-        padding: 16px;
-      }
-
-      .video-result {
-        flex-direction: column;
-      }
-
-      .video-thumbnail-wrapper {
-        width: 100%;
-      }
-
-      .skeleton-video {
-        flex-direction: column;
-      }
-
-      .skeleton-thumbnail {
-        width: 100%;
-      }
-
-      .channel-result {
-        flex-direction: column;
-        text-align: center;
-      }
-
-      .filter-section {
-        top: 56px;
-      }
-    }
-
     /* Playlist Result Card */
     .playlist-result {
       display: flex;
@@ -623,9 +836,9 @@
       cursor: pointer;
       text-decoration: none;
       color: inherit;
-      padding: 8px;
-      margin: -8px;
-      border-radius: 8px;
+      padding: 12px;
+      margin: -12px;
+      border-radius: 12px;
       transition: background 0.2s;
     }
 
@@ -672,131 +885,536 @@
       font-size: 24px;
     }
 
+    /* Loading States */
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      gap: 20px;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid #272727;
+      border-top-color: #ff0000;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-more {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+      gap: 12px;
+    }
+
+    .loading-more .spinner {
+      width: 32px;
+      height: 32px;
+      border-width: 3px;
+    }
+
+    .loading-more p {
+      color: #aaa;
+      font-size: 14px;
+    }
+
+    /* Skeleton Loading */
+    .skeleton-container {
+      width: 100%;
+    }
+
+    .skeleton-video {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding: 12px;
+    }
+
+    .skeleton-thumbnail {
+      width: 360px;
+      aspect-ratio: 16/9;
+      background: #272727;
+      border-radius: 12px;
+      animation: pulse 1.5s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    .skeleton-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 4px 0;
+    }
+
+    .skeleton-title {
+      height: 24px;
+      background: #272727;
+      border-radius: 4px;
+      width: 85%;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .skeleton-meta {
+      height: 16px;
+      background: #272727;
+      border-radius: 4px;
+      width: 50%;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .skeleton-channel {
+      height: 24px;
+      background: #272727;
+      border-radius: 12px;
+      width: 150px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .skeleton-desc {
+      height: 16px;
+      background: #272727;
+      border-radius: 4px;
+      width: 75%;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* No Results */
+    .no-results {
+      text-align: center;
+      padding: 80px 20px;
+    }
+
+    .no-results-icon {
+      font-size: 72px;
+      margin-bottom: 20px;
+    }
+
+    .no-results-text {
+      font-size: 20px;
+      color: #f1f1f1;
+      margin-bottom: 8px;
+    }
+
+    .no-results-suggestion {
+      font-size: 14px;
+      color: #aaa;
+    }
+
+    /* End Message */
+    .end-message {
+      text-align: center;
+      padding: 40px;
+      color: #717171;
+      font-size: 14px;
+    }
+
     /* Hidden class */
     .hidden {
       display: none !important;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 900px) {
+      .video-thumbnail-wrapper,
+      .playlist-thumbnail-wrapper {
+        width: 280px;
+      }
+
+      .skeleton-thumbnail {
+        width: 280px;
+      }
+
+      .channel-avatar {
+        width: 100px;
+        height: 100px;
+      }
+
+      .channel-name {
+        font-size: 18px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .left-menu {
+        transform: translateX(-100%);
+        width: 200px;
+      }
+
+      .left-menu.open {
+        transform: translateX(0);
+      }
+
+      .menu-overlay.open {
+        display: block;
+      }
+
+      .main-wrapper {
+        margin-left: 0;
+      }
+
+      /* Hide desktop search, show mobile search button */
+      .header-center {
+        display: none;
+      }
+
+      .mobile-search-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .menu-toggle {
+        display: block;
+      }
+
+      .filter-bar {
+        padding: 12px 16px;
+      }
+
+      .filter-bar-content {
+        flex-wrap: nowrap;
+      }
+
+      .filter-chips {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .filter-panel {
+        padding: 16px;
+      }
+
+      .filter-panel-content {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+      }
+
+      .main-content {
+        padding: 16px;
+      }
+
+      .video-result,
+      .playlist-result {
+        flex-direction: column;
+        padding: 8px;
+        margin: -8px;
+      }
+
+      .video-thumbnail-wrapper,
+      .playlist-thumbnail-wrapper {
+        width: 100%;
+      }
+
+      .skeleton-video {
+        flex-direction: column;
+        padding: 8px;
+      }
+
+      .skeleton-thumbnail {
+        width: 100%;
+      }
+
+      .channel-result {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+      }
+
+      .channel-avatar {
+        width: 80px;
+        height: 80px;
+      }
+
+      .channel-name {
+        justify-content: center;
+      }
+
+      .video-title {
+        font-size: 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .filter-panel-content {
+        grid-template-columns: 1fr;
+      }
+
+      .filter-actions {
+        flex-direction: column;
+      }
+
+      .filter-clear-btn,
+      .filter-apply-btn {
+        width: 100%;
+        justify-content: center;
+      }
     }
   </style>
 </head>
 <body>
   <!-- Header -->
   <header class="header">
-    <div class="header-content">
+    <div class="header-left">
+      <button class="menu-toggle" id="menu-toggle" aria-label="Toggle menu">☰</button>
       <a href="/" class="logo">
         <div class="logo-icon">▶</div>
         <span>YouTube</span>
       </a>
-      <div class="search-container">
-        <form class="search-form" id="search-form">
-          <input 
-            type="text" 
-            class="search-input" 
-            id="search-input" 
-            placeholder="Search"
-            autocomplete="off"
-          >
-          <button type="submit" class="search-button">
-            🔍
-          </button>
-        </form>
-      </div>
+    </div>
+
+    <!-- Desktop Search -->
+    <div class="header-center">
+      <form class="search-container" id="desktop-search-form">
+        <div class="search-input-wrapper">
+          <input type="text" class="search-input" id="desktop-search-input" placeholder="Search" autocomplete="off">
+        </div>
+        <button type="submit" class="search-btn" aria-label="Search">
+          <svg viewBox="0 0 24 24">
+            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
+          </svg>
+        </button>
+      </form>
+    </div>
+
+    <!-- Mobile Search Button -->
+    <div class="header-right">
+      <button class="mobile-search-btn" id="mobile-search-btn" aria-label="Search">
+        <svg viewBox="0 0 24 24">
+          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
+        </svg>
+      </button>
     </div>
   </header>
 
-  <!-- Filter Chips -->
-  <div class="filter-section">
-    <div class="filter-container" id="filter-chips">
-      <div class="filter-chip active" data-filter="all">
-        All
-      </div>
-      <div class="filter-chip" data-filter="video">
-        <span class="filter-icon">🎬</span>
-        Videos
-      </div>
-      <div class="filter-chip" data-filter="channel">
-        <span class="filter-icon">👤</span>
-        Channels
-      </div>
-      <div class="filter-chip" data-filter="playlist">
-        <span class="filter-icon">📝</span>
-        Playlists
-      </div>
-    </div>
+  <!-- Mobile Search Bar -->
+  <div class="mobile-search-container" id="mobile-search-container">
+    <form class="mobile-search-wrapper" id="mobile-search-form">
+      <input type="text" class="mobile-search-input" id="mobile-search-input" placeholder="Search" autocomplete="off">
+      <button type="submit" class="mobile-search-submit" aria-label="Search">
+        <svg viewBox="0 0 24 24">
+          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
+        </svg>
+      </button>
+      <button type="button" class="mobile-search-close" id="mobile-search-close" aria-label="Close search">✕</button>
+    </form>
   </div>
 
-  <!-- Main Content -->
-  <div class="main-container">
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-      <!-- Upload Date -->
-      <div class="sidebar-section">
-        <h3 class="sidebar-title">Upload Date</h3>
-        <div class="sidebar-option" data-filter="hour">
-          <input type="radio" name="upload" class="sidebar-checkbox">
-          <label class="sidebar-label">Last hour</label>
+  <!-- Left Menu -->
+  <nav class="left-menu" id="left-menu">
+    <a href="/" class="menu-item">
+      <span class="menu-item-icon">🏠</span>
+      <span>Home</span>
+    </a>
+    <a href="/shorts" class="menu-item">
+      <span class="menu-item-icon">⚡</span>
+      <span>Shorts</span>
+    </a>
+    <a href="/subscriptions" class="menu-item">
+      <span class="menu-item-icon">📺</span>
+      <span>Subscriptions</span>
+    </a>
+    
+    <div class="menu-divider"></div>
+    
+    <div class="menu-section-title">You</div>
+    <a href="/history" class="menu-item">
+      <span class="menu-item-icon">⏱️</span>
+      <span>History</span>
+    </a>
+    <a href="/playlists" class="menu-item">
+      <span class="menu-item-icon">📁</span>
+      <span>Playlists</span>
+    </a>
+    <a href="/watch-later" class="menu-item">
+      <span class="menu-item-icon">⏰</span>
+      <span>Watch later</span>
+    </a>
+    <a href="/liked" class="menu-item">
+      <span class="menu-item-icon">👍</span>
+      <span>Liked videos</span>
+    </a>
+    
+    <div class="menu-divider"></div>
+    
+    <div class="menu-section-title">Explore</div>
+    <a href="/trending" class="menu-item">
+      <span class="menu-item-icon">🔥</span>
+      <span>Trending</span>
+    </a>
+    <a href="/music" class="menu-item">
+      <span class="menu-item-icon">🎵</span>
+      <span>Music</span>
+    </a>
+    <a href="/gaming" class="menu-item">
+      <span class="menu-item-icon">🎮</span>
+      <span>Gaming</span>
+    </a>
+    <a href="/sports" class="menu-item">
+      <span class="menu-item-icon">⚽</span>
+      <span>Sports</span>
+    </a>
+  </nav>
+
+  <!-- Menu Overlay for Mobile -->
+  <div class="menu-overlay" id="menu-overlay"></div>
+
+  <!-- Main Wrapper -->
+  <div class="main-wrapper">
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="filter-bar-content">
+        <div class="filter-chips" id="filter-chips">
+          <button class="filter-chip active" data-filter="all">All</button>
+          <button class="filter-chip" data-filter="video">
+            <span class="filter-chip-icon">🎬</span>
+            Videos
+          </button>
+          <button class="filter-chip" data-filter="channel">
+            <span class="filter-chip-icon">👤</span>
+            Channels
+          </button>
+          <button class="filter-chip" data-filter="playlist">
+            <span class="filter-chip-icon">📋</span>
+            Playlists
+          </button>
         </div>
-        <div class="sidebar-option" data-filter="today">
-          <input type="radio" name="upload" class="sidebar-checkbox">
-          <label class="sidebar-label">Today</label>
+        <button class="filter-toggle-btn" id="filter-toggle-btn">
+          <svg viewBox="0 0 24 24">
+            <path d="M3 5h18v2H3V5zm4 7h10v2H7v-2zm3 7h4v2h-4v-2z"/>
+          </svg>
+          Filters
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter Panel -->
+    <div class="filter-panel" id="filter-panel">
+      <div class="filter-panel-content">
+        <!-- Upload Date -->
+        <div class="filter-group">
+          <h3 class="filter-group-title">Upload Date</h3>
+          <div class="filter-option" data-filter-type="upload" data-value="">
+            <div class="filter-option-radio"></div>
+            <span>Any time</span>
+          </div>
+          <div class="filter-option" data-filter-type="upload" data-value="hour">
+            <div class="filter-option-radio"></div>
+            <span>Last hour</span>
+          </div>
+          <div class="filter-option" data-filter-type="upload" data-value="today">
+            <div class="filter-option-radio"></div>
+            <span>Today</span>
+          </div>
+          <div class="filter-option" data-filter-type="upload" data-value="week">
+            <div class="filter-option-radio"></div>
+            <span>This week</span>
+          </div>
+          <div class="filter-option" data-filter-type="upload" data-value="month">
+            <div class="filter-option-radio"></div>
+            <span>This month</span>
+          </div>
+          <div class="filter-option" data-filter-type="upload" data-value="year">
+            <div class="filter-option-radio"></div>
+            <span>This year</span>
+          </div>
         </div>
-        <div class="sidebar-option" data-filter="week">
-          <input type="radio" name="upload" class="sidebar-checkbox">
-          <label class="sidebar-label">This week</label>
+
+        <!-- Duration -->
+        <div class="filter-group">
+          <h3 class="filter-group-title">Duration</h3>
+          <div class="filter-option" data-filter-type="duration" data-value="">
+            <div class="filter-option-radio"></div>
+            <span>Any duration</span>
+          </div>
+          <div class="filter-option" data-filter-type="duration" data-value="short">
+            <div class="filter-option-radio"></div>
+            <span>Under 4 minutes</span>
+          </div>
+          <div class="filter-option" data-filter-type="duration" data-value="medium">
+            <div class="filter-option-radio"></div>
+            <span>4-20 minutes</span>
+          </div>
+          <div class="filter-option" data-filter-type="duration" data-value="long">
+            <div class="filter-option-radio"></div>
+            <span>Over 20 minutes</span>
+          </div>
         </div>
-        <div class="sidebar-option" data-filter="month">
-          <input type="radio" name="upload" class="sidebar-checkbox">
-          <label class="sidebar-label">This month</label>
+
+        <!-- Sort By -->
+        <div class="filter-group">
+          <h3 class="filter-group-title">Sort By</h3>
+          <div class="filter-option active" data-filter-type="sort" data-value="relevance">
+            <div class="filter-option-radio"></div>
+            <span>Relevance</span>
+          </div>
+          <div class="filter-option" data-filter-type="sort" data-value="date">
+            <div class="filter-option-radio"></div>
+            <span>Upload date</span>
+          </div>
+          <div class="filter-option" data-filter-type="sort" data-value="views">
+            <div class="filter-option-radio"></div>
+            <span>View count</span>
+          </div>
+          <div class="filter-option" data-filter-type="sort" data-value="rating">
+            <div class="filter-option-radio"></div>
+            <span>Rating</span>
+          </div>
         </div>
-        <div class="sidebar-option" data-filter="year">
-          <input type="radio" name="upload" class="sidebar-checkbox">
-          <label class="sidebar-label">This year</label>
+
+        <!-- Features -->
+        <div class="filter-group">
+          <h3 class="filter-group-title">Features</h3>
+          <div class="filter-option" data-filter-type="features" data-value="">
+            <div class="filter-option-radio"></div>
+            <span>Any</span>
+          </div>
+          <div class="filter-option" data-filter-type="features" data-value="live">
+            <div class="filter-option-radio"></div>
+            <span>Live</span>
+          </div>
+          <div class="filter-option" data-filter-type="features" data-value="4k">
+            <div class="filter-option-radio"></div>
+            <span>4K</span>
+          </div>
+          <div class="filter-option" data-filter-type="features" data-value="hd">
+            <div class="filter-option-radio"></div>
+            <span>HD</span>
+          </div>
+          <div class="filter-option" data-filter-type="features" data-value="subtitles">
+            <div class="filter-option-radio"></div>
+            <span>Subtitles/CC</span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="filter-actions">
+          <button class="filter-clear-btn" id="filter-clear-btn">Clear all</button>
+          <button class="filter-apply-btn" id="filter-apply-btn">Apply filters</button>
         </div>
       </div>
+    </div>
 
-      <!-- Duration -->
-      <div class="sidebar-section">
-        <h3 class="sidebar-title">Duration</h3>
-        <div class="sidebar-option" data-filter="short">
-          <input type="radio" name="duration" class="sidebar-checkbox">
-          <label class="sidebar-label">Under 4 minutes</label>
-        </div>
-        <div class="sidebar-option" data-filter="medium">
-          <input type="radio" name="duration" class="sidebar-checkbox">
-          <label class="sidebar-label">4-20 minutes</label>
-        </div>
-        <div class="sidebar-option" data-filter="long">
-          <input type="radio" name="duration" class="sidebar-checkbox">
-          <label class="sidebar-label">Over 20 minutes</label>
-        </div>
-      </div>
-
-      <!-- Sort By -->
-      <div class="sidebar-section">
-        <h3 class="sidebar-title">Sort By</h3>
-        <div class="sidebar-option" data-sort="relevance">
-          <input type="radio" name="sort" class="sidebar-checkbox" checked>
-          <label class="sidebar-label">Relevance</label>
-        </div>
-        <div class="sidebar-option" data-sort="date">
-          <input type="radio" name="sort" class="sidebar-checkbox">
-          <label class="sidebar-label">Upload date</label>
-        </div>
-        <div class="sidebar-option" data-sort="views">
-          <input type="radio" name="sort" class="sidebar-checkbox">
-          <label class="sidebar-label">View count</label>
-        </div>
-        <div class="sidebar-option" data-sort="rating">
-          <input type="radio" name="sort" class="sidebar-checkbox">
-          <label class="sidebar-label">Rating</label>
-        </div>
-      </div>
-    </aside>
-
-    <!-- Results Section -->
-    <section class="results-section">
+    <!-- Main Content -->
+    <main class="main-content">
       <!-- Results Info -->
       <div class="results-info" id="results-info">
-        <div class="results-count"></div>
+        <div class="results-count" id="results-count">Enter a search term to get started</div>
+        <div class="active-filters hidden" id="active-filters"></div>
       </div>
 
       <!-- Results Container -->
@@ -821,12 +1439,12 @@
         <div class="no-results-text">No results found</div>
         <div class="no-results-suggestion">Try different keywords or remove filters</div>
       </div>
-    </section>
+    </main>
   </div>
 
   <script>
     // API Configuration
-    const API_BASE = 'https://plp-s5su.onrender.com/api';
+    const API_BASE = 'https://9fecd8f8-cc38-4ee3-a55a-0e61e94dafe5-00-24aic6pbf1rh0.sisko.replit.dev/api';
 
     // State
     let currentQuery = '';
@@ -838,8 +1456,205 @@
     let currentStart = 1;
     let currentEnd = 20;
     const BATCH_SIZE = 20;
-    let totalCached = 0;
-    let lastScrollCheck = 0;
+    let menuOpen = false;
+    let mobileSearchOpen = false;
+    let filterPanelOpen = false;
+
+    // Filter state
+    let filters = {
+      upload: '',
+      duration: '',
+      sort: 'relevance',
+      features: ''
+    };
+
+    // DOM Elements
+    const menuToggle = document.getElementById('menu-toggle');
+    const leftMenu = document.getElementById('left-menu');
+    const menuOverlay = document.getElementById('menu-overlay');
+    const mobileSearchBtn = document.getElementById('mobile-search-btn');
+    const mobileSearchContainer = document.getElementById('mobile-search-container');
+    const mobileSearchClose = document.getElementById('mobile-search-close');
+    const desktopSearchForm = document.getElementById('desktop-search-form');
+    const desktopSearchInput = document.getElementById('desktop-search-input');
+    const mobileSearchForm = document.getElementById('mobile-search-form');
+    const mobileSearchInput = document.getElementById('mobile-search-input');
+    const filterToggleBtn = document.getElementById('filter-toggle-btn');
+    const filterPanel = document.getElementById('filter-panel');
+
+    // Menu toggle functionality
+    function toggleMenu() {
+      menuOpen = !menuOpen;
+      leftMenu.classList.toggle('open', menuOpen);
+      menuOverlay.classList.toggle('open', menuOpen);
+    }
+
+    menuToggle.addEventListener('click', toggleMenu);
+    menuOverlay.addEventListener('click', toggleMenu);
+
+    // Mobile search functionality
+    function openMobileSearch() {
+      mobileSearchOpen = true;
+      mobileSearchContainer.classList.add('open');
+      mobileSearchInput.focus();
+    }
+
+    function closeMobileSearch() {
+      mobileSearchOpen = false;
+      mobileSearchContainer.classList.remove('open');
+    }
+
+    mobileSearchBtn.addEventListener('click', openMobileSearch);
+    mobileSearchClose.addEventListener('click', closeMobileSearch);
+
+    // Filter panel toggle
+    function toggleFilterPanel() {
+      filterPanelOpen = !filterPanelOpen;
+      filterPanel.classList.toggle('open', filterPanelOpen);
+      filterToggleBtn.classList.toggle('active', filterPanelOpen);
+    }
+
+    filterToggleBtn.addEventListener('click', toggleFilterPanel);
+
+    // Filter options click handler
+    document.querySelectorAll('.filter-option').forEach(option => {
+      option.addEventListener('click', () => {
+        const filterType = option.dataset.filterType;
+        const value = option.dataset.value;
+        
+        // Update active state within group
+        document.querySelectorAll(`.filter-option[data-filter-type="${filterType}"]`).forEach(opt => {
+          opt.classList.remove('active');
+        });
+        option.classList.add('active');
+        
+        filters[filterType] = value;
+      });
+    });
+
+    // Clear filters
+    document.getElementById('filter-clear-btn').addEventListener('click', () => {
+      filters = {
+        upload: '',
+        duration: '',
+        sort: 'relevance',
+        features: ''
+      };
+      
+      document.querySelectorAll('.filter-option').forEach(opt => {
+        opt.classList.remove('active');
+        if (opt.dataset.value === '' || (opt.dataset.filterType === 'sort' && opt.dataset.value === 'relevance')) {
+          opt.classList.add('active');
+        }
+      });
+      
+      updateActiveFilterTags();
+    });
+
+    // Apply filters
+    document.getElementById('filter-apply-btn').addEventListener('click', () => {
+      currentSort = filters.sort;
+      updateActiveFilterTags();
+      toggleFilterPanel();
+      
+      if (currentQuery) {
+        performSearch(currentQuery);
+      }
+    });
+
+    // Update active filter tags display
+    function updateActiveFilterTags() {
+      const container = document.getElementById('active-filters');
+      container.innerHTML = '';
+      
+      const filterLabels = {
+        upload: { hour: 'Last hour', today: 'Today', week: 'This week', month: 'This month', year: 'This year' },
+        duration: { short: 'Under 4 min', medium: '4-20 min', long: 'Over 20 min' },
+        sort: { date: 'Upload date', views: 'View count', rating: 'Rating' },
+        features: { live: 'Live', '4k': '4K', hd: 'HD', subtitles: 'Subtitles' }
+      };
+      
+      let hasActiveFilters = false;
+      
+      Object.entries(filters).forEach(([type, value]) => {
+        if (value && !(type === 'sort' && value === 'relevance')) {
+          hasActiveFilters = true;
+          const label = filterLabels[type]?.[value] || value;
+          const tag = document.createElement('div');
+          tag.className = 'active-filter-tag';
+          tag.innerHTML = `
+            <span>${label}</span>
+            <button data-type="${type}" aria-label="Remove filter">✕</button>
+          `;
+          tag.querySelector('button').addEventListener('click', () => {
+            filters[type] = type === 'sort' ? 'relevance' : '';
+            document.querySelectorAll(`.filter-option[data-filter-type="${type}"]`).forEach(opt => {
+              opt.classList.remove('active');
+              if (opt.dataset.value === filters[type]) {
+                opt.classList.add('active');
+              }
+            });
+            updateActiveFilterTags();
+            if (currentQuery) performSearch(currentQuery);
+          });
+          container.appendChild(tag);
+        }
+      });
+      
+      container.classList.toggle('hidden', !hasActiveFilters);
+    }
+
+    // Search functionality
+    function performSearchAction(query) {
+      if (query && query.trim()) {
+        currentQuery = query.trim();
+        updateURL(currentQuery);
+        document.title = `${currentQuery} - YouTube Search`;
+        desktopSearchInput.value = currentQuery;
+        mobileSearchInput.value = currentQuery;
+        performSearch(currentQuery);
+      }
+    }
+
+    desktopSearchForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      performSearchAction(desktopSearchInput.value);
+    });
+
+    mobileSearchForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      performSearchAction(mobileSearchInput.value);
+      closeMobileSearch();
+    });
+
+    // Close menu on window resize
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) {
+        if (menuOpen) {
+          menuOpen = false;
+          leftMenu.classList.remove('open');
+          menuOverlay.classList.remove('open');
+        }
+        if (mobileSearchOpen) {
+          closeMobileSearch();
+        }
+      }
+    });
+
+    // Filter chips
+    document.getElementById('filter-chips').addEventListener('click', (e) => {
+      const chip = e.target.closest('.filter-chip');
+      if (!chip) return;
+      
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      
+      currentFilter = chip.dataset.filter;
+      
+      if (currentQuery) {
+        performSearch(currentQuery);
+      }
+    });
 
     // Get query from URL
     function getQueryFromURL() {
@@ -886,80 +1701,53 @@
       return div.innerHTML;
     }
 
-    // Extract @handle from various sources and return local URL
+    // Get channel URL
     function getChannelUrl(channel) {
       let handle = null;
       
-      // 1. Check if URL contains @handle (from YouTube URL)
       if (channel.url && channel.url.includes('@')) {
-        // Extract @handle from URL like "https://www.youtube.com/@MrBeast"
         const match = channel.url.match(/@[\w-]+/);
-        if (match) {
-          handle = match[0];
-        }
+        if (match) handle = match[0];
       }
       
-      // 2. Check subscriberCount field (API sometimes puts handle here)
       if (!handle && channel.subscriberCount && channel.subscriberCount.startsWith('@')) {
         handle = channel.subscriberCount;
       }
       
-      // 3. Check handle field directly
       if (!handle && channel.handle) {
         handle = channel.handle.startsWith('@') ? channel.handle : '@' + channel.handle;
       }
       
-      // 4. If we found a handle, return local URL
-      if (handle) {
-        return '/' + handle;
-      }
-      
-      // 5. Fallback to channel ID
-      if (channel.id && channel.id !== 'N/A') {
-        return '/channel/' + channel.id;
-      }
-      
-      // 6. Last resort - create handle from name
-      if (channel.name) {
-        return '/@' + channel.name.replace(/\s+/g, '');
-      }
+      if (handle) return '/' + handle;
+      if (channel.id && channel.id !== 'N/A') return '/channel/' + channel.id;
+      if (channel.name) return '/@' + channel.name.replace(/\s+/g, '');
       
       return '#';
     }
 
-    // Get display handle for channel
+    // Get channel handle
     function getChannelHandle(channel) {
-      // Check subscriberCount first (API puts handle there sometimes)
       if (channel.subscriberCount && channel.subscriberCount.startsWith('@')) {
         return channel.subscriberCount;
       }
-      
-      // Check handle field
       if (channel.handle) {
         return channel.handle.startsWith('@') ? channel.handle : '@' + channel.handle;
       }
-      
-      // Extract from URL
       if (channel.url && channel.url.includes('@')) {
         const match = channel.url.match(/@[\w-]+/);
         if (match) return match[0];
       }
-      
       return null;
     }
 
-    // Get subscriber count text
+    // Get subscriber count
     function getSubscriberCount(channel) {
-      // videoCount field often contains the actual subscriber count
       if (channel.videoCount && channel.videoCount.includes('subscriber')) {
         return channel.videoCount;
       }
-      
-      // subscriberCount might have actual count if it doesn't start with @
       if (channel.subscriberCount && !channel.subscriberCount.startsWith('@')) {
         return channel.subscriberCount;
       }
-      
       return null;
     }
 
@@ -973,7 +1761,7 @@
       const subscriberText = getSubscriberCount(channel);
       
       channelEl.innerHTML = `
-        <img class="channel-avatar" src="${fixThumbnailUrl(channel.thumbnail)}" alt="${escapeHtml(channel.name)}">
+        <img class="channel-avatar" src="${fixThumbnailUrl(channel.thumbnail)}" alt="${escapeHtml(channel.name)}" loading="lazy">
         <div class="channel-info">
           <div class="channel-name">
             ${escapeHtml(channel.name)}
@@ -1010,7 +1798,7 @@
           </div>
           ${video.channel ? `
             <div class="video-channel-info">
-              ${video.channel.thumbnail ? `<img class="video-channel-avatar" src="${fixThumbnailUrl(video.channel.thumbnail)}" alt="${escapeHtml(video.channel.name)}">` : ''}
+              ${video.channel.thumbnail ? `<img class="video-channel-avatar" src="${fixThumbnailUrl(video.channel.thumbnail)}" alt="${escapeHtml(video.channel.name)}" loading="lazy">` : ''}
               <a class="video-channel-name" href="${channelUrl}" onclick="event.stopPropagation();">
                 ${escapeHtml(video.channel.name)}
               </a>
@@ -1069,10 +1857,11 @@
           <div class="skeleton-info">
             <div class="skeleton-title"></div>
             <div class="skeleton-meta"></div>
+            <div class="skeleton-channel"></div>
             <div class="skeleton-desc"></div>
           </div>
         </div>
-      `.repeat(3);
+      `.repeat(4);
       return skeleton;
     }
 
@@ -1086,7 +1875,6 @@
         container.innerHTML = '';
       }
       
-      // Remove skeleton loaders
       const skeletons = container.querySelectorAll('.skeleton-container');
       skeletons.forEach(s => s.remove());
       
@@ -1131,16 +1919,10 @@
 
     // Load more results
     async function loadMoreResults() {
-      if (!currentQuery || isLoading || !hasMore) {
-        return;
-      }
-      
-      console.log('Loading more:', { start: currentStart, end: currentEnd });
+      if (!currentQuery || isLoading || !hasMore) return;
       
       isLoading = true;
-      
-      const loadingMore = document.getElementById('loading-more');
-      loadingMore.classList.remove('hidden');
+      document.getElementById('loading-more').classList.remove('hidden');
       
       try {
         let apiUrl = `${API_BASE}/search?q=${encodeURIComponent(currentQuery)}&start=${currentStart}&end=${currentEnd}`;
@@ -1170,7 +1952,6 @@
           
           currentStart = currentEnd + 1;
           currentEnd = currentStart + BATCH_SIZE - 1;
-          
         } else {
           throw new Error(data.error || 'Search failed');
         }
@@ -1179,15 +1960,14 @@
         hasMore = false;
       } finally {
         isLoading = false;
-        loadingMore.classList.add('hidden');
+        document.getElementById('loading-more').classList.add('hidden');
       }
     }
 
-    // Initial search
+    // Perform search
     async function performSearch(query) {
       if (!query || isLoading) return;
       
-      // Reset state
       currentStart = 1;
       currentEnd = BATCH_SIZE;
       currentResults = [];
@@ -1197,7 +1977,7 @@
       isLoading = true;
       
       const container = document.getElementById('results-container');
-      const resultsInfo = document.getElementById('results-info');
+      const resultsCount = document.getElementById('results-count');
       
       container.innerHTML = '';
       container.appendChild(renderSkeleton());
@@ -1228,7 +2008,7 @@
           const totalText = data.totalCached ? 
             `About ${data.totalCached.toLocaleString()} results` : 
             `${results.length} results`;
-          resultsInfo.querySelector('.results-count').textContent = totalText;
+          resultsCount.textContent = totalText;
           
           displayResults(results, false);
           
@@ -1236,7 +2016,6 @@
           
           currentStart = currentEnd + 1;
           currentEnd = currentStart + BATCH_SIZE - 1;
-          
         } else {
           throw new Error(data.error || 'Search failed');
         }
@@ -1250,7 +2029,7 @@
           <div class="no-results">
             <div class="no-results-icon">⚠️</div>
             <div class="no-results-text">Something went wrong</div>
-            <div class="no-results-suggestion">${error.message}</div>
+            <div class="no-results-suggestion">${escapeHtml(error.message)}</div>
           </div>
         `;
         hasMore = false;
@@ -1260,6 +2039,7 @@
     }
 
     // Scroll handler
+    let lastScrollCheck = 0;
     function checkScroll() {
       if (!currentQuery || isLoading || !hasMore) return;
       
@@ -1278,69 +2058,20 @@
       }
     }
 
-    // Search form submit
-    document.getElementById('search-form').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const query = document.getElementById('search-input').value.trim();
-      if (query && query !== currentQuery) {
-        currentQuery = query;
-        updateURL(query);
-        document.title = `${query} - YouTube Search`;
-        performSearch(query);
-      }
-    });
-
-    // Filter chips
-    document.getElementById('filter-chips').addEventListener('click', (e) => {
-      const chip = e.target.closest('.filter-chip');
-      if (!chip) return;
-      
-      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      
-      currentFilter = chip.dataset.filter;
-      
-      if (currentQuery) {
-        performSearch(currentQuery);
-      }
-    });
-
-    // Sidebar options
-    document.querySelectorAll('.sidebar-option').forEach(option => {
-      option.addEventListener('click', () => {
-        const checkbox = option.querySelector('.sidebar-checkbox');
-        if (checkbox.type === 'radio') {
-          checkbox.checked = true;
-        } else {
-          checkbox.checked = !checkbox.checked;
-        }
-        
-        if (option.dataset.sort) {
-          currentSort = option.dataset.sort;
-          if (currentQuery) {
-            performSearch(currentQuery);
-          }
-        }
-      });
-    });
-
     // Initialize
     document.addEventListener('DOMContentLoaded', () => {
       const query = getQueryFromURL();
       if (query) {
         currentQuery = query;
-        document.getElementById('search-input').value = query;
+        desktopSearchInput.value = query;
+        mobileSearchInput.value = query;
         document.title = `${query} - YouTube Search`;
         performSearch(query);
-      } else {
-        document.getElementById('results-info').querySelector('.results-count').textContent = 'Enter a search term to get started';
       }
       
-      // Scroll listeners
       window.addEventListener('scroll', checkScroll);
       window.addEventListener('resize', checkScroll);
       
-      // Periodic check
       setInterval(() => {
         if (currentQuery && !isLoading && hasMore) {
           checkScroll();
@@ -1353,13 +2084,22 @@
       const query = getQueryFromURL();
       if (query !== currentQuery) {
         currentQuery = query;
-        document.getElementById('search-input').value = query;
+        desktopSearchInput.value = query;
+        mobileSearchInput.value = query;
         if (query) {
           performSearch(query);
         } else {
           document.getElementById('results-container').innerHTML = '';
-          document.getElementById('results-info').querySelector('.results-count').textContent = 'Enter a search term to get started';
+          document.getElementById('results-count').textContent = 'Enter a search term to get started';
         }
+      }
+    });
+
+    // Close mobile search on escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (mobileSearchOpen) closeMobileSearch();
+        if (filterPanelOpen) toggleFilterPanel();
       }
     });
   </script>
