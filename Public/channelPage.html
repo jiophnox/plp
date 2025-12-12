@@ -18,13 +18,345 @@
       min-height: 100vh;
     }
 
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: #0f0f0f;
+      border-bottom: 1px solid #272727;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 1000;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+
+    .menu-toggle:hover {
+      background: #272727;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+      color: #fff;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: #ff0000;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Search Bar - Desktop */
+    .header-center {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      max-width: 600px;
+      padding: 0 16px;
+    }
+
+    .search-container {
+      display: flex;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .search-input-wrapper {
+      flex: 1;
+      position: relative;
+      display: flex;
+    }
+
+    .search-input {
+      width: 100%;
+      height: 40px;
+      background: #121212;
+      border: 1px solid #303030;
+      border-radius: 20px 0 0 20px;
+      padding: 0 16px;
+      font-size: 16px;
+      color: #fff;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: #1c62b9;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,.3);
+    }
+
+    .search-input::placeholder {
+      color: #888;
+    }
+
+    .search-btn {
+      height: 40px;
+      width: 64px;
+      background: #222;
+      border: 1px solid #303030;
+      border-left: none;
+      border-radius: 0 20px 20px 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .search-btn:hover {
+      background: #333;
+    }
+
+    .search-btn svg {
+      width: 24px;
+      height: 24px;
+      fill: #fff;
+    }
+
+    /* Header Right - Mobile Search Icon */
+    .header-right {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-shrink: 0;
+      min-width: 40px;
+    }
+
+    .mobile-search-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: #fff;
+      padding: 8px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .mobile-search-btn:hover {
+      background: #272727;
+    }
+
+    .mobile-search-btn svg {
+      width: 24px;
+      height: 24px;
+      fill: #fff;
+      display: block;
+    }
+
+    /* Mobile Search Bar */
+    .mobile-search-container {
+      display: none;
+      position: fixed;
+      top: 56px;
+      left: 0;
+      right: 0;
+      background: #0f0f0f;
+      padding: 12px 16px;
+      border-bottom: 1px solid #272727;
+      z-index: 999;
+      animation: slideDown 0.2s ease;
+    }
+
+    .mobile-search-container.open {
+      display: block;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .mobile-search-wrapper {
+      display: flex;
+      gap: 8px;
+    }
+
+    .mobile-search-input {
+      flex: 1;
+      height: 40px;
+      background: #121212;
+      border: 1px solid #303030;
+      border-radius: 20px;
+      padding: 0 16px;
+      font-size: 16px;
+      color: #fff;
+      outline: none;
+    }
+
+    .mobile-search-input:focus {
+      border-color: #1c62b9;
+    }
+
+    .mobile-search-input::placeholder {
+      color: #888;
+    }
+
+    .mobile-search-submit {
+      height: 40px;
+      width: 40px;
+      background: #222;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+
+    .mobile-search-submit:hover {
+      background: #333;
+    }
+
+    .mobile-search-submit svg {
+      width: 20px;
+      height: 20px;
+      fill: #fff;
+    }
+
+    .mobile-search-close {
+      height: 40px;
+      width: 40px;
+      background: none;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 24px;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+
+    .mobile-search-close:hover {
+      background: #272727;
+    }
+
+    /* Left Menu */
+    .left-menu {
+      position: fixed;
+      top: 56px;
+      left: 0;
+      width: 150px;
+      height: calc(100vh - 56px);
+      background: #0f0f0f;
+      border-right: 1px solid #272727;
+      padding: 12px 0;
+      overflow-y: auto;
+      z-index: 999;
+      transition: transform 0.3s ease;
+    }
+
+    .menu-overlay {
+      display: none;
+      position: fixed;
+      top: 56px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 998;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      color: #fff;
+      text-decoration: none;
+      font-size: 13px;
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+
+    .menu-item:hover {
+      background: #272727;
+    }
+
+    .menu-item.active {
+      background: #272727;
+    }
+
+    .menu-item-icon {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .menu-divider {
+      height: 1px;
+      background: #272727;
+      margin: 12px 0;
+    }
+
+    .menu-section-title {
+      padding: 8px 16px;
+      font-size: 11px;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Main Content Wrapper */
+    .main-wrapper {
+      margin-left: 150px;
+      padding-top: 56px;
+      min-height: 100vh;
+    }
+
     /* Loading & Error States */
     .loading-container {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
+      min-height: calc(100vh - 56px);
       gap: 20px;
     }
 
@@ -58,7 +390,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
+      min-height: calc(100vh - 56px);
       gap: 20px;
     }
 
@@ -86,56 +418,39 @@
       background: #cc0000;
     }
 
-    /* Channel Banner */
-    .channel-banner {
-      width: 100%;
-      height: 200px;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-      position: relative;
-    }
-
-    .channel-banner img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    /* Channel Info Section - Scrollable */
+    /* Channel Info Section */
     .channel-info-section {
       background: #0f0f0f;
-      padding: 16px 0 0;
+      padding: 24px 0;
     }
 
     .channel-info-content {
-      max-width: 1284px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 0 24px;
     }
 
     .channel-info-top {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       gap: 24px;
-      margin-top: -40px;
     }
 
     .channel-avatar {
-      width: 160px;
-      height: 160px;
+      width: 120px;
+      height: 120px;
       border-radius: 50%;
       object-fit: cover;
       background: #333;
-      border: 4px solid #0f0f0f;
       flex-shrink: 0;
     }
 
     .channel-info {
-      padding-top: 50px;
       flex: 1;
     }
 
     .channel-info h1 {
-      font-size: 36px;
+      font-size: 28px;
       font-weight: 700;
       margin-bottom: 8px;
     }
@@ -167,7 +482,7 @@
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
-      max-width: 800px;
+      max-width: 700px;
       margin-bottom: 16px;
     }
 
@@ -208,14 +523,14 @@
     /* Sticky Tabs Header */
     .sticky-tabs-wrapper {
       position: sticky;
-      top: 0;
+      top: 56px;
       z-index: 100;
       background: #0f0f0f;
       border-bottom: 1px solid #333;
     }
 
     .channel-tabs {
-      max-width: 1284px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 0 24px;
       display: flex;
@@ -251,7 +566,7 @@
 
     /* Main Content */
     .main-content {
-      max-width: 1284px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 24px;
     }
@@ -347,7 +662,7 @@
     /* Video Grid */
     .video-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 24px 16px;
     }
 
@@ -698,7 +1013,7 @@
       color: #aaa;
     }
 
-    /* Playlist Card - Enhanced */
+    /* Playlist Card */
     .playlist-card {
       flex: 0 0 auto;
       width: 210px;
@@ -1034,7 +1349,7 @@
       font-size: 14px;
     }
 
-    /* Responsive */
+    /* Mobile Responsive */
     @media (max-width: 900px) {
       .featured-video-section {
         flex-direction: column;
@@ -1050,7 +1365,7 @@
       }
 
       .video-grid {
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       }
 
       .playlist-grid {
@@ -1067,6 +1382,39 @@
     }
 
     @media (max-width: 768px) {
+
+      .left-menu {
+        transform: translateX(-100%);
+        width: 200px;
+      }
+
+      .left-menu.open {
+        transform: translateX(0);
+      }
+
+      .menu-overlay.open {
+        display: block;
+      }
+
+      .main-wrapper {
+        margin-left: 0;
+      }
+
+      /* Hide desktop search, show mobile search button */
+      .header-center {
+        display: none;
+      }
+
+      .mobile-search-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .menu-toggle {
+        display: block;
+      }
+
       .channel-info-content {
         padding: 0 16px;
       }
@@ -1075,20 +1423,15 @@
         flex-direction: column;
         align-items: center;
         text-align: center;
-        margin-top: -60px;
       }
 
       .channel-avatar {
-        width: 120px;
-        height: 120px;
-      }
-
-      .channel-info {
-        padding-top: 16px;
+        width: 80px;
+        height: 80px;
       }
 
       .channel-info h1 {
-        font-size: 24px;
+        font-size: 20px;
       }
 
       .channel-meta {
@@ -1120,12 +1463,16 @@
       }
 
       .video-grid {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         gap: 16px 12px;
       }
 
       .channel-tabs {
         padding: 0 16px;
+      }
+
+      .sticky-tabs-wrapper {
+        top: 56px;
       }
     }
 
@@ -1136,109 +1483,219 @@
   </style>
 </head>
 <body>
-  <!-- Loading State -->
-  <div id="loading" class="loading-container">
-    <div class="spinner"></div>
-    <p>Loading channel...</p>
-  </div>
-
-  <!-- Error State -->
-  <div id="error" class="error-container hidden">
-    <div class="error-icon">😕</div>
-    <p class="error-message" id="error-message">Channel not found</p>
-    <button class="retry-btn" onclick="loadChannel()">Try Again</button>
-  </div>
-
-  <!-- Main Content -->
-  <div id="content" class="hidden">
-    <!-- Channel Banner -->
-    <div class="channel-banner" id="channel-banner"></div>
-
-    <!-- Channel Info Section (Scrollable) -->
-    <section class="channel-info-section">
-      <div class="channel-info-content">
-        <div class="channel-info-top">
-          <img id="channel-avatar" class="channel-avatar" src="" alt="Channel Avatar">
-          <div class="channel-info">
-            <h1 id="channel-name"></h1>
-            <div class="channel-meta">
-              <span id="channel-handle"></span>
-              <span id="channel-subscribers"></span>
-              <span id="channel-videos"></span>
-            </div>
-            <p class="channel-description" id="channel-description"></p>
-            <button class="show-more-btn hidden" id="show-more-btn">...more</button>
-            <button class="subscribe-btn">Subscribe</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Sticky Tabs -->
-    <div class="sticky-tabs-wrapper">
-      <nav class="channel-tabs" id="channel-tabs">
-        <a class="channel-tab active" data-tab="home">Home</a>
-        <a class="channel-tab" data-tab="videos">Videos</a>
-        <a class="channel-tab" data-tab="shorts">Shorts</a>
-        <a class="channel-tab" data-tab="playlists">Playlists</a>
-        <a class="channel-tab" data-tab="community">Community</a>
-      </nav>
+  <!-- Header -->
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <button class="menu-toggle" id="menu-toggle" aria-label="Toggle menu">☰</button>
+      <a href="/" class="logo">
+        <div class="logo-icon">▶</div>
+        <span>YouTube</span>
+      </a>
     </div>
 
-    <!-- Main Content Area -->
-    <main class="main-content">
-      <!-- Home Tab -->
-      <div id="tab-home" class="tab-content active">
-        <div id="sections-container"></div>
+    <!-- Desktop Search -->
+    <div class="header-center">
+      <form class="search-container" id="desktop-search-form">
+        <div class="search-input-wrapper">
+          <input type="text" class="search-input" id="desktop-search-input" placeholder="Search" autocomplete="off">
+        </div>
+        <button type="submit" class="search-btn" aria-label="Search">
+          <svg viewBox="0 0 24 24">
+            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
+          </svg>
+        </button>
+      </form>
+    </div>
+
+    <!-- Mobile Search Button (Right Side) -->
+    <div class="header-right">
+      <button class="mobile-search-btn" id="mobile-search-btn" aria-label="Search">
+        <svg viewBox="0 0 24 24">
+          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Search Bar -->
+  <div class="mobile-search-container" id="mobile-search-container">
+    <form class="mobile-search-wrapper" id="mobile-search-form">
+      <input type="text" class="mobile-search-input" id="mobile-search-input" placeholder="Search" autocomplete="off">
+      <button type="submit" class="mobile-search-submit" aria-label="Search">
+        <svg viewBox="0 0 24 24">
+          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
+        </svg>
+      </button>
+      <button type="button" class="mobile-search-close" id="mobile-search-close" aria-label="Close search">✕</button>
+    </form>
+  </div>
+
+  <!-- Left Menu -->
+  <nav class="left-menu" id="left-menu">
+    <a href="/" class="menu-item">
+      <span class="menu-item-icon">🏠</span>
+      <span>Home</span>
+    </a>
+    <a href="/shorts" class="menu-item">
+      <span class="menu-item-icon">⚡</span>
+      <span>Shorts</span>
+    </a>
+    <a href="/subscriptions" class="menu-item">
+      <span class="menu-item-icon">📺</span>
+      <span>Subscriptions</span>
+    </a>
+    
+    <div class="menu-divider"></div>
+    
+    <div class="menu-section-title">You</div>
+    <a href="/history" class="menu-item">
+      <span class="menu-item-icon">⏱️</span>
+      <span>History</span>
+    </a>
+    <a href="/playlists" class="menu-item">
+      <span class="menu-item-icon">📁</span>
+      <span>Playlists</span>
+    </a>
+    <a href="/watch-later" class="menu-item">
+      <span class="menu-item-icon">⏰</span>
+      <span>Watch later</span>
+    </a>
+    <a href="/liked" class="menu-item">
+      <span class="menu-item-icon">👍</span>
+      <span>Liked videos</span>
+    </a>
+    
+    <div class="menu-divider"></div>
+    
+    <div class="menu-section-title">Explore</div>
+    <a href="/trending" class="menu-item">
+      <span class="menu-item-icon">🔥</span>
+      <span>Trending</span>
+    </a>
+    <a href="/music" class="menu-item">
+      <span class="menu-item-icon">🎵</span>
+      <span>Music</span>
+    </a>
+    <a href="/gaming" class="menu-item">
+      <span class="menu-item-icon">🎮</span>
+      <span>Gaming</span>
+    </a>
+    <a href="/sports" class="menu-item">
+      <span class="menu-item-icon">⚽</span>
+      <span>Sports</span>
+    </a>
+  </nav>
+
+  <!-- Menu Overlay for Mobile -->
+  <div class="menu-overlay" id="menu-overlay"></div>
+
+  <!-- Main Wrapper -->
+  <div class="main-wrapper">
+    <!-- Loading State -->
+    <div id="loading" class="loading-container">
+      <div class="spinner"></div>
+      <p>Loading channel...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error" class="error-container hidden">
+      <div class="error-icon">😕</div>
+      <p class="error-message" id="error-message">Channel not found</p>
+      <button class="retry-btn" onclick="loadChannel()">Try Again</button>
+    </div>
+
+    <!-- Main Content -->
+    <div id="content" class="hidden">
+      <!-- Channel Info Section -->
+      <section class="channel-info-section">
+        <div class="channel-info-content">
+          <div class="channel-info-top">
+            <img id="channel-avatar" class="channel-avatar" src="" alt="Channel Avatar">
+            <div class="channel-info">
+              <h1 id="channel-name"></h1>
+              <div class="channel-meta">
+                <span id="channel-handle"></span>
+                <span id="channel-subscribers"></span>
+                <span id="channel-videos"></span>
+              </div>
+              <p class="channel-description" id="channel-description"></p>
+              <button class="show-more-btn hidden" id="show-more-btn">...more</button>
+              <button class="subscribe-btn">Subscribe</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sticky Tabs -->
+      <div class="sticky-tabs-wrapper">
+        <nav class="channel-tabs" id="channel-tabs">
+          <a class="channel-tab active" data-tab="home">Home</a>
+          <a class="channel-tab" data-tab="videos">Videos</a>
+          <a class="channel-tab" data-tab="shorts">Shorts</a>
+          <a class="channel-tab" data-tab="playlists">Playlists</a>
+          <a class="channel-tab" data-tab="community">Community</a>
+        </nav>
       </div>
 
-      <!-- Videos Tab -->
-      <div id="tab-videos" class="tab-content">
-        <div class="video-grid" id="videos-grid"></div>
-        <div id="videos-loading" class="loading-more hidden">
-          <div class="spinner"></div>
+      <!-- Main Content Area -->
+      <main class="main-content">
+        <!-- Home Tab -->
+        <div id="tab-home" class="tab-content active">
+          <div id="sections-container"></div>
         </div>
-        <div id="videos-end" class="end-message hidden">No more videos to load</div>
-      </div>
 
-      <!-- Shorts Tab -->
-      <div id="tab-shorts" class="tab-content">
-        <div class="video-grid" id="shorts-grid"></div>
-        <div id="shorts-loading" class="loading-more hidden">
-          <div class="spinner"></div>
+        <!-- Videos Tab -->
+        <div id="tab-videos" class="tab-content">
+          <div class="video-grid" id="videos-grid"></div>
+          <div id="videos-loading" class="loading-more hidden">
+            <div class="spinner"></div>
+          </div>
+          <div id="videos-end" class="end-message hidden">No more videos to load</div>
         </div>
-        <div id="shorts-end" class="end-message hidden">No more shorts to load</div>
-      </div>
 
-      <!-- Playlists Tab -->
-      <div id="tab-playlists" class="tab-content">
-        <div id="playlists-stats" class="tab-stats"></div>
-        <div class="playlist-grid" id="playlists-grid"></div>
-        <div id="playlists-loading" class="loading-more hidden">
-          <div class="spinner"></div>
+        <!-- Shorts Tab -->
+        <div id="tab-shorts" class="tab-content">
+          <div class="video-grid" id="shorts-grid"></div>
+          <div id="shorts-loading" class="loading-more hidden">
+            <div class="spinner"></div>
+          </div>
+          <div id="shorts-end" class="end-message hidden">No more shorts to load</div>
         </div>
-        <div id="playlists-end" class="end-message hidden">No more playlists to load</div>
-      </div>
 
-      <!-- Community Tab -->
-      <div id="tab-community" class="tab-content">
-        <div id="community-container"></div>
-        <div id="community-loading" class="loading-more hidden">
-          <div class="spinner"></div>
+        <!-- Playlists Tab -->
+        <div id="tab-playlists" class="tab-content">
+          <div id="playlists-stats" class="tab-stats"></div>
+          <div class="playlist-grid" id="playlists-grid"></div>
+          <div id="playlists-loading" class="loading-more hidden">
+            <div class="spinner"></div>
+          </div>
+          <div id="playlists-end" class="end-message hidden">No more playlists to load</div>
         </div>
-        <div id="community-end" class="end-message hidden">No more posts to load</div>
-      </div>
-    </main>
+
+        <!-- Community Tab -->
+        <div id="tab-community" class="tab-content">
+          <div id="community-container"></div>
+          <div id="community-loading" class="loading-more hidden">
+            <div class="spinner"></div>
+          </div>
+          <div id="community-end" class="end-message hidden">No more posts to load</div>
+        </div>
+      </main>
+    </div>
   </div>
 
   <script>
-    const API_BASE = 'https://plp-s5su.onrender.com/api/channel';
+    const API_BASE = 'https://9fecd8f8-cc38-4ee3-a55a-0e61e94dafe5-00-24aic6pbf1rh0.sisko.replit.dev/api/channel';
+    const SITE_BASE = window.location.origin;
 
     // State
     let currentChannel = null;
     let channelInfo = null;
     let currentTab = 'home';
     let allPlaylistIds = [];
+    let menuOpen = false;
+    let mobileSearchOpen = false;
     
     // Pagination state
     const pagination = {
@@ -1247,6 +1704,76 @@
       playlists: { index: 0, batchSize: 6, loading: false, hasMore: true, loaded: false },
       community: { start: 1, end: 20, loading: false, hasMore: true, loaded: false }
     };
+
+    // DOM Elements
+    const menuToggle = document.getElementById('menu-toggle');
+    const leftMenu = document.getElementById('left-menu');
+    const menuOverlay = document.getElementById('menu-overlay');
+    const mobileSearchBtn = document.getElementById('mobile-search-btn');
+    const mobileSearchContainer = document.getElementById('mobile-search-container');
+    const mobileSearchClose = document.getElementById('mobile-search-close');
+    const desktopSearchForm = document.getElementById('desktop-search-form');
+    const desktopSearchInput = document.getElementById('desktop-search-input');
+    const mobileSearchForm = document.getElementById('mobile-search-form');
+    const mobileSearchInput = document.getElementById('mobile-search-input');
+
+    // Menu toggle functionality
+    function toggleMenu() {
+      menuOpen = !menuOpen;
+      leftMenu.classList.toggle('open', menuOpen);
+      menuOverlay.classList.toggle('open', menuOpen);
+    }
+
+    menuToggle.addEventListener('click', toggleMenu);
+    menuOverlay.addEventListener('click', toggleMenu);
+
+    // Mobile search functionality
+    function openMobileSearch() {
+      mobileSearchOpen = true;
+      mobileSearchContainer.classList.add('open');
+      mobileSearchInput.focus();
+    }
+
+    function closeMobileSearch() {
+      mobileSearchOpen = false;
+      mobileSearchContainer.classList.remove('open');
+      mobileSearchInput.value = '';
+    }
+
+    mobileSearchBtn.addEventListener('click', openMobileSearch);
+    mobileSearchClose.addEventListener('click', closeMobileSearch);
+
+    // Search functionality
+    function performSearch(query) {
+      if (query && query.trim()) {
+        window.location.href = `/search?q=${encodeURIComponent(query.trim())}`;
+      }
+    }
+
+    desktopSearchForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      performSearch(desktopSearchInput.value);
+    });
+
+    mobileSearchForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      performSearch(mobileSearchInput.value);
+      closeMobileSearch();
+    });
+
+    // Close menu on window resize to desktop
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) {
+        if (menuOpen) {
+          menuOpen = false;
+          leftMenu.classList.remove('open');
+          menuOverlay.classList.remove('open');
+        }
+        if (mobileSearchOpen) {
+          closeMobileSearch();
+        }
+      }
+    });
 
     // Get channel and tab from URL
     function getRouteInfo() {
@@ -1297,6 +1824,57 @@
       const div = document.createElement('div');
       div.textContent = text;
       return div.innerHTML;
+    }
+
+    // Extract channel identifier from URL
+    function extractChannelId(url) {
+      if (!url) return null;
+      
+      // Handle @username format
+      if (url.includes('@')) {
+        const match = url.match(/@[\w-]+/);
+        if (match) return match[0];
+      }
+      
+      // Handle /channel/UC... format
+      if (url.includes('/channel/')) {
+        const match = url.match(/\/channel\/(UC[\w-]+)/);
+        if (match) return match[1];
+      }
+      
+      // Handle /c/ or /user/ format
+      if (url.includes('/c/') || url.includes('/user/')) {
+        const match = url.match(/\/(c|user)\/([\w-]+)/);
+        if (match) return match[2];
+      }
+      
+      return null;
+    }
+
+    // Generate channel URL for internal navigation
+    function getChannelUrl(channel) {
+      let channelId = null;
+      
+      // If channel has url property
+      if (channel.url) {
+        channelId = extractChannelId(channel.url);
+      }
+      
+      // Fallback to channel id
+      if (!channelId && channel.id) {
+        channelId = channel.id;
+      }
+      
+      // Fallback to channelId property
+      if (!channelId && channel.channelId) {
+        channelId = channel.channelId;
+      }
+      
+      if (channelId) {
+        return `/${channelId}`;
+      }
+      
+      return '#';
     }
 
     // Create scroll container
@@ -1400,13 +1978,11 @@
       return card;
     }
 
-    // Render channel card
+    // Render channel card - Updated to use internal URLs
     function renderChannelCard(channel) {
       const card = document.createElement('a');
       card.className = 'channel-card';
-      card.href = channel.url;
-      card.target = '_blank';
-      card.rel = 'noopener noreferrer';
+      card.href = getChannelUrl(channel);
 
       card.innerHTML = `
         <img class="channel-card-avatar" src="${fixThumbnailUrl(channel.thumbnail)}" alt="${escapeHtml(channel.title)}" loading="lazy">
@@ -1704,7 +2280,7 @@
       }
     }
 
-    // Load playlists - ONLY when playlist tab is clicked
+    // Load playlists
     async function loadPlaylists(reset = false) {
       const state = pagination.playlists;
       if (state.loading || (!state.hasMore && !reset)) return;
@@ -1716,7 +2292,6 @@
         document.getElementById('playlists-end').classList.add('hidden');
       }
 
-      // Check if we have playlist IDs
       if (!allPlaylistIds || allPlaylistIds.length === 0) {
         document.getElementById('playlists-stats').textContent = 'No playlists found';
         document.getElementById('playlists-end').classList.remove('hidden');
@@ -1724,10 +2299,8 @@
         return;
       }
 
-      // Update stats
       document.getElementById('playlists-stats').textContent = `${allPlaylistIds.length} playlists`;
 
-      // Get next batch of playlist IDs
       const startIdx = state.index;
       const endIdx = Math.min(startIdx + state.batchSize, allPlaylistIds.length);
       const playlistIdsToFetch = allPlaylistIds.slice(startIdx, endIdx);
@@ -1743,7 +2316,6 @@
 
       const grid = document.getElementById('playlists-grid');
 
-      // Add skeletons
       const skeletons = [];
       for (let i = 0; i < playlistIdsToFetch.length; i++) {
         const skeleton = renderPlaylistSkeleton();
@@ -1752,14 +2324,12 @@
       }
       
       try {
-        // Fetch all playlist details in parallel
         const fetchPromises = playlistIdsToFetch.map(async (playlistId, index) => {
           try {
             const response = await fetch(`${API_BASE}/playlist/${playlistId}`);
             const data = await response.json();
             
             if (data && data.id) {
-              // Replace skeleton with actual card
               const card = renderPlaylistDetailCard(data);
               if (skeletons[index] && skeletons[index].parentNode) {
                 skeletons[index].replaceWith(card);
@@ -1768,7 +2338,6 @@
             }
           } catch (err) {
             console.error(`Error fetching playlist ${playlistId}:`, err);
-            // Remove failed skeleton
             if (skeletons[index] && skeletons[index].parentNode) {
               skeletons[index].remove();
             }
@@ -1778,7 +2347,6 @@
 
         await Promise.all(fetchPromises);
         
-        // Update state
         state.index = endIdx;
         state.hasMore = endIdx < allPlaylistIds.length;
         state.loaded = true;
@@ -1788,7 +2356,6 @@
         }
       } catch (error) {
         console.error('Error loading playlists:', error);
-        // Remove all skeletons on error
         skeletons.forEach(s => s.remove());
       } finally {
         state.loading = false;
@@ -1813,9 +2380,8 @@
       document.getElementById('community-loading').classList.remove('hidden');
       
       try {
-        const response = await fetch(`${API_BASE}/community/${encodeURIComponent(currentChannel)}?start=${state.start}&end=${state.end}`);
-        const data = await response.json();
-        
+        const response = await fetch(`${API_BASE}/community/${encodeURIComponent(currentChannel)}?start=${state.end}`);
+                                                                                                          const data = await response.json();
         if (data.success && data.posts?.length > 0) {
           const container = document.getElementById('community-container');
           data.posts.forEach(post => {
@@ -1825,7 +2391,7 @@
             card.style.marginBottom = '16px';
             container.appendChild(card);
           });
-          
+
           state.start = state.end + 1;
           state.end = state.start + 19;
           state.hasMore = data.posts.length === 20;
@@ -1833,33 +2399,32 @@
         } else {
           state.hasMore = false;
         }
-        
+
         if (!state.hasMore) document.getElementById('community-end').classList.remove('hidden');
-      } catch (error) {
+        } catch (error) {
         console.error('Error loading community:', error);
-      } finally {
+        } finally {
         state.loading = false;
         document.getElementById('community-loading').classList.add('hidden');
-      }
-    }
+        }
+        }
 
-    // Switch tab
-    function switchTab(tab) {
-      if (currentTab === tab) return;
-      
-      currentTab = tab;
-      updateURL(tab);
-      
-      document.querySelectorAll('.channel-tab').forEach(t => {
+        // Switch tab
+        function switchTab(tab) {
+        if (currentTab === tab) return;
+
+        currentTab = tab;
+        updateURL(tab);
+
+        document.querySelectorAll('.channel-tab').forEach(t => {
         t.classList.toggle('active', t.dataset.tab === tab);
-      });
-      
-      document.querySelectorAll('.tab-content').forEach(c => {
+        });
+
+        document.querySelectorAll('.tab-content').forEach(c => {
         c.classList.toggle('active', c.id === `tab-${tab}`);
-      });
-      
-      // Load content if needed - ONLY when tab is clicked
-      switch (tab) {
+        });
+
+        switch (tab) {
         case 'videos':
           if (!pagination.videos.loaded) loadVideos(true);
           break;
@@ -1872,42 +2437,41 @@
         case 'community':
           if (!pagination.community.loaded) loadCommunity(true);
           break;
-      }
-    }
+        }
+        }
 
-    // Infinite scroll handler
-    function handleScroll() {
-      const scrollY = window.scrollY;
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
-      
-      if (scrollY + windowHeight >= documentHeight - 300) {
+        // Infinite scroll handler
+        function handleScroll() {
+        const scrollY = window.scrollY;
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+
+        if (scrollY + windowHeight >= documentHeight - 300) {
         switch (currentTab) {
           case 'videos': loadVideos(); break;
           case 'shorts': loadShorts(); break;
           case 'playlists': loadPlaylists(); break;
           case 'community': loadCommunity(); break;
         }
-      }
-    }
+        }
+        }
 
-    // Main load function
-    async function loadChannel() {
-      const loadingEl = document.getElementById('loading');
-      const errorEl = document.getElementById('error');
-      const contentEl = document.getElementById('content');
-      const errorMsgEl = document.getElementById('error-message');
+        // Main load function
+        async function loadChannel() {
+        const loadingEl = document.getElementById('loading');
+        const errorEl = document.getElementById('error');
+        const contentEl = document.getElementById('content');
+        const errorMsgEl = document.getElementById('error-message');
 
-      loadingEl.classList.remove('hidden');
-      errorEl.classList.add('hidden');
-      contentEl.classList.add('hidden');
+        loadingEl.classList.remove('hidden');
+        errorEl.classList.add('hidden');
+        contentEl.classList.add('hidden');
 
-      const route = getRouteInfo();
-      currentChannel = route.channel;
-      currentTab = route.tab;
+        const route = getRouteInfo();
+        currentChannel = route.channel;
+        currentTab = route.tab;
 
-      // Reset pagination
-      Object.keys(pagination).forEach(key => {
+        Object.keys(pagination).forEach(key => {
         pagination[key].loaded = false;
         pagination[key].hasMore = true;
         pagination[key].loading = false;
@@ -1917,11 +2481,9 @@
           pagination[key].start = 1;
           pagination[key].end = 20;
         }
-      });
+        });
 
-      try {
-        // Fetch channel info and home page data ONLY
-        // DO NOT fetch playlist details here
+        try {
         const [infoResponse, homeResponse] = await Promise.all([
           fetch(`${API_BASE}/${encodeURIComponent(currentChannel)}`),
           fetch(`${API_BASE}/home/${encodeURIComponent(currentChannel)}`)
@@ -1937,20 +2499,17 @@
         channelInfo = infoData.success ? infoData.channel : homeData.channel;
         const sections = homeData.success ? homeData.featuredContent.sections : [];
 
-        // Store playlist IDs for later use (when playlist tab is clicked)
         if (infoData.success && infoData.channel.playlistIds) {
           allPlaylistIds = infoData.channel.playlistIds;
         } else {
           allPlaylistIds = [];
         }
 
-        // Update page title
         document.title = `${channelInfo.name} - YouTube`;
 
-        // Update channel header
         document.getElementById('channel-avatar').src = fixThumbnailUrl(channelInfo.thumbnail);
         document.getElementById('channel-name').textContent = channelInfo.name;
-        
+
         const handleEl = document.getElementById('channel-handle');
         if (channelInfo.url && channelInfo.url.includes('@')) {
           handleEl.textContent = channelInfo.url.split('/').pop();
@@ -1987,7 +2546,6 @@
           descEl.style.display = 'none';
         }
 
-        // Render home sections
         const sectionsContainer = document.getElementById('sections-container');
         sectionsContainer.innerHTML = '';
         sections.forEach(sectionData => {
@@ -1995,7 +2553,6 @@
           if (sectionEl) sectionsContainer.appendChild(sectionEl);
         });
 
-        // Setup tab listeners
         document.querySelectorAll('.channel-tab').forEach(tab => {
           tab.onclick = (e) => {
             e.preventDefault();
@@ -2003,21 +2560,17 @@
           };
         });
 
-        // Show content
         loadingEl.classList.add('hidden');
         contentEl.classList.remove('hidden');
 
-        // Switch to correct tab from URL if not home
         if (currentTab !== 'home') {
-          // Update UI first
           document.querySelectorAll('.channel-tab').forEach(t => {
             t.classList.toggle('active', t.dataset.tab === currentTab);
           });
           document.querySelectorAll('.tab-content').forEach(c => {
             c.classList.toggle('active', c.id === `tab-${currentTab}`);
           });
-          
-          // Load content for that specific tab
+
           switch (currentTab) {
             case 'videos': loadVideos(true); break;
             case 'shorts': loadShorts(true); break;
@@ -2026,30 +2579,36 @@
           }
         }
 
-        // Setup infinite scroll
         window.removeEventListener('scroll', handleScroll);
         window.addEventListener('scroll', handleScroll);
 
-      } catch (error) {
+        } catch (error) {
         console.error('Error loading channel:', error);
         loadingEl.classList.add('hidden');
         errorMsgEl.textContent = error.message || 'Failed to load channel';
         errorEl.classList.remove('hidden');
-      }
-    }
+        }
+        }
 
-    // Handle browser back/forward
-    window.addEventListener('popstate', (e) => {
-      const route = getRouteInfo();
-      if (route.channel !== currentChannel) {
+        // Handle browser back/forward
+        window.addEventListener('popstate', (e) => {
+        const route = getRouteInfo();
+        if (route.channel !== currentChannel) {
         loadChannel();
-      } else if (route.tab !== currentTab) {
+        } else if (route.tab !== currentTab) {
         switchTab(route.tab);
-      }
-    });
+        }
+        });
 
-    // Initialize
-    document.addEventListener('DOMContentLoaded', loadChannel);
-  </script>
-</body>
+        // Close mobile search on escape key
+        document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && mobileSearchOpen) {
+        closeMobileSearch();
+        }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', loadChannel);
+    </script>
+</body> 
 </html>
