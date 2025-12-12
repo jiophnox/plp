@@ -7,9 +7,6 @@ let ytInstance = null;
 // Cache structure for each channel
 const channelCache = new Map();
 
-// Background fetch status
-const fetchStatus = new Map();
-
 async function initYouTube() {
   if (ytInstance) return ytInstance;
 
@@ -52,10 +49,16 @@ async function resolveChannelId(youtube, channelIdentifier) {
   return channelId;
 }
 
+// FIXED: formatVideo function now matches the working version
 function formatVideo(v) {
+  // Get video ID
   const videoId = v.id || v.video_id || v.videoId;
-  if (!videoId) return null;
+  if (!videoId || typeof videoId !== 'string') return null;
 
+  // Validate video ID format (11 characters, alphanumeric with - and _)
+  if (videoId.length !== 11 || !/^[a-zA-Z0-9_-]+$/.test(videoId)) return null;
+
+  // Get title
   let title = 'Unknown';
   if (v.title) {
     if (typeof v.title === 'string') title = v.title;
@@ -64,13 +67,18 @@ function formatVideo(v) {
     else if (typeof v.title.toString === 'function') title = v.title.toString();
   }
 
+  // Get thumbnail - prefer higher quality
   let thumbnail = '';
-  if (v.thumbnails?.length > 0) {
-    thumbnail = v.thumbnails[v.thumbnails.length - 1]?.url || v.thumbnails[0]?.url;
-  } else {
+  if (v.thumbnails && Array.isArray(v.thumbnails) && v.thumbnails.length > 0) {
+    // Get the best quality thumbnail
+    const sortedThumbs = [...v.thumbnails].sort((a, b) => (b.width || 0) - (a.width || 0));
+    thumbnail = sortedThumbs[0]?.url || v.thumbnails[0]?.url || '';
+  }
+  if (!thumbnail) {
     thumbnail = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
   }
 
+  // Get duration
   let duration = 'N/A';
   if (v.duration) {
     if (typeof v.duration === 'string') duration = v.duration;
@@ -83,16 +91,38 @@ function formatVideo(v) {
         ? `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
         : `${m}:${s.toString().padStart(2, '0')}`;
     }
+  } else if (v.length_text?.text) {
+    duration = v.length_text.text;
   }
 
+  // Get views
   let views = 'N/A';
   if (v.view_count?.text) views = v.view_count.text;
   else if (v.short_view_count?.text) views = v.short_view_count.text;
   else if (typeof v.view_count === 'string') views = v.view_count;
+  else if (v.view_count?.short_view_count?.text) views = v.view_count.short_view_count.text;
 
+  // Get published date
   let published = 'N/A';
   if (v.published?.text) published = v.published.text;
   else if (typeof v.published === 'string') published = v.published;
+  else if (v.publishedTimeText?.text) published = v.publishedTimeText.text;
+
+  // FIXED: Get description (was missing!)
+  let description = '';
+  if (v.description_snippet?.text) {
+    description = v.description_snippet.text;
+  } else if (v.description_snippet?.runs) {
+    description = v.description_snippet.runs.map(r => r.text).join('');
+  } else if (v.description?.text) {
+    description = v.description.text;
+  } else if (v.description?.runs) {
+    description = v.description.runs.map(r => r.text).join('');
+  } else if (typeof v.description === 'string') {
+    description = v.description;
+  } else if (v.snippetText?.runs) {
+    description = v.snippetText.runs.map(r => r.text).join('');
+  }
 
   return {
     id: videoId,
@@ -101,46 +131,151 @@ function formatVideo(v) {
     duration,
     views,
     published,
-    url: `https://www.youtube.com/watch?v=${videoId}`
+    description  // ADDED: description field
   };
 }
 
-function findAllVideos(obj, seenIds, depth = 0) {
+// FIXED: Better video extraction that preserves all data
+function extractVideosFromTab(data, seenIds) {
   const videos = [];
 
-  if (!obj || typeof obj !== 'object' || depth > 20) return videos;
-
-  const id = obj.id || obj.video_id || obj.videoId;
-  if (id && typeof id === 'string' && id.length === 11 && /^[a-zA-Z0-9_-]+$/.test(id)) {
-    if (!seenIds.has(id) && (obj.title || obj.thumbnails)) {
-      seenIds.add(id);
-      const formatted = formatVideo(obj);
-      if (formatted) videos.push(formatted);
-    }
-  }
-
-  if (obj.content) {
-    const contentId = obj.content.id || obj.content.video_id;
-    if (contentId && !seenIds.has(contentId)) {
-      seenIds.add(contentId);
-      const formatted = formatVideo(obj.content);
-      if (formatted) videos.push(formatted);
-    }
-  }
-
-  if (Array.isArray(obj)) {
-    for (const item of obj) {
-      videos.push(...findAllVideos(item, seenIds, depth + 1));
-    }
-  } else {
-    for (const key of Object.keys(obj)) {
-      if (key.startsWith('_') || typeof obj[key] === 'function') continue;
-      if (obj[key] && typeof obj[key] === 'object') {
-        videos.push(...findAllVideos(obj[key], seenIds, depth + 1));
+  // Method 1: Direct videos array (like first code)
+  if (data.videos && Array.isArray(data.videos)) {
+    for (const v of data.videos) {
+      const id = v.id || v.video_id;
+      if (id && !seenIds.has(id)) {
+        seenIds.add(id);
+        const formatted = formatVideo(v);
+        if (formatted) videos.push(formatted);
       }
     }
   }
 
+  // Method 2: Current tab structure (like first code)
+  if (data.current_tab?.content?.contents) {
+    for (const section of data.current_tab.content.contents) {
+      const items = section.contents || section.items || [];
+      for (const item of items) {
+        const v = item.content || item;
+        const id = v.id || v.video_id;
+        if (id && !seenIds.has(id)) {
+          seenIds.add(id);
+          const formatted = formatVideo(v);
+          if (formatted) videos.push(formatted);
+        }
+      }
+    }
+  }
+
+  // Method 3: Contents array directly
+  if (data.contents) {
+    const processContents = (contents) => {
+      if (!Array.isArray(contents)) return;
+      for (const item of contents) {
+        // Check if this is a video item
+        const v = item.content || item;
+        const id = v.id || v.video_id || v.videoId;
+        if (id && !seenIds.has(id) && (v.title || v.thumbnails)) {
+          seenIds.add(id);
+          const formatted = formatVideo(v);
+          if (formatted) videos.push(formatted);
+        }
+        // Recurse into nested contents
+        if (item.contents) processContents(item.contents);
+        if (item.items) processContents(item.items);
+      }
+    };
+    processContents(data.contents);
+  }
+
+  return videos;
+}
+
+// For browse API responses (different structure)
+function extractVideosFromBrowse(data, seenIds) {
+  const videos = [];
+
+  if (!data) return videos;
+
+  const findVideos = (obj, depth = 0) => {
+    if (!obj || typeof obj !== 'object' || depth > 15) return;
+
+    // Check if this object is a video
+    const id = obj.videoId || obj.id || obj.video_id;
+    if (id && typeof id === 'string' && id.length === 11) {
+      if (!seenIds.has(id) && (obj.title || obj.thumbnail || obj.thumbnails)) {
+        seenIds.add(id);
+
+        // Build video object from various possible structures
+        const videoData = {
+          id: id,
+          title: obj.title,
+          thumbnails: obj.thumbnail?.thumbnails || obj.thumbnails,
+          duration: obj.lengthText || obj.duration || obj.length_text,
+          view_count: obj.viewCountText || obj.view_count || obj.shortViewCountText,
+          published: obj.publishedTimeText || obj.published,
+          description_snippet: obj.descriptionSnippet || obj.description_snippet || obj.snippetText
+        };
+
+        const formatted = formatVideo(videoData);
+        if (formatted) videos.push(formatted);
+      }
+    }
+
+    // Check for richItemRenderer (common in browse responses)
+    if (obj.richItemRenderer?.content?.videoRenderer) {
+      const vr = obj.richItemRenderer.content.videoRenderer;
+      if (vr.videoId && !seenIds.has(vr.videoId)) {
+        seenIds.add(vr.videoId);
+        const videoData = {
+          id: vr.videoId,
+          title: vr.title,
+          thumbnails: vr.thumbnail?.thumbnails,
+          duration: vr.lengthText,
+          view_count: vr.viewCountText || vr.shortViewCountText,
+          published: vr.publishedTimeText,
+          description_snippet: vr.descriptionSnippet
+        };
+        const formatted = formatVideo(videoData);
+        if (formatted) videos.push(formatted);
+      }
+    }
+
+    // Check for gridVideoRenderer
+    if (obj.gridVideoRenderer) {
+      const vr = obj.gridVideoRenderer;
+      if (vr.videoId && !seenIds.has(vr.videoId)) {
+        seenIds.add(vr.videoId);
+        const videoData = {
+          id: vr.videoId,
+          title: vr.title,
+          thumbnails: vr.thumbnail?.thumbnails,
+          duration: vr.lengthText || vr.thumbnailOverlays?.[0]?.thumbnailOverlayTimeStatusRenderer?.text,
+          view_count: vr.viewCountText || vr.shortViewCountText,
+          published: vr.publishedTimeText,
+          description_snippet: vr.descriptionSnippet
+        };
+        const formatted = formatVideo(videoData);
+        if (formatted) videos.push(formatted);
+      }
+    }
+
+    // Recurse
+    if (Array.isArray(obj)) {
+      for (const item of obj) {
+        findVideos(item, depth + 1);
+      }
+    } else {
+      for (const key of Object.keys(obj)) {
+        if (key.startsWith('_') || typeof obj[key] === 'function') continue;
+        if (obj[key] && typeof obj[key] === 'object') {
+          findVideos(obj[key], depth + 1);
+        }
+      }
+    }
+  };
+
+  findVideos(data);
   return videos;
 }
 
@@ -173,9 +308,6 @@ function findContinuationToken(obj, depth = 0) {
   return null;
 }
 
-/**
- * Initialize cache for a channel
- */
 function initCache(channelId) {
   if (!channelCache.has(channelId)) {
     channelCache.set(channelId, {
@@ -190,13 +322,9 @@ function initCache(channelId) {
   return channelCache.get(channelId);
 }
 
-/**
- * Background fetch function - fetches ALL videos
- */
 async function backgroundFetchVideos(channelId, channelName, youtube) {
   const cache = initCache(channelId);
 
-  // Already fetching or complete
   if (cache.isFetching || cache.isComplete) {
     return;
   }
@@ -205,59 +333,94 @@ async function backgroundFetchVideos(channelId, channelName, youtube) {
   console.log(`\n🔄 [Background] Starting fetch for ${channelName}...`);
 
   try {
-    // Method 1: Browse endpoint (main videos)
-    console.log('📁 [Background] Fetching via browse endpoint...');
+    // Method 1: Use getChannel().getVideos() first (like the working code!)
+    console.log('📁 [Background] Fetching via getVideos()...');
 
-    let browseData = await youtube.actions.execute('/browse', {
-      browseId: channelId,
-      params: 'EgZ2aWRlb3PyBgQKAjoA'
-    });
+    try {
+      const channel = await youtube.getChannel(channelId);
+      let videosTab = await channel.getVideos();
+      let pageCount = 0;
+      let consecutiveEmpty = 0;
 
-    let pageCount = 0;
-    let consecutiveEmpty = 0;
-    const maxPages = 1000;
+      while (pageCount < 1000 && consecutiveEmpty < 5) {
+        pageCount++;
+        const beforeCount = cache.videos.length;
 
-    while (pageCount < maxPages && consecutiveEmpty < 5) {
-      pageCount++;
-      const beforeCount = cache.videos.length;
+        // Use the extraction method from working code
+        const pageVideos = extractVideosFromTab(videosTab, cache.seenIds);
+        cache.videos.push(...pageVideos);
+        cache.lastUpdate = Date.now();
 
-      const pageVideos = findAllVideos(browseData?.data, cache.seenIds);
-      cache.videos.push(...pageVideos);
-      cache.lastUpdate = Date.now();
+        const newCount = cache.videos.length - beforeCount;
 
-      const newCount = cache.videos.length - beforeCount;
+        if (newCount === 0) {
+          consecutiveEmpty++;
+        } else {
+          consecutiveEmpty = 0;
+          if (pageCount % 20 === 0 || pageCount <= 3) {
+            console.log(`   [Background] Page ${pageCount}: +${newCount} videos (total: ${cache.videos.length})`);
+          }
+        }
 
-      if (newCount === 0) {
-        consecutiveEmpty++;
-      } else {
-        consecutiveEmpty = 0;
-        if (pageCount % 20 === 0 || pageCount <= 3) {
-          console.log(`   [Background] Page ${pageCount}: +${newCount} videos (total: ${cache.videos.length})`);
+        if (!videosTab.has_continuation) {
+          console.log(`   [Background] No more continuation after page ${pageCount}`);
+          break;
+        }
+
+        try {
+          videosTab = await videosTab.getContinuation();
+          if (pageCount % 20 === 0) {
+            await new Promise(r => setTimeout(r, 300));
+          }
+        } catch (e) {
+          console.log(`   [Background] Pagination error: ${e.message}`);
+          break;
         }
       }
 
-      const continuationToken = findContinuationToken(browseData?.data);
+      console.log(`   [Background] ✅ Videos tab: ${cache.videos.length} videos`);
+    } catch (e) {
+      console.log(`   [Background] ⚠️ getVideos error: ${e.message}`);
 
-      if (!continuationToken) {
-        console.log(`   [Background] No more continuation after page ${pageCount}`);
-        break;
-      }
+      // Fallback to browse endpoint
+      console.log('📁 [Background] Fallback to browse endpoint...');
 
-      try {
-        browseData = await youtube.actions.execute('/browse', {
-          continuation: continuationToken
-        });
+      let browseData = await youtube.actions.execute('/browse', {
+        browseId: channelId,
+        params: 'EgZ2aWRlb3PyBgQKAjoA'
+      });
 
-        if (pageCount % 20 === 0) {
-          await new Promise(r => setTimeout(r, 300));
+      let pageCount = 0;
+      let consecutiveEmpty = 0;
+
+      while (pageCount < 1000 && consecutiveEmpty < 5) {
+        pageCount++;
+        const beforeCount = cache.videos.length;
+
+        const pageVideos = extractVideosFromBrowse(browseData?.data, cache.seenIds);
+        cache.videos.push(...pageVideos);
+        cache.lastUpdate = Date.now();
+
+        const newCount = cache.videos.length - beforeCount;
+
+        if (newCount === 0) {
+          consecutiveEmpty++;
+        } else {
+          consecutiveEmpty = 0;
         }
-      } catch (e) {
-        console.log(`   [Background] Pagination error: ${e.message}`);
-        break;
+
+        const continuationToken = findContinuationToken(browseData?.data);
+        if (!continuationToken) break;
+
+        try {
+          browseData = await youtube.actions.execute('/browse', {
+            continuation: continuationToken
+          });
+        } catch (e) {
+          break;
+        }
       }
     }
-
-    console.log(`   [Background] ✅ Videos tab: ${cache.videos.length} videos`);
 
     // Method 2: Shorts tab
     console.log('📁 [Background] Fetching Shorts...');
@@ -269,7 +432,7 @@ async function backgroundFetchVideos(channelId, channelName, youtube) {
 
       while (shortsPageCount < 200) {
         shortsPageCount++;
-        const pageVideos = findAllVideos(shortsTab, cache.seenIds);
+        const pageVideos = extractVideosFromTab(shortsTab, cache.seenIds);
         cache.videos.push(...pageVideos);
         cache.lastUpdate = Date.now();
 
@@ -277,9 +440,6 @@ async function backgroundFetchVideos(channelId, channelName, youtube) {
 
         try {
           shortsTab = await shortsTab.getContinuation();
-          if (shortsPageCount % 20 === 0) {
-            await new Promise(r => setTimeout(r, 200));
-          }
         } catch (e) {
           break;
         }
@@ -300,7 +460,7 @@ async function backgroundFetchVideos(channelId, channelName, youtube) {
 
       while (livePageCount < 100) {
         livePageCount++;
-        const pageVideos = findAllVideos(liveTab, cache.seenIds);
+        const pageVideos = extractVideosFromTab(liveTab, cache.seenIds);
         cache.videos.push(...pageVideos);
         cache.lastUpdate = Date.now();
 
@@ -318,37 +478,6 @@ async function backgroundFetchVideos(channelId, channelName, youtube) {
       console.log(`   [Background] ⚠️ Live: ${e.message}`);
     }
 
-    // Method 4: Uploads playlist (backup to catch any missed videos)
-    console.log('📁 [Background] Checking uploads playlist...');
-    try {
-      const uploadsPlaylistId = channelId.replace('UC', 'UU');
-      let playlist = await youtube.getPlaylist(uploadsPlaylistId);
-      let playlistPageCount = 0;
-      const beforePlaylist = cache.videos.length;
-
-      while (playlistPageCount < 500) {
-        playlistPageCount++;
-        const pageVideos = findAllVideos(playlist, cache.seenIds);
-        cache.videos.push(...pageVideos);
-        cache.lastUpdate = Date.now();
-
-        if (!playlist.has_continuation) break;
-
-        try {
-          playlist = await playlist.getContinuation();
-          if (playlistPageCount % 20 === 0) {
-            await new Promise(r => setTimeout(r, 200));
-          }
-        } catch (e) {
-          break;
-        }
-      }
-
-      console.log(`   [Background] ✅ Uploads playlist: ${cache.videos.length - beforePlaylist} new videos`);
-    } catch (e) {
-      console.log(`   [Background] ⚠️ Uploads playlist: ${e.message}`);
-    }
-
     cache.isComplete = true;
     console.log(`\n✅ [Background] Complete! Total: ${cache.videos.length} videos for ${channelName}`);
 
@@ -360,9 +489,6 @@ async function backgroundFetchVideos(channelId, channelName, youtube) {
   }
 }
 
-/**
- * Wait for enough videos to be cached
- */
 async function waitForVideos(channelId, requiredCount, maxWaitMs = 30000) {
   const cache = channelCache.get(channelId);
   if (!cache) return false;
@@ -379,10 +505,6 @@ async function waitForVideos(channelId, requiredCount, maxWaitMs = 30000) {
   return false;
 }
 
-/**
- * Get videos from a YouTube channel
- * Returns immediately with available videos, continues fetching in background
- */
 async function getChannelVideos(channelIdentifier, start = null, end = null) {
   try {
     const youtube = await initYouTube();
@@ -419,30 +541,23 @@ async function getChannelVideos(channelIdentifier, start = null, end = null) {
       : '📊 Target: ALL videos'
     );
 
-    // Initialize cache
     const cache = initCache(channelId);
 
-    // Start background fetch if not already running
     if (!cache.isFetching && !cache.isComplete) {
-      // Start background fetch (don't await)
       backgroundFetchVideos(channelId, channelName, youtube);
     }
 
-    // If we need specific range, wait for those videos
     if (hasRange) {
-      // Check if we already have enough
       if (cache.videos.length >= requiredEnd || cache.isComplete) {
         console.log(`📦 Cache hit: ${cache.videos.length} videos available`);
       } else {
-        // Wait for required videos (max 30 seconds)
         console.log(`⏳ Waiting for videos ${start}-${end}...`);
         await waitForVideos(channelId, requiredEnd, 60000);
       }
     } else {
-      // For all videos, wait until complete or timeout
       if (!cache.isComplete) {
         console.log(`⏳ Waiting for all videos...`);
-        const maxWait = 120000; // 2 minutes max
+        const maxWait = 120000;
         const startTime = Date.now();
         while (!cache.isComplete && Date.now() - startTime < maxWait) {
           await new Promise(r => setTimeout(r, 500));
@@ -450,7 +565,6 @@ async function getChannelVideos(channelIdentifier, start = null, end = null) {
       }
     }
 
-    // Get videos from cache
     let finalVideos = cache.videos;
 
     if (hasRange) {
@@ -492,9 +606,6 @@ async function getChannelVideos(channelIdentifier, start = null, end = null) {
   }
 }
 
-/**
- * Get cache status for a channel
- */
 function getCacheStatus(channelId) {
   const cache = channelCache.get(channelId);
   if (!cache) {
@@ -511,9 +622,6 @@ function getCacheStatus(channelId) {
   };
 }
 
-/**
- * Clear cache for a channel or all channels
- */
 function clearCache(channelId = null) {
   if (channelId) {
     channelCache.delete(channelId);
@@ -524,9 +632,6 @@ function clearCache(channelId = null) {
   }
 }
 
-/**
- * Pre-fetch channel videos in background
- */
 async function prefetchChannel(channelIdentifier) {
   const youtube = await initYouTube();
 
