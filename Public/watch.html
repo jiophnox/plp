@@ -18,7 +18,7 @@
       min-height: 100vh;
     }
 
-    /* Header - Same as channel/search pages */
+    /* Header */
     .header {
       position: fixed;
       top: 0;
@@ -195,14 +195,8 @@
     }
 
     @keyframes slideDown {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .mobile-search-wrapper {
@@ -274,7 +268,7 @@
       background: #272727;
     }
 
-    /* Left Menu - Same 150px as channel/search pages */
+    /* Left Menu */
     .left-menu {
       position: fixed;
       top: 56px;
@@ -349,7 +343,7 @@
       letter-spacing: 0.5px;
     }
 
-    /* Main Content Wrapper - Same 150px offset as channel/search pages */
+    /* Main Content Wrapper */
     .main-wrapper {
       margin-left: 150px;
       padding-top: 56px;
@@ -373,6 +367,12 @@
       border-top-color: #ff0000;
       border-radius: 50%;
       animation: spin 1s linear infinite;
+    }
+
+    .spinner.small {
+      width: 24px;
+      height: 24px;
+      border-width: 3px;
     }
 
     @keyframes spin {
@@ -509,11 +509,6 @@
       color: #000;
     }
 
-    .action-btn.active {
-      background: #fff;
-      color: #000;
-    }
-
     /* Channel Info */
     .channel-row {
       display: flex;
@@ -620,6 +615,7 @@
       line-height: 1.6;
       color: #f1f1f1;
       white-space: pre-wrap;
+      word-break: break-word;
     }
 
     .description-text:not(.expanded) {
@@ -629,8 +625,21 @@
       overflow: hidden;
     }
 
-    .description-text.expanded {
-      -webkit-line-clamp: unset;
+    .description-hashtags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .hashtag {
+      color: #3ea6ff;
+      font-size: 13px;
+      text-decoration: none;
+    }
+
+    .hashtag:hover {
+      text-decoration: underline;
     }
 
     .show-more-btn {
@@ -648,44 +657,464 @@
       color: #fff;
     }
 
-    /* Sidebar - Related Videos / Playlist */
-    .sidebar {
-      width: 400px;
-      flex-shrink: 0;
+    /* Comments Section */
+    .comments-section {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid #272727;
     }
 
-    /* Quick Actions Bar */
-    .quick-actions {
+    .comments-header {
       display: flex;
-      gap: 8px;
-      padding: 12px;
-      background: #181818;
-      border-radius: 12px;
-      margin-bottom: 16px;
-    }
-
-    .quick-action-btn {
-      flex: 1;
-      padding: 10px;
-      background: #272727;
-      border: none;
-      border-radius: 8px;
-      color: #fff;
-      font-size: 12px;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 4px;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .comments-count {
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .comments-sort {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: none;
+      border: none;
+      color: #f1f1f1;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 20px;
       transition: background 0.2s;
     }
 
-    .quick-action-btn:hover {
+    .comments-sort:hover {
+      background: #272727;
+    }
+
+    .comments-sort.active {
+      background: #272727;
+    }
+
+    .add-comment {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .add-comment-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #3ea6ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .add-comment-input-wrapper {
+      flex: 1;
+    }
+
+    .add-comment-input {
+      width: 100%;
+      background: none;
+      border: none;
+      border-bottom: 1px solid #272727;
+      color: #fff;
+      font-size: 14px;
+      padding: 8px 0;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .add-comment-input:focus {
+      border-color: #fff;
+    }
+
+    .add-comment-input::placeholder {
+      color: #717171;
+    }
+
+    .add-comment-actions {
+      display: none;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .add-comment-actions.show {
+      display: flex;
+    }
+
+    .comment-cancel-btn {
+      padding: 8px 16px;
+      background: none;
+      border: none;
+      color: #f1f1f1;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 18px;
+    }
+
+    .comment-cancel-btn:hover {
+      background: #272727;
+    }
+
+    .comment-submit-btn {
+      padding: 8px 16px;
+      background: #3ea6ff;
+      border: none;
+      color: #0f0f0f;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 18px;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .comment-submit-btn.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .comments-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Comment Item */
+    .comment-item {
+      display: flex;
+      gap: 12px;
+    }
+
+    .comment-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #333;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .comment-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .comment-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+      flex-wrap: wrap;
+    }
+
+    .comment-author {
+      font-size: 13px;
+      font-weight: 500;
+      color: #f1f1f1;
+      text-decoration: none;
+    }
+
+    .comment-author:hover {
+      color: #3ea6ff;
+    }
+
+    .comment-author.owner {
+      background: #272727;
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+
+    .comment-author.verified::after {
+      content: '✓';
+      margin-left: 4px;
+      color: #aaa;
+      font-size: 12px;
+    }
+
+    .comment-time {
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    .comment-badges {
+      display: flex;
+      gap: 4px;
+    }
+
+    .comment-badge {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #272727;
+      color: #aaa;
+    }
+
+    .comment-badge.pinned {
+      background: #3ea6ff20;
+      color: #3ea6ff;
+    }
+
+    .comment-badge.hearted {
+      background: #ff000020;
+      color: #ff0000;
+    }
+
+    .comment-text {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #f1f1f1;
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin-bottom: 8px;
+    }
+
+    .comment-text.collapsed {
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .comment-read-more {
+      background: none;
+      border: none;
+      color: #aaa;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 0;
+      margin-bottom: 8px;
+    }
+
+    .comment-read-more:hover {
+      color: #fff;
+    }
+
+    .comment-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .comment-action-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      color: #aaa;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 16px;
+      transition: background 0.2s;
+    }
+
+    .comment-action-btn:hover {
+      background: #272727;
+    }
+
+    .comment-reply-btn {
+      background: none;
+      border: none;
+      color: #aaa;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 4px 12px;
+      border-radius: 16px;
+    }
+
+    .comment-reply-btn:hover {
+      background: #272727;
+    }
+
+    .comment-replies-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: none;
+      border: none;
+      color: #3ea6ff;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 8px 0;
+      margin-top: 4px;
+    }
+
+    .comment-replies-toggle:hover {
+      color: #65b8ff;
+    }
+
+    .comments-loading {
+      display: flex;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .comments-end {
+      text-align: center;
+      padding: 24px;
+      color: #717171;
+      font-size: 14px;
+    }
+
+    /* Mobile Comments Bar (Collapsed) */
+    .mobile-comments-bar {
+      display: none;
+      background: #272727;
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .mobile-comments-bar:hover {
       background: #3f3f3f;
     }
 
-    .quick-action-btn span:first-child {
+    .mobile-comments-bar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .mobile-comments-bar-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: #f1f1f1;
+    }
+
+    .mobile-comments-bar-arrow {
+      color: #aaa;
       font-size: 18px;
+    }
+
+    .mobile-comments-preview {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .mobile-comments-preview-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #333;
+      flex-shrink: 0;
+    }
+
+    .mobile-comments-preview-text {
+      font-size: 13px;
+      color: #aaa;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Mobile Comments Modal */
+    .mobile-comments-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #0f0f0f;
+      z-index: 2000;
+      flex-direction: column;
+    }
+
+    .mobile-comments-modal.open {
+      display: flex;
+    }
+
+    .mobile-comments-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      border-bottom: 1px solid #272727;
+      flex-shrink: 0;
+    }
+
+    .mobile-comments-modal-title {
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .mobile-comments-modal-close {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mobile-comments-modal-close:hover {
+      background: #272727;
+    }
+
+    .mobile-comments-modal-sort {
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      border-bottom: 1px solid #272727;
+      flex-shrink: 0;
+    }
+
+    .mobile-comments-modal-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .mobile-comments-modal-add {
+      display: flex;
+      gap: 12px;
+      padding: 12px 16px;
+      border-top: 1px solid #272727;
+      background: #181818;
+      flex-shrink: 0;
+    }
+
+    .mobile-comments-modal-add input {
+      flex: 1;
+      background: #272727;
+      border: none;
+      border-radius: 20px;
+      padding: 10px 16px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .mobile-comments-modal-add input::placeholder {
+      color: #717171;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 400px;
+      flex-shrink: 0;
     }
 
     /* Playlist Panel */
@@ -781,7 +1210,7 @@
       left: 18px;
     }
 
-    .shuffle-btn, .loop-btn {
+    .shuffle-btn {
       background: none;
       border: none;
       color: #aaa;
@@ -791,17 +1220,17 @@
       transition: color 0.2s;
     }
 
-    .shuffle-btn:hover, .loop-btn:hover {
+    .shuffle-btn:hover {
       color: #fff;
     }
 
-    .shuffle-btn.active, .loop-btn.active {
+    .shuffle-btn.active {
       color: #3ea6ff;
     }
 
-    /* Playlist Videos - Hidden scrollbar */
+    /* Playlist Videos */
     .playlist-videos {
-      max-height: calc(100vh - 450px);
+      max-height: 300px;
       overflow-y: auto;
       scrollbar-width: none;
       -ms-overflow-style: none;
@@ -898,33 +1327,43 @@
     .related-section {
       background: #181818;
       border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .related-header {
       padding: 16px;
+      border-bottom: 1px solid #272727;
     }
 
     .related-title {
       font-size: 16px;
       font-weight: 600;
-      margin-bottom: 16px;
       color: #f1f1f1;
     }
 
     .related-videos {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+      max-height: calc(100vh - 200px);
+      overflow-y: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .related-videos::-webkit-scrollbar {
+      display: none;
     }
 
     .related-video-item {
       display: flex;
       gap: 8px;
+      padding: 8px 12px;
       cursor: pointer;
       text-decoration: none;
       color: inherit;
-      transition: opacity 0.2s;
+      transition: background 0.2s;
     }
 
     .related-video-item:hover {
-      opacity: 0.8;
+      background: #272727;
     }
 
     .related-video-thumb {
@@ -977,9 +1416,27 @@
       margin-bottom: 2px;
     }
 
+    .related-video-channel.verified::after {
+      content: ' ✓';
+      font-size: 11px;
+    }
+
     .related-video-meta {
       font-size: 12px;
       color: #aaa;
+    }
+
+    .related-loading {
+      display: flex;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .related-end {
+      text-align: center;
+      padding: 16px;
+      color: #717171;
+      font-size: 13px;
     }
 
     /* Autoplay Overlay */
@@ -1124,106 +1581,7 @@
       background: #3f3f3f;
     }
 
-    /* Empty State */
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: #aaa;
-      background: #181818;
-      border-radius: 12px;
-    }
-
-    .empty-state-icon {
-      font-size: 48px;
-      margin-bottom: 16px;
-      opacity: 0.5;
-    }
-
-    .empty-state h3 {
-      font-size: 18px;
-      color: #fff;
-      margin-bottom: 8px;
-    }
-
-    .empty-state p {
-      font-size: 14px;
-      max-width: 300px;
-      margin: 0 auto;
-    }
-
-    /* Comments Section */
-    .comments-section {
-      margin-top: 24px;
-      padding-top: 24px;
-      border-top: 1px solid #272727;
-    }
-
-    .comments-header {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-      margin-bottom: 24px;
-    }
-
-    .comments-count {
-      font-size: 16px;
-      font-weight: 500;
-    }
-
-    .comments-sort {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: none;
-      border: none;
-      color: #f1f1f1;
-      font-size: 14px;
-      cursor: pointer;
-    }
-
-    .comments-sort:hover {
-      color: #fff;
-    }
-
-    .add-comment {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .add-comment-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: #3ea6ff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      flex-shrink: 0;
-    }
-
-    .add-comment-input {
-      flex: 1;
-      background: none;
-      border: none;
-      border-bottom: 1px solid #272727;
-      color: #fff;
-      font-size: 14px;
-      padding: 8px 0;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .add-comment-input:focus {
-      border-color: #fff;
-    }
-
-    .add-comment-input::placeholder {
-      color: #717171;
-    }
-
-    /* Toast Notification */
+    /* Toast */
     .toast {
       position: fixed;
       bottom: 24px;
@@ -1234,29 +1592,22 @@
       padding: 12px 24px;
       border-radius: 8px;
       font-size: 14px;
-      z-index: 2000;
+      z-index: 3000;
       transition: transform 0.3s ease;
-      display: flex;
-      align-items: center;
-      gap: 12px;
     }
 
     .toast.show {
       transform: translateX(-50%) translateY(0);
     }
 
-    .toast-action {
-      color: #3ea6ff;
-      background: none;
-      border: none;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-    }
-
-    /* Hidden class */
+    /* Hidden */
     .hidden {
       display: none !important;
+    }
+
+    /* Desktop only comments */
+    .desktop-comments {
+      display: block;
     }
 
     /* Responsive */
@@ -1264,7 +1615,6 @@
       .sidebar {
         width: 350px;
       }
-
       .related-video-thumb {
         width: 140px;
       }
@@ -1274,17 +1624,22 @@
       .watch-container {
         flex-direction: column;
       }
-
       .sidebar {
         width: 100%;
+        order: 2;
       }
-
+      .player-section {
+        order: 1;
+      }
       .playlist-videos {
-        max-height: 400px;
+        max-height: 250px;
       }
-
+      .related-videos {
+        max-height: none;
+        overflow-y: visible;
+      }
       .related-video-thumb {
-        width: 168px;
+        width: 160px;
       }
     }
 
@@ -1293,47 +1648,44 @@
         transform: translateX(-100%);
         width: 200px;
       }
-
       .left-menu.open {
         transform: translateX(0);
       }
-
       .menu-overlay.open {
         display: block;
       }
-
       .main-wrapper {
         margin-left: 0;
       }
-
       .header-center {
         display: none;
       }
-
       .mobile-search-btn {
         display: flex;
         align-items: center;
         justify-content: center;
       }
-
       .menu-toggle {
         display: block;
       }
-
       .watch-container {
-        padding: 16px;
-        gap: 16px;
+        padding: 0;
+        gap: 0;
       }
-
+      .player-section {
+        padding: 0 16px 16px;
+      }
+      .video-player-container {
+        border-radius: 0;
+        margin: 0 -16px;
+      }
       .video-title {
         font-size: 16px;
       }
-
       .video-stats {
         flex-direction: column;
         align-items: flex-start;
       }
-
       .video-actions {
         width: 100%;
         overflow-x: auto;
@@ -1342,67 +1694,107 @@
         scrollbar-width: none;
         -ms-overflow-style: none;
       }
-
       .video-actions::-webkit-scrollbar {
         display: none;
       }
-
       .channel-row {
         flex-direction: column;
         align-items: flex-start;
       }
-
       .channel-buttons {
         width: 100%;
       }
-
       .subscribe-btn {
         flex: 1;
       }
 
-      .quick-actions {
-        flex-wrap: wrap;
+      /* Hide desktop comments, show mobile comments bar */
+      .desktop-comments {
+        display: none;
+      }
+      .mobile-comments-bar {
+        display: block;
       }
 
-      .quick-action-btn {
-        flex: 1 1 calc(33.33% - 6px);
-        min-width: calc(33.33% - 6px);
+      /* Sidebar adjustments */
+      .sidebar {
+        padding: 0 16px 16px;
       }
-
       .related-video-item {
-        flex-direction: row;
+        padding: 8px 0;
       }
-
       .related-video-thumb {
         width: 120px;
       }
+      .related-section {
+        background: transparent;
+      }
+      .related-header {
+        padding: 16px 0;
+        border-bottom: none;
+      }
+    }
+    /* Find and replace this section in the @media (max-width: 768px) */
+
+    @media (max-width: 768px) {
+      /* ... other styles ... */
+
+      .watch-container {
+        padding: 0;
+        gap: 0;
+      }
+
+      .player-section {
+        padding: 0 0 16px 0;
+      }
+
+      .video-player-container {
+        border-radius: 0;
+        width: 100%;
+        margin: 0;
+      }
+
+      .video-info {
+        padding: 16px;
+      }
+
+      .channel-row {
+        padding: 0 16px 16px;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .description-box {
+        margin: 0 16px 16px;
+      }
+
+      .mobile-comments-bar {
+        display: block;
+        margin: 0 16px 16px;
+      }
+
+      /* ... rest of mobile styles ... */
     }
 
     @media (max-width: 480px) {
       .action-btn span:last-child {
         display: none;
       }
-
       .action-btn {
         padding: 10px 12px;
       }
-
       .autoplay-controls {
         flex-direction: column;
         gap: 12px;
       }
-
       .autoplay-next-video {
         flex-direction: column;
       }
-
       .autoplay-thumb {
         width: 100%;
       }
-
-      .playlist-controls {
-        flex-wrap: wrap;
-        gap: 12px;
+      .related-video-thumb {
+        width: 100px;
       }
     }
   </style>
@@ -1418,26 +1810,20 @@
       </a>
     </div>
 
-    <!-- Desktop Search -->
     <div class="header-center">
       <form class="search-container" id="desktop-search-form">
         <div class="search-input-wrapper">
           <input type="text" class="search-input" id="desktop-search-input" placeholder="Search" autocomplete="off">
         </div>
         <button type="submit" class="search-btn" aria-label="Search">
-          <svg viewBox="0 0 24 24">
-            <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
-          </svg>
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
         </button>
       </form>
     </div>
 
-    <!-- Mobile Search Button -->
     <div class="header-right">
       <button class="mobile-search-btn" id="mobile-search-btn" aria-label="Search">
-        <svg viewBox="0 0 24 24">
-          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
-        </svg>
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
       </button>
     </div>
   </header>
@@ -1447,92 +1833,51 @@
     <form class="mobile-search-wrapper" id="mobile-search-form">
       <input type="text" class="mobile-search-input" id="mobile-search-input" placeholder="Search" autocomplete="off">
       <button type="submit" class="mobile-search-submit" aria-label="Search">
-        <svg viewBox="0 0 24 24">
-          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
-        </svg>
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
       </button>
-      <button type="button" class="mobile-search-close" id="mobile-search-close" aria-label="Close search">✕</button>
+      <button type="button" class="mobile-search-close" id="mobile-search-close" aria-label="Close">✕</button>
     </form>
   </div>
 
-  <!-- Left Menu - Same as channel/search pages -->
+  <!-- Left Menu -->
   <nav class="left-menu" id="left-menu">
-    <a href="/" class="menu-item">
-      <span class="menu-item-icon">🏠</span>
-      <span>Home</span>
-    </a>
-    <a href="/shorts" class="menu-item">
-      <span class="menu-item-icon">⚡</span>
-      <span>Shorts</span>
-    </a>
-    <a href="/subscriptions" class="menu-item">
-      <span class="menu-item-icon">📺</span>
-      <span>Subscriptions</span>
-    </a>
-    
+    <a href="/" class="menu-item"><span class="menu-item-icon">🏠</span><span>Home</span></a>
+    <a href="/shorts" class="menu-item"><span class="menu-item-icon">⚡</span><span>Shorts</span></a>
+    <a href="/subscriptions" class="menu-item"><span class="menu-item-icon">📺</span><span>Subscriptions</span></a>
     <div class="menu-divider"></div>
-    
     <div class="menu-section-title">You</div>
-    <a href="/history" class="menu-item">
-      <span class="menu-item-icon">⏱️</span>
-      <span>History</span>
-    </a>
-    <a href="/playlists" class="menu-item">
-      <span class="menu-item-icon">📁</span>
-      <span>Playlists</span>
-    </a>
-    <a href="/watch-later" class="menu-item">
-      <span class="menu-item-icon">⏰</span>
-      <span>Watch later</span>
-    </a>
-    <a href="/liked" class="menu-item">
-      <span class="menu-item-icon">👍</span>
-      <span>Liked videos</span>
-    </a>
-    
+    <a href="/history" class="menu-item"><span class="menu-item-icon">⏱️</span><span>History</span></a>
+    <a href="/playlists" class="menu-item"><span class="menu-item-icon">📁</span><span>Playlists</span></a>
+    <a href="/watch-later" class="menu-item"><span class="menu-item-icon">⏰</span><span>Watch later</span></a>
+    <a href="/liked" class="menu-item"><span class="menu-item-icon">👍</span><span>Liked videos</span></a>
     <div class="menu-divider"></div>
-    
     <div class="menu-section-title">Explore</div>
-    <a href="/trending" class="menu-item">
-      <span class="menu-item-icon">🔥</span>
-      <span>Trending</span>
-    </a>
-    <a href="/music" class="menu-item">
-      <span class="menu-item-icon">🎵</span>
-      <span>Music</span>
-    </a>
-    <a href="/gaming" class="menu-item">
-      <span class="menu-item-icon">🎮</span>
-      <span>Gaming</span>
-    </a>
-    <a href="/sports" class="menu-item">
-      <span class="menu-item-icon">⚽</span>
-      <span>Sports</span>
-    </a>
+    <a href="/trending" class="menu-item"><span class="menu-item-icon">🔥</span><span>Trending</span></a>
+    <a href="/music" class="menu-item"><span class="menu-item-icon">🎵</span><span>Music</span></a>
+    <a href="/gaming" class="menu-item"><span class="menu-item-icon">🎮</span><span>Gaming</span></a>
+    <a href="/sports" class="menu-item"><span class="menu-item-icon">⚽</span><span>Sports</span></a>
   </nav>
 
-  <!-- Menu Overlay for Mobile -->
   <div class="menu-overlay" id="menu-overlay"></div>
 
   <!-- Main Wrapper -->
   <div class="main-wrapper">
-    <!-- Loading State -->
+    <!-- Loading -->
     <div id="loading" class="loading-container">
       <div class="spinner"></div>
       <p>Loading...</p>
     </div>
 
-    <!-- Main Content -->
+    <!-- Content -->
     <div id="content" class="hidden">
       <div class="watch-container">
         <!-- Player Section -->
         <div class="player-section">
           <div class="video-player-container" id="player-container">
-            <!-- Player Placeholder -->
             <div class="player-placeholder" id="player-placeholder">
               <div class="player-placeholder-icon">🎬</div>
               <h2>Ready to watch?</h2>
-              <p>Search for a video or paste a YouTube playlist URL/ID in the search bar to get started.</p>
+              <p>Search for a video or paste a YouTube URL to get started.</p>
             </div>
             <div id="player"></div>
             
@@ -1541,9 +1886,7 @@
               <div class="autoplay-content">
                 <p class="autoplay-label">Up Next</p>
                 <div class="autoplay-next-video">
-                  <div class="autoplay-thumb">
-                    <img id="autoplay-thumb" src="" alt="">
-                  </div>
+                  <div class="autoplay-thumb"><img id="autoplay-thumb" src="" alt=""></div>
                   <div class="autoplay-info">
                     <h4 class="autoplay-title" id="autoplay-title"></h4>
                     <p class="autoplay-author" id="autoplay-author"></p>
@@ -1553,8 +1896,7 @@
                   <div class="countdown-ring">
                     <svg width="60" height="60">
                       <circle class="bg" cx="30" cy="30" r="26"></circle>
-                      <circle class="progress" id="countdown-progress" cx="30" cy="30" r="26" 
-                        stroke-dasharray="163.36" stroke-dashoffset="0"></circle>
+                      <circle class="progress" id="countdown-progress" cx="30" cy="30" r="26" stroke-dasharray="163.36" stroke-dashoffset="0"></circle>
                     </svg>
                     <span class="countdown-number" id="countdown-number">5</span>
                   </div>
@@ -1566,7 +1908,7 @@
           </div>
 
           <!-- Video Info -->
-          <div class="video-info" id="video-info-section">
+          <div class="video-info">
             <h1 class="video-title" id="video-title">Select a video to play</h1>
             <div class="video-stats">
               <div class="video-meta">
@@ -1574,28 +1916,16 @@
                 <span id="video-date"></span>
               </div>
               <div class="video-actions">
-                <button class="action-btn" id="like-btn">
-                  <span>👍</span>
-                  <span id="like-count">Like</span>
-                </button>
-                <button class="action-btn" id="dislike-btn">
-                  <span>👎</span>
-                  <span>Dislike</span>
-                </button>
-                <button class="action-btn" id="share-btn">
-                  <span>↗️</span>
-                  <span>Share</span>
-                </button>
-                <button class="action-btn" id="save-btn">
-                  <span>📥</span>
-                  <span>Save</span>
-                </button>
+                <button class="action-btn" id="like-btn"><span>👍</span><span id="like-count">Like</span></button>
+                <button class="action-btn" id="dislike-btn"><span>👎</span><span>Dislike</span></button>
+                <button class="action-btn" id="share-btn"><span>↗️</span><span>Share</span></button>
+                <button class="action-btn" id="save-btn"><span>📥</span><span>Save</span></button>
               </div>
             </div>
           </div>
 
           <!-- Channel Info -->
-          <div class="channel-row" id="channel-row">
+          <div class="channel-row">
             <div class="channel-info">
               <img class="channel-avatar" id="channel-avatar" src="" alt="Channel">
               <div class="channel-details">
@@ -1610,47 +1940,49 @@
 
           <!-- Description -->
           <div class="description-box" id="description-box">
-            <div class="description-meta">
-              <span id="desc-views"></span> <span id="desc-date"></span>
-            </div>
+            <div class="description-meta" id="desc-meta"></div>
             <p class="description-text" id="video-description"></p>
+            <div class="description-hashtags" id="description-hashtags"></div>
             <button class="show-more-btn hidden" id="desc-toggle">Show more</button>
           </div>
 
-          <!-- Comments Section -->
-          <div class="comments-section" id="comments-section">
+          <!-- Mobile Comments Bar (Collapsed - shows on mobile only) -->
+          <div class="mobile-comments-bar" id="mobile-comments-bar">
+            <div class="mobile-comments-bar-header">
+              <span class="mobile-comments-bar-title">Comments <span id="mobile-comments-count"></span></span>
+              <span class="mobile-comments-bar-arrow">›</span>
+            </div>
+            <div class="mobile-comments-preview">
+              <img class="mobile-comments-preview-avatar" id="mobile-preview-avatar" src="" alt="">
+              <p class="mobile-comments-preview-text" id="mobile-preview-text">No comments yet</p>
+            </div>
+          </div>
+
+          <!-- Desktop Comments Section (hidden on mobile) -->
+          <div class="comments-section desktop-comments" id="comments-section">
             <div class="comments-header">
               <span class="comments-count" id="comments-count">Comments</span>
-              <button class="comments-sort">
-                <span>⇅</span>
-                <span>Sort by</span>
-              </button>
+              <button class="comments-sort active" id="comments-sort-top"><span>⇅</span><span>Top</span></button>
+              <button class="comments-sort" id="comments-sort-new"><span>🕐</span><span>Newest</span></button>
             </div>
             <div class="add-comment">
               <div class="add-comment-avatar">Y</div>
-              <input type="text" class="add-comment-input" placeholder="Add a comment...">
+              <div class="add-comment-input-wrapper">
+                <input type="text" class="add-comment-input" id="add-comment-input" placeholder="Add a comment...">
+                <div class="add-comment-actions" id="add-comment-actions">
+                  <button class="comment-cancel-btn" id="comment-cancel-btn">Cancel</button>
+                  <button class="comment-submit-btn" id="comment-submit-btn">Comment</button>
+                </div>
+              </div>
             </div>
+            <div class="comments-list" id="comments-list"></div>
+            <div class="comments-loading hidden" id="comments-loading"><div class="spinner small"></div></div>
+            <div class="comments-end hidden" id="comments-end">No more comments</div>
           </div>
         </div>
 
         <!-- Sidebar -->
         <div class="sidebar" id="sidebar">
-          <!-- Quick Actions -->
-          <div class="quick-actions">
-            <button class="quick-action-btn" id="paste-playlist-btn">
-              <span>📋</span>
-              <span>Paste Playlist</span>
-            </button>
-            <button class="quick-action-btn" id="clear-playlist-btn">
-              <span>🗑️</span>
-              <span>Clear</span>
-            </button>
-            <button class="quick-action-btn" id="shuffle-all-btn">
-              <span>🔀</span>
-              <span>Shuffle</span>
-            </button>
-          </div>
-
           <!-- Playlist Panel -->
           <div class="playlist-panel hidden" id="playlist-panel">
             <div class="playlist-header">
@@ -1661,46 +1993,56 @@
               </div>
               <div class="playlist-controls">
                 <button class="shuffle-btn" id="shuffle-btn" title="Shuffle">🔀</button>
-                <div class="control-item">
-                  <span>Loop</span>
-                  <div class="control-toggle" id="loop-toggle"></div>
-                </div>
-                <div class="control-item">
-                  <span>Autoplay</span>
-                  <div class="control-toggle active" id="autoplay-toggle"></div>
-                </div>
+                <div class="control-item"><span>Loop</span><div class="control-toggle" id="loop-toggle"></div></div>
+                <div class="control-item"><span>Autoplay</span><div class="control-toggle active" id="autoplay-toggle"></div></div>
               </div>
             </div>
             <div class="playlist-videos" id="playlist-videos"></div>
           </div>
 
-          <!-- Empty State -->
-          <div class="empty-state" id="empty-state">
-            <div class="empty-state-icon">📝</div>
-            <h3>No playlist loaded</h3>
-            <p>Search or paste a YouTube playlist URL to load videos here.</p>
+          <!-- Related Videos -->
+          <div class="related-section" id="related-section">
+            <div class="related-header">
+              <h3 class="related-title">Related Videos</h3>
+            </div>
+            <div class="related-videos" id="related-videos"></div>
+            <div class="related-loading hidden" id="related-loading"><div class="spinner small"></div></div>
+            <div class="related-end hidden" id="related-end">No more videos</div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Toast Notification -->
-  <div class="toast" id="toast">
-    <span id="toast-message"></span>
-    <button class="toast-action hidden" id="toast-action"></button>
+  <!-- Mobile Comments Modal -->
+  <div class="mobile-comments-modal" id="mobile-comments-modal">
+    <div class="mobile-comments-modal-header">
+      <span class="mobile-comments-modal-title">Comments</span>
+      <button class="mobile-comments-modal-close" id="mobile-comments-close">✕</button>
+    </div>
+    <div class="mobile-comments-modal-sort">
+      <button class="comments-sort active" id="mobile-sort-top"><span>⇅</span><span>Top</span></button>
+      <button class="comments-sort" id="mobile-sort-new"><span>🕐</span><span>Newest</span></button>
+    </div>
+    <div class="mobile-comments-modal-content" id="mobile-comments-content"></div>
+    <div class="mobile-comments-modal-add">
+      <input type="text" placeholder="Add a comment..." id="mobile-comment-input">
+    </div>
   </div>
 
-  <!-- YouTube IFrame API -->
+  <!-- Toast -->
+  <div class="toast" id="toast"><span id="toast-message"></span></div>
+
   <script src="https://www.youtube.com/iframe_api"></script>
   
   <script>
-    const API_BASE = 'https://9fecd8f8-cc38-4ee3-a55a-0e61e94dafe5-00-24aic6pbf1rh0.sisko.replit.dev/api/channel';
+    const API_BASE = 'https://9fecd8f8-cc38-4ee3-a55a-0e61e94dafe5-00-24aic6pbf1rh0.sisko.replit.dev/api';
 
     // State
     let player = null;
     let playerReady = false;
     let currentVideoId = null;
+    let currentVideoData = null;
     let currentPlaylistId = null;
     let playlistData = null;
     let currentPlaylistIndex = 0;
@@ -1712,8 +2054,22 @@
     let countdownSeconds = 5;
     let menuOpen = false;
     let mobileSearchOpen = false;
+    let mobileCommentsOpen = false;
 
-    // DOM Elements
+    // Comments state
+    let commentsLoading = false;
+    let commentsHasMore = true;
+    let commentsStart = 21;
+    let commentsSortBy = 'top';
+    let allComments = [];
+
+    // Related state
+    let relatedLoading = false;
+    let relatedHasMore = true;
+    let relatedStart = 1;
+    let relatedEnd = 20;
+
+    // DOM
     const menuToggle = document.getElementById('menu-toggle');
     const leftMenu = document.getElementById('left-menu');
     const menuOverlay = document.getElementById('menu-overlay');
@@ -1724,114 +2080,133 @@
     const desktopSearchInput = document.getElementById('desktop-search-input');
     const mobileSearchForm = document.getElementById('mobile-search-form');
     const mobileSearchInput = document.getElementById('mobile-search-input');
+    const mobileCommentsBar = document.getElementById('mobile-comments-bar');
+    const mobileCommentsModal = document.getElementById('mobile-comments-modal');
+    const mobileCommentsClose = document.getElementById('mobile-comments-close');
+    const mobileCommentsContent = document.getElementById('mobile-comments-content');
 
-    // Menu toggle functionality
+    // Menu
     function toggleMenu() {
       menuOpen = !menuOpen;
       leftMenu.classList.toggle('open', menuOpen);
       menuOverlay.classList.toggle('open', menuOpen);
     }
-
     menuToggle.addEventListener('click', toggleMenu);
     menuOverlay.addEventListener('click', toggleMenu);
 
-    // Mobile search functionality
+    // Mobile search
     function openMobileSearch() {
       mobileSearchOpen = true;
       mobileSearchContainer.classList.add('open');
       mobileSearchInput.focus();
     }
-
     function closeMobileSearch() {
       mobileSearchOpen = false;
       mobileSearchContainer.classList.remove('open');
     }
-
     mobileSearchBtn.addEventListener('click', openMobileSearch);
     mobileSearchClose.addEventListener('click', closeMobileSearch);
 
-    // Search functionality
+    // Mobile comments modal
+    function openMobileComments() {
+      mobileCommentsOpen = true;
+      mobileCommentsModal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      renderMobileComments();
+    }
+    
+    function closeMobileComments() {
+      mobileCommentsOpen = false;
+      mobileCommentsModal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+    
+    mobileCommentsBar.addEventListener('click', openMobileComments);
+    mobileCommentsClose.addEventListener('click', closeMobileComments);
+
+    // Render mobile comments
+    function renderMobileComments() {
+      mobileCommentsContent.innerHTML = '';
+      allComments.forEach(comment => {
+        const item = createCommentElement(comment);
+        mobileCommentsContent.appendChild(item);
+      });
+    }
+
+    // Mobile comments scroll
+    mobileCommentsContent.addEventListener('scroll', () => {
+      if (!currentVideoId || commentsLoading || !commentsHasMore) return;
+      
+      const { scrollTop, scrollHeight, clientHeight } = mobileCommentsContent;
+      if (scrollTop + clientHeight >= scrollHeight - 200) {
+        loadMoreComments(true);
+      }
+    });
+
+    // Mobile sort buttons
+    document.getElementById('mobile-sort-top').addEventListener('click', function() {
+      if (commentsSortBy !== 'top') {
+        commentsSortBy = 'top';
+        this.classList.add('active');
+        document.getElementById('mobile-sort-new').classList.remove('active');
+        reloadComments();
+      }
+    });
+    
+    document.getElementById('mobile-sort-new').addEventListener('click', function() {
+      if (commentsSortBy !== 'newest') {
+        commentsSortBy = 'newest';
+        this.classList.add('active');
+        document.getElementById('mobile-sort-top').classList.remove('active');
+        reloadComments();
+      }
+    });
+
+    // Search
     function performSearch(query) {
       if (query && query.trim()) {
-        const playlistId = extractPlaylistId(query);
         const videoId = extractVideoId(query);
+        const playlistId = extractPlaylistId(query);
         
         if (playlistId) {
-          const alsoHasVideo = videoId && !query.includes('playlist?');
-          if (alsoHasVideo) {
-            currentVideoId = videoId;
-            initPlayer(videoId);
-            loadVideoData(videoId);
-          }
-          loadPlaylist(playlistId, 0, !alsoHasVideo);
+          if (videoId && !query.includes('playlist?')) loadVideo(videoId);
+          loadPlaylist(playlistId, 0, !videoId);
         } else if (videoId) {
-          initPlayer(videoId);
-          loadVideoData(videoId);
-          updateURL(videoId);
-          playlistData = null;
-          document.getElementById('playlist-panel').classList.add('hidden');
-          document.getElementById('empty-state').classList.remove('hidden');
+          loadVideo(videoId);
         } else {
           window.location.href = `/search?q=${encodeURIComponent(query.trim())}`;
         }
       }
     }
 
-    desktopSearchForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      performSearch(desktopSearchInput.value);
-    });
+    desktopSearchForm.addEventListener('submit', (e) => { e.preventDefault(); performSearch(desktopSearchInput.value); });
+    mobileSearchForm.addEventListener('submit', (e) => { e.preventDefault(); performSearch(mobileSearchInput.value); closeMobileSearch(); });
 
-    mobileSearchForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      performSearch(mobileSearchInput.value);
-      closeMobileSearch();
-    });
-
-    // Close menu on window resize
     window.addEventListener('resize', () => {
       if (window.innerWidth > 768) {
-        if (menuOpen) {
-          menuOpen = false;
-          leftMenu.classList.remove('open');
-          menuOverlay.classList.remove('open');
-        }
-        if (mobileSearchOpen) {
-          closeMobileSearch();
-        }
+        if (menuOpen) toggleMenu();
+        if (mobileSearchOpen) closeMobileSearch();
+        if (mobileCommentsOpen) closeMobileComments();
       }
     });
 
-    // Get URL parameters
+    // Helpers
     function getUrlParams() {
       const params = new URLSearchParams(window.location.search);
-      return {
-        videoId: params.get('v'),
-        playlistId: params.get('list'),
-        index: parseInt(params.get('index')) || 0
-      };
+      return { videoId: params.get('v'), playlistId: params.get('list'), index: parseInt(params.get('index')) || 0 };
     }
 
-    // Update URL
     function updateURL(videoId, playlistId = null, index = null) {
       let url = `/watch?v=${videoId}`;
-      if (playlistId) {
-        url += `&list=${playlistId}`;
-        if (index !== null && index > 0) {
-          url += `&index=${index}`;
-        }
-      }
+      if (playlistId) { url += `&list=${playlistId}`; if (index > 0) url += `&index=${index}`; }
       window.history.pushState({}, '', url);
     }
 
-    // Fix thumbnail URLs
     function fixThumbnailUrl(url) {
       if (!url) return 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 9"><rect fill="%23333" width="16" height="9"/></svg>';
-      if (url.startsWith('//')) return 'https:' + url;
-      return url;
+      return url.startsWith('//') ? 'https:' + url : url;
     }
 
-    // Escape HTML
     function escapeHtml(text) {
       if (!text) return '';
       const div = document.createElement('div');
@@ -1839,293 +2214,426 @@
       return div.innerHTML;
     }
 
-    // Show toast notification
-    function showToast(message, action = null, actionText = null) {
-      const toast = document.getElementById('toast');
-      const toastMessage = document.getElementById('toast-message');
-      const toastAction = document.getElementById('toast-action');
-      
-      toastMessage.textContent = message;
-      
-      if (action && actionText) {
-        toastAction.textContent = actionText;
-        toastAction.classList.remove('hidden');
-        toastAction.onclick = action;
-      } else {
-        toastAction.classList.add('hidden');
-      }
-      
-      toast.classList.add('show');
-      
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 4000);
+    function formatNumber(num) {
+      if (!num) return '0';
+      if (typeof num === 'string') num = parseInt(num.replace(/[^0-9]/g, ''));
+      if (isNaN(num)) return '0';
+      if (num >= 1e9) return (num / 1e9).toFixed(1).replace(/\.0$/, '') + 'B';
+      if (num >= 1e6) return (num / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+      if (num >= 1e3) return (num / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
+      return num.toString();
     }
 
-    // Extract playlist ID
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-message').textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 4000);
+    }
+
     function extractPlaylistId(input) {
       if (!input) return null;
       input = input.trim();
-      
-      if (/^[A-Za-z0-9_-]{10,}$/.test(input) && !input.includes('/')) {
-        return input;
-      }
-      
-      const patterns = [
-        /[?&]list=([A-Za-z0-9_-]+)/,
-        /youtube\.com\/playlist\?list=([A-Za-z0-9_-]+)/,
-        /youtu\.be\/.*[?&]list=([A-Za-z0-9_-]+)/
-      ];
-      
-      for (const pattern of patterns) {
-        const match = input.match(pattern);
-        if (match) return match[1];
-      }
-      
-      return null;
+      if (/^PL[A-Za-z0-9_-]{10,}$/.test(input)) return input;
+      const match = input.match(/[?&]list=([A-Za-z0-9_-]+)/);
+      return match ? match[1] : null;
     }
 
-    // Extract video ID
     function extractVideoId(input) {
       if (!input) return null;
       input = input.trim();
-      
-      if (/^[A-Za-z0-9_-]{11}$/.test(input)) {
-        return input;
-      }
-      
-      const patterns = [
-        /[?&]v=([A-Za-z0-9_-]{11})/,
-        /youtu\.be\/([A-Za-z0-9_-]{11})/,
-        /youtube\.com\/embed\/([A-Za-z0-9_-]{11})/,
-        /youtube\.com\/shorts\/([A-Za-z0-9_-]{11})/
-      ];
-      
-      for (const pattern of patterns) {
-        const match = input.match(pattern);
-        if (match) return match[1];
-      }
-      
+      if (/^[A-Za-z0-9_-]{11}$/.test(input)) return input;
+      const patterns = [/[?&]v=([A-Za-z0-9_-]{11})/, /youtu\.be\/([A-Za-z0-9_-]{11})/, /embed\/([A-Za-z0-9_-]{11})/, /shorts\/([A-Za-z0-9_-]{11})/];
+      for (const p of patterns) { const m = input.match(p); if (m) return m[1]; }
       return null;
     }
 
-    // YouTube Player API Ready
+    // YouTube Player
     function onYouTubeIframeAPIReady() {
       playerReady = true;
-      
       const params = getUrlParams();
-      
       document.getElementById('loading').classList.add('hidden');
       document.getElementById('content').classList.remove('hidden');
       
       if (params.videoId) {
-        initPlayer(params.videoId);
-        loadVideoData(params.videoId);
-        
-        if (params.playlistId) {
-          loadPlaylist(params.playlistId, params.index);
-        }
+        loadVideo(params.videoId);
+        if (params.playlistId) loadPlaylist(params.playlistId, params.index);
       } else if (params.playlistId) {
         loadPlaylist(params.playlistId, 0, true);
       }
     }
 
-    // Initialize YouTube Player
     function initPlayer(videoId) {
       document.getElementById('player-placeholder').classList.add('hidden');
-      
-      if (player) {
-        player.loadVideoById(videoId);
-        return;
-      }
+      if (player) { player.loadVideoById(videoId); return; }
       
       player = new YT.Player('player', {
-        height: '100%',
-        width: '100%',
-        videoId: videoId,
-        playerVars: {
-          'autoplay': 1,
-          'rel': 0,
-          'modestbranding': 1,
-          'playsinline': 1,
-          'enablejsapi': 1
-        },
+        height: '100%', width: '100%', videoId,
+        playerVars: { autoplay: 1, rel: 0, modestbranding: 1, playsinline: 1, enablejsapi: 1 },
         events: {
-          'onReady': onPlayerReady,
-          'onStateChange': onPlayerStateChange,
-          'onError': onPlayerError
+          onReady: (e) => e.target.playVideo(),
+          onStateChange: (e) => {
+            if (e.data === YT.PlayerState.ENDED) handleVideoEnded();
+            if (e.data === YT.PlayerState.PLAYING) cancelAutoplayCountdown();
+          },
+          onError: () => { showToast('Error playing video'); if (playlistData && autoplayEnabled) setTimeout(playNextVideo, 2000); }
         }
       });
     }
 
-    function onPlayerReady(event) {
-      event.target.playVideo();
-    }
-
-    function onPlayerStateChange(event) {
-      if (event.data === YT.PlayerState.ENDED) {
-        handleVideoEnded();
-      }
-      if (event.data === YT.PlayerState.PLAYING) {
-        cancelAutoplayCountdown();
-      }
-    }
-
-    function onPlayerError(event) {
-      console.error('Player error:', event.data);
-      showToast('Error playing video. Trying next...');
-      if (playlistData && autoplayEnabled) {
-        setTimeout(() => playNextVideo(), 2000);
-      }
-    }
-
-    function handleVideoEnded() {
-      if (!autoplayEnabled || !playlistData) return;
-      const nextIndex = getNextVideoIndex();
-      if (nextIndex !== null) {
-        startAutoplayCountdown(nextIndex);
-      } else {
-        showToast('Playlist ended');
-      }
-    }
-
-    function getNextVideoIndex() {
-      if (!playlistData || !playlistData.videos) return null;
-      const order = shuffleEnabled ? shuffledOrder : [...Array(playlistData.videos.length).keys()];
-      const currentOrderIndex = order.indexOf(currentPlaylistIndex);
-      const nextOrderIndex = currentOrderIndex + 1;
-      
-      if (nextOrderIndex < order.length) {
-        return order[nextOrderIndex];
-      } else if (loopEnabled) {
-        return order[0];
-      }
-      return null;
-    }
-
-    function startAutoplayCountdown(nextIndex) {
-      const nextVideo = playlistData.videos[nextIndex];
-      if (!nextVideo) return;
-      
-      document.getElementById('autoplay-thumb').src = fixThumbnailUrl(nextVideo.img || nextVideo.thumbnail);
-      document.getElementById('autoplay-title').textContent = nextVideo.title;
-      document.getElementById('autoplay-author').textContent = nextVideo.author || playlistData.author || '';
-      document.getElementById('autoplay-overlay').classList.remove('hidden');
-      
-      countdownSeconds = 5;
-      updateCountdown();
-      
-      countdownInterval = setInterval(() => {
-        countdownSeconds--;
-        updateCountdown();
-        if (countdownSeconds <= 0) {
-          cancelAutoplayCountdown();
-          playVideoFromPlaylist(nextIndex);
-        }
-      }, 1000);
-    }
-
-    function updateCountdown() {
-      document.getElementById('countdown-number').textContent = countdownSeconds;
-      const progress = document.getElementById('countdown-progress');
-      const circumference = 163.36;
-      const offset = circumference - (countdownSeconds / 5) * circumference;
-      progress.style.strokeDashoffset = offset;
-    }
-
-    function cancelAutoplayCountdown() {
-      if (countdownInterval) {
-        clearInterval(countdownInterval);
-        countdownInterval = null;
-      }
-      document.getElementById('autoplay-overlay').classList.add('hidden');
-    }
-
-    function playNextVideo() {
-      const nextIndex = getNextVideoIndex();
-      if (nextIndex !== null) {
-        playVideoFromPlaylist(nextIndex);
-      }
-    }
-
-    async function loadVideoData(videoId) {
+    // Load video
+    async function loadVideo(videoId) {
       currentVideoId = videoId;
+      updateURL(videoId, currentPlaylistId);
+      initPlayer(videoId);
+      
+      // Reset
+      commentsStart = 21;
+      commentsHasMore = true;
+      allComments = [];
+      relatedStart = 1;
+      relatedEnd = 20;
+      relatedHasMore = true;
+      
+      document.getElementById('comments-list').innerHTML = '';
+      document.getElementById('related-videos').innerHTML = '';
+      document.getElementById('comments-end').classList.add('hidden');
+      document.getElementById('related-end').classList.add('hidden');
+      
+      try {
+        const response = await fetch(`${API_BASE}/search/video/${videoId}`);
+        const data = await response.json();
+        
+        if (data.success && data.video) {
+          currentVideoData = data.video;
+          updateVideoUI(data.video);
+          
+          if (data.video.comments?.items) {
+            allComments = data.video.comments.items;
+            renderComments(allComments);
+            updateMobileCommentsPreview();
+            commentsHasMore = data.video.comments.hasMore;
+          }
+          
+          loadRelatedVideos(videoId, true);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        loadVideoOembed(videoId);
+        loadRelatedVideos(videoId, true);
+      }
+    }
+
+    async function loadVideoOembed(videoId) {
       try {
         const response = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
         const data = await response.json();
-        
         document.getElementById('video-title').textContent = data.title || 'Video';
         document.getElementById('channel-name').textContent = data.author_name || 'Channel';
         document.getElementById('channel-name').href = data.author_url || '#';
         document.getElementById('channel-avatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.author_name || 'C')}&background=ff0000&color=fff&size=48`;
         document.title = `${data.title} - YouTube`;
-      } catch (error) {
-        console.error('Error loading video data:', error);
+      } catch (e) { console.error(e); }
+    }
+
+    function updateVideoUI(video) {
+      document.getElementById('video-title').textContent = video.title || 'Video';
+      document.title = `${video.title} - YouTube`;
+      document.getElementById('video-views').textContent = video.viewsFormatted ? `${video.viewsFormatted} views` : '';
+      document.getElementById('like-count').textContent = video.likesFormatted || 'Like';
+      
+      if (video.channel) {
+        document.getElementById('channel-name').textContent = video.channel.name || 'Channel';
+        document.getElementById('channel-name').href = video.channel.url || '#';
+        document.getElementById('channel-subs').textContent = video.channel.subscriberCount || '';
+        document.getElementById('channel-avatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(video.channel.name || 'C')}&background=ff0000&color=fff&size=48`;
+      }
+      
+      document.getElementById('desc-meta').textContent = `${video.viewsFormatted || ''} views`;
+      document.getElementById('video-description').textContent = video.description || '';
+      
+      const hashtagsContainer = document.getElementById('description-hashtags');
+      hashtagsContainer.innerHTML = '';
+      if (video.metadata?.hashtags?.length) {
+        video.metadata.hashtags.forEach(tag => {
+          const a = document.createElement('a');
+          a.className = 'hashtag';
+          a.href = `/search?q=${encodeURIComponent(tag)}`;
+          a.textContent = tag;
+          hashtagsContainer.appendChild(a);
+        });
+      }
+      
+      if (video.description?.length > 200) document.getElementById('desc-toggle').classList.remove('hidden');
+    }
+
+    function updateMobileCommentsPreview() {
+      if (allComments.length > 0) {
+        const first = allComments[0];
+        document.getElementById('mobile-preview-avatar').src = fixThumbnailUrl(first.author?.thumbnail);
+        document.getElementById('mobile-preview-text').textContent = first.text || '';
+        document.getElementById('mobile-comments-count').textContent = `(${allComments.length}+)`;
       }
     }
 
-    async function loadPlaylist(playlistId, startIndex = 0, autoPlayFirst = false) {
-      currentPlaylistId = playlistId;
-      showToast('Loading playlist...');
+    // Comments
+    function createCommentElement(comment) {
+      const item = document.createElement('div');
+      item.className = 'comment-item';
       
-      try {
-        const response = await fetch(`${API_BASE}/playlist/${playlistId}`);
-        const data = await response.json();
-        
-        if (data && data.videos && data.videos.length > 0) {
+      let badges = '';
+      if (comment.isPinned) badges += '<span class="comment-badge pinned">📌 Pinned</span>';
+      if (comment.isHearted) badges += '<span class="comment-badge hearted">❤️</span>';
+      
+      const authorClass = comment.author?.isChannelOwner ? 'comment-author owner' : 
+                         (comment.author?.isVerified ? 'comment-author verified' : 'comment-author');
+      
+      item.innerHTML = `
+        <img class="comment-avatar" src="${fixThumbnailUrl(comment.author?.thumbnail)}" alt="" loading="lazy">
+        <div class="comment-content">
+          <div class="comment-header">
+            <a class="${authorClass}" href="/${comment.author?.id || '#'}">${escapeHtml(comment.author?.name || 'User')}</a>
+            <span class="comment-time">${comment.published || ''}</span>
+            ${badges ? `<div class="comment-badges">${badges}</div>` : ''}
+          </div>
+          <p class="comment-text ${comment.text?.length > 300 ? 'collapsed' : ''}">${escapeHtml(comment.text || '')}</p>
+          ${comment.text?.length > 300 ? '<button class="comment-read-more">Read more</button>' : ''}
+          <div class="comment-actions">
+            <button class="comment-action-btn"><span>👍</span><span>${comment.likes || ''}</span></button>
+            <button class="comment-action-btn"><span>👎</span></button>
+            <button class="comment-reply-btn">Reply</button>
+          </div>
+          ${comment.replyCount && parseInt(comment.replyCount) > 0 ? `
+            <button class="comment-replies-toggle"><span>▼</span><span>${comment.replyCount} replies</span></button>
+          ` : ''}
+          </div>
+          `;
+
+          const readMoreBtn = item.querySelector('.comment-read-more');
+          if (readMoreBtn) {
+          readMoreBtn.addEventListener('click', () => {
+          const text = item.querySelector('.comment-text');
+          text.classList.toggle('collapsed');
+          readMoreBtn.textContent = text.classList.contains('collapsed') ? 'Read more' : 'Show less';
+          });
+          }
+
+          return item;
+          }
+
+          function renderComments(comments, append = false) {
+          const container = document.getElementById('comments-list');
+          if (!append) container.innerHTML = '';
+
+          comments.forEach(comment => {
+          container.appendChild(createCommentElement(comment));
+          });
+
+          const count = container.querySelectorAll('.comment-item').length;
+          document.getElementById('comments-count').textContent = `${count} Comments`;
+          }
+
+          async function loadMoreComments(forMobile = false) {
+          if (commentsLoading || !commentsHasMore || !currentVideoId) return;
+
+          commentsLoading = true;
+          if (!forMobile) document.getElementById('comments-loading').classList.remove('hidden');
+
+          try {
+          const end = commentsStart + 9;
+          const response = await fetch(`${API_BASE}/search/video/${currentVideoId}/comments?start=${commentsStart}&end=${end}&sort=${commentsSortBy}`);
+          const data = await response.json();
+
+          if (data.success && data.comments?.length > 0) {
+          allComments = [...allComments, ...data.comments];
+
+          if (forMobile) {
+            data.comments.forEach(comment => {
+              mobileCommentsContent.appendChild(createCommentElement(comment));
+            });
+          } else {
+            renderComments(data.comments, true);
+          }
+
+          commentsStart = end + 1;
+          commentsHasMore = data.hasMore !== false && data.comments.length >= 10;
+          } else {
+          commentsHasMore = false;
+          }
+
+          if (!commentsHasMore && !forMobile) {
+          document.getElementById('comments-end').classList.remove('hidden');
+          }
+          } catch (error) {
+          console.error('Error loading comments:', error);
+          commentsHasMore = false;
+          } finally {
+          commentsLoading = false;
+          if (!forMobile) document.getElementById('comments-loading').classList.add('hidden');
+          }
+          }
+
+          async function reloadComments() {
+          commentsStart = 1;
+          commentsHasMore = true;
+          allComments = [];
+
+          document.getElementById('comments-list').innerHTML = '';
+          mobileCommentsContent.innerHTML = '';
+          document.getElementById('comments-end').classList.add('hidden');
+          document.getElementById('comments-loading').classList.remove('hidden');
+
+          try {
+          const response = await fetch(`${API_BASE}/search/video/${currentVideoId}/comments?start=1&end=20&sort=${commentsSortBy}`);
+          const data = await response.json();
+
+          if (data.success && data.comments) {
+          allComments = data.comments;
+          renderComments(allComments);
+          updateMobileCommentsPreview();
+
+          if (mobileCommentsOpen) renderMobileComments();
+
+          commentsStart = 21;
+          commentsHasMore = data.hasMore !== false;
+          }
+          } catch (error) {
+          console.error('Error:', error);
+          } finally {
+          document.getElementById('comments-loading').classList.add('hidden');
+          }
+          }
+
+          // Related videos
+          function renderRelatedVideos(videos, append = false) {
+          const container = document.getElementById('related-videos');
+          if (!append) container.innerHTML = '';
+
+          videos.forEach(video => {
+          if (video.type !== 'video' || video.id === currentVideoId) return;
+
+          const item = document.createElement('a');
+          item.className = 'related-video-item';
+          item.href = `/watch?v=${video.id}`;
+
+          const verified = video.channel?.isVerified || video.channel?.isArtist;
+
+          item.innerHTML = `
+          <div class="related-video-thumb">
+            <img src="${fixThumbnailUrl(video.thumbnail)}" alt="${escapeHtml(video.title)}" loading="lazy">
+            ${video.duration ? `<span class="related-video-duration">${video.duration}</span>` : ''}
+          </div>
+          <div class="related-video-info">
+            <h4 class="related-video-title">${escapeHtml(video.title)}</h4>
+            <p class="related-video-channel ${verified ? 'verified' : ''}">${escapeHtml(video.channel?.name || '')}</p>
+            <p class="related-video-meta">${video.views || ''} • ${video.published || ''}</p>
+          </div>
+          `;
+
+          item.addEventListener('click', (e) => {
+          e.preventDefault();
+          loadVideo(video.id);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          });
+
+          container.appendChild(item);
+          });
+          }
+
+          async function loadRelatedVideos(videoId, reset = false) {
+          if (relatedLoading || (!relatedHasMore && !reset)) return;
+
+          if (reset) {
+          relatedStart = 1;
+          relatedEnd = 20;
+          relatedHasMore = true;
+          document.getElementById('related-videos').innerHTML = '';
+          document.getElementById('related-end').classList.add('hidden');
+          }
+
+          relatedLoading = true;
+          document.getElementById('related-loading').classList.remove('hidden');
+
+          try {
+          const response = await fetch(`${API_BASE}/search/video/${videoId}/related?start=${relatedStart}&end=${relatedEnd}`);
+          const data = await response.json();
+
+          if (data.success && data.results?.length > 0) {
+          renderRelatedVideos(data.results, !reset);
+          relatedStart = relatedEnd + 1;
+          relatedEnd = relatedStart + 19;
+          relatedHasMore = data.results.length >= 10;
+          } else {
+          relatedHasMore = false;
+          }
+
+          if (!relatedHasMore) document.getElementById('related-end').classList.remove('hidden');
+          } catch (error) {
+          console.error('Error loading related:', error);
+          relatedHasMore = false;
+          } finally {
+          relatedLoading = false;
+          document.getElementById('related-loading').classList.add('hidden');
+          }
+          }
+
+          // Playlist
+          async function loadPlaylist(playlistId, startIndex = 0, autoPlayFirst = false) {
+          currentPlaylistId = playlistId;
+          showToast('Loading playlist...');
+
+          try {
+          const response = await fetch(`${API_BASE}/channel/playlist/${playlistId}`);
+          const data = await response.json();
+
+          if (data?.videos?.length > 0) {
           playlistData = data;
           shuffledOrder = [...Array(data.videos.length).keys()];
-          
-          document.getElementById('empty-state').classList.add('hidden');
+
           document.getElementById('playlist-panel').classList.remove('hidden');
-          
           document.getElementById('playlist-title').textContent = data.title || 'Playlist';
           document.getElementById('playlist-author').innerHTML = data.author ? 
             `<a href="/@${data.author}">${escapeHtml(data.author)}</a>` : '';
-          
+
           renderPlaylistVideos();
-          
+
           if (currentVideoId) {
             const idx = data.videos.findIndex(v => v.id === currentVideoId);
             if (idx !== -1) currentPlaylistIndex = idx;
           } else {
             currentPlaylistIndex = startIndex;
           }
-          
+
           updatePlaylistProgress();
           highlightCurrentVideo();
-          
-          if (autoPlayFirst) {
-            playVideoFromPlaylist(currentPlaylistIndex);
-          }
-          
-          showToast(`Loaded ${data.videos.length} videos`);
-        } else {
-          showToast('Playlist not found or empty');
-        }
-      } catch (error) {
-        console.error('Error loading playlist:', error);
-        showToast('Failed to load playlist');
-      }
-    }
 
-    function renderPlaylistVideos() {
-      const container = document.getElementById('playlist-videos');
-      container.innerHTML = '';
-      
-      const order = shuffleEnabled ? shuffledOrder : [...Array(playlistData.videos.length).keys()];
-      
-      order.forEach((videoIndex, displayIndex) => {
-        const video = playlistData.videos[videoIndex];
-        const item = document.createElement('div');
-        item.className = 'playlist-video-item' + (videoIndex === currentPlaylistIndex ? ' active' : '');
-        item.dataset.index = videoIndex;
-        item.onclick = () => playVideoFromPlaylist(videoIndex);
-        
-        item.innerHTML = `
-          <div class="video-index ${videoIndex === currentPlaylistIndex ? 'playing' : ''}">
-            ${videoIndex === currentPlaylistIndex ? '▶' : displayIndex + 1}
-          </div>
+          if (autoPlayFirst) playVideoFromPlaylist(currentPlaylistIndex);
+
+          showToast(`Loaded ${data.videos.length} videos`);
+          } else {
+          showToast('Playlist not found or empty');
+          }
+          } catch (error) {
+          console.error('Error:', error);
+          showToast('Failed to load playlist');
+          }
+          }
+
+          function renderPlaylistVideos() {
+          const container = document.getElementById('playlist-videos');
+          container.innerHTML = '';
+
+          const order = shuffleEnabled ? shuffledOrder : [...Array(playlistData.videos.length).keys()];
+
+          order.forEach((videoIndex, displayIndex) => {
+          const video = playlistData.videos[videoIndex];
+          const item = document.createElement('div');
+          item.className = 'playlist-video-item' + (videoIndex === currentPlaylistIndex ? ' active' : '');
+          item.dataset.index = videoIndex;
+          item.onclick = () => playVideoFromPlaylist(videoIndex);
+
+          item.innerHTML = `
+          <div class="video-index ${videoIndex === currentPlaylistIndex ? 'playing' : ''}">${videoIndex === currentPlaylistIndex ? '▶' : displayIndex + 1}</div>
           <div class="playlist-video-thumb">
             <img src="${fixThumbnailUrl(video.img || video.thumbnail)}" alt="" loading="lazy">
             ${video.duration ? `<span class="playlist-video-duration">${video.duration}</span>` : ''}
@@ -2134,248 +2642,380 @@
             <h4 class="playlist-video-title">${escapeHtml(video.title)}</h4>
             <p class="playlist-video-author">${escapeHtml(video.author || playlistData.author || '')}</p>
           </div>
-        `;
-        container.appendChild(item);
-      });
-    }
+          `;
+          container.appendChild(item);
+          });
+          }
 
-    function playVideoFromPlaylist(index) {
-      if (!playlistData || !playlistData.videos[index]) return;
-      
-      cancelAutoplayCountdown();
-      
-      const video = playlistData.videos[index];
-      currentPlaylistIndex = index;
-      currentVideoId = video.id;
-      
-      updateURL(video.id, currentPlaylistId, index);
-      
-      if (player && typeof player.loadVideoById === 'function') {
-        player.loadVideoById(video.id);
-      } else {
-        initPlayer(video.id);
-      }
-      
-      document.getElementById('video-title').textContent = video.title;
-      document.getElementById('channel-name').textContent = video.author || playlistData.author || 'Channel';
-      document.title = `${video.title} - YouTube`;
-      
-      updatePlaylistProgress();
-      highlightCurrentVideo();
-      scrollToCurrentVideo();
-    }
+          function playVideoFromPlaylist(index) {
+          if (!playlistData?.videos[index]) return;
 
-    function updatePlaylistProgress() {
-      if (playlistData) {
-        document.getElementById('playlist-progress').textContent = 
-          `${currentPlaylistIndex + 1} / ${playlistData.videos.length}`;
-      }
-    }
+          cancelAutoplayCountdown();
+          const video = playlistData.videos[index];
+          currentPlaylistIndex = index;
 
-    function highlightCurrentVideo() {
-      const items = document.querySelectorAll('.playlist-video-item');
-      items.forEach(item => {
-        const idx = parseInt(item.dataset.index);
-        const isActive = idx === currentPlaylistIndex;
-        item.classList.toggle('active', isActive);
-        
-        const indexEl = item.querySelector('.video-index');
-        indexEl.classList.toggle('playing', isActive);
-        indexEl.textContent = isActive ? '▶' : (shuffleEnabled ? 
-          shuffledOrder.indexOf(idx) + 1 : idx + 1);
-      });
-    }
+          loadVideo(video.id);
+          updateURL(video.id, currentPlaylistId, index);
 
-    function scrollToCurrentVideo() {
-      const container = document.getElementById('playlist-videos');
-      const activeItem = container.querySelector('.playlist-video-item.active');
-      if (activeItem) {
-        activeItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }
+          updatePlaylistProgress();
+          highlightCurrentVideo();
+          scrollToCurrentVideo();
+          }
 
-    function shufflePlaylist() {
-      if (!playlistData) return;
-      
-      shuffleEnabled = !shuffleEnabled;
-      document.getElementById('shuffle-btn').classList.toggle('active', shuffleEnabled);
-      
-      if (shuffleEnabled) {
-        shuffledOrder = [...Array(playlistData.videos.length).keys()];
-        for (let i = shuffledOrder.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [shuffledOrder[i], shuffledOrder[j]] = [shuffledOrder[j], shuffledOrder[i]];
-        }
-        const currentIdx = shuffledOrder.indexOf(currentPlaylistIndex);
-        if (currentIdx > 0) {
-          shuffledOrder.splice(currentIdx, 1);
-          shuffledOrder.unshift(currentPlaylistIndex);
-        }
-        showToast('Shuffle enabled');
-      } else {
-        shuffledOrder = [...Array(playlistData.videos.length).keys()];
-        showToast('Shuffle disabled');
-      }
-      
-      renderPlaylistVideos();
-      highlightCurrentVideo();
-    }
+          function updatePlaylistProgress() {
+          if (playlistData) {
+          document.getElementById('playlist-progress').textContent = `${currentPlaylistIndex + 1} / ${playlistData.videos.length}`;
+          }
+          }
 
-    async function pasteFromClipboard() {
-      try {
-        const text = await navigator.clipboard.readText();
-        desktopSearchInput.value = text;
-        performSearch(text);
-      } catch (error) {
-        showToast('Unable to access clipboard. Please paste manually.');
-      }
-    }
+          function highlightCurrentVideo() {
+          document.querySelectorAll('.playlist-video-item').forEach(item => {
+          const idx = parseInt(item.dataset.index);
+          const isActive = idx === currentPlaylistIndex;
+          item.classList.toggle('active', isActive);
 
-    function clearPlaylist() {
-      playlistData = null;
-      currentPlaylistId = null;
-      shuffledOrder = [];
-      
-      document.getElementById('playlist-panel').classList.add('hidden');
-      document.getElementById('empty-state').classList.remove('hidden');
-      
-      if (currentVideoId) updateURL(currentVideoId);
-      showToast('Playlist cleared');
-    }
+          const indexEl = item.querySelector('.video-index');
+          indexEl.classList.toggle('playing', isActive);
+          indexEl.textContent = isActive ? '▶' : (shuffleEnabled ? shuffledOrder.indexOf(idx) + 1 : idx + 1);
+          });
+          }
 
-    // Setup event listeners
-    function setupEventListeners() {
-      document.getElementById('paste-playlist-btn').onclick = pasteFromClipboard;
-      document.getElementById('clear-playlist-btn').onclick = clearPlaylist;
-      document.getElementById('shuffle-all-btn').onclick = shufflePlaylist;
-      document.getElementById('shuffle-btn').onclick = shufflePlaylist;
-      
-      document.getElementById('loop-toggle').onclick = function() {
-        loopEnabled = !loopEnabled;
-        this.classList.toggle('active', loopEnabled);
-        showToast(loopEnabled ? 'Loop enabled' : 'Loop disabled');
-      };
-      
-      document.getElementById('autoplay-toggle').onclick = function() {
-        autoplayEnabled = !autoplayEnabled;
-        this.classList.toggle('active', autoplayEnabled);
-        showToast(autoplayEnabled ? 'Autoplay enabled' : 'Autoplay disabled');
-      };
-      
-      document.getElementById('play-now-btn').onclick = () => {
-        const nextIndex = getNextVideoIndex();
-        if (nextIndex !== null) {
+          function scrollToCurrentVideo() {
+          const activeItem = document.querySelector('.playlist-video-item.active');
+          if (activeItem) activeItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+
+          function handleVideoEnded() {
+          if (!autoplayEnabled) return;
+
+          if (playlistData) {
+          const nextIndex = getNextVideoIndex();
+          if (nextIndex !== null) {
+          startAutoplayCountdown(nextIndex, true);
+          return;
+          }
+          }
+
+          const firstRelated = document.querySelector('.related-video-item');
+          if (firstRelated) {
+          const videoId = firstRelated.href.split('v=')[1]?.split('&')[0];
+          if (videoId) startAutoplayCountdownRelated(videoId, firstRelated);
+          }
+          }
+
+          function getNextVideoIndex() {
+          if (!playlistData?.videos) return null;
+          const order = shuffleEnabled ? shuffledOrder : [...Array(playlistData.videos.length).keys()];
+          const currentOrderIndex = order.indexOf(currentPlaylistIndex);
+          const nextOrderIndex = currentOrderIndex + 1;
+
+          if (nextOrderIndex < order.length) return order[nextOrderIndex];
+          if (loopEnabled) return order[0];
+          return null;
+          }
+
+          function startAutoplayCountdown(nextIndex) {
+          const nextVideo = playlistData.videos[nextIndex];
+          if (!nextVideo) return;
+
+          document.getElementById('autoplay-thumb').src = fixThumbnailUrl(nextVideo.img || nextVideo.thumbnail);
+          document.getElementById('autoplay-title').textContent = nextVideo.title;
+          document.getElementById('autoplay-author').textContent = nextVideo.author || playlistData.author || '';
+          document.getElementById('autoplay-overlay').classList.remove('hidden');
+
+          countdownSeconds = 5;
+          updateCountdown();
+
+          countdownInterval = setInterval(() => {
+          countdownSeconds--;
+          updateCountdown();
+          if (countdownSeconds <= 0) {
           cancelAutoplayCountdown();
           playVideoFromPlaylist(nextIndex);
-        }
-      };
-      
-      document.getElementById('cancel-autoplay-btn').onclick = cancelAutoplayCountdown;
-      
-      document.getElementById('description-box').onclick = function() {
-        const desc = document.getElementById('video-description');
-        const toggle = document.getElementById('desc-toggle');
-        if (!this.classList.contains('expanded')) {
-          desc.classList.add('expanded');
+          }
+          }, 1000);
+          }
+
+          function startAutoplayCountdownRelated(videoId, element) {
+          const title = element.querySelector('.related-video-title')?.textContent || 'Next video';
+          const author = element.querySelector('.related-video-channel')?.textContent || '';
+          const thumb = element.querySelector('img')?.src || '';
+
+          document.getElementById('autoplay-thumb').src = thumb;
+          document.getElementById('autoplay-title').textContent = title;
+          document.getElementById('autoplay-author').textContent = author;
+          document.getElementById('autoplay-overlay').classList.remove('hidden');
+
+          countdownSeconds = 5;
+          updateCountdown();
+
+          countdownInterval = setInterval(() => {
+          countdownSeconds--;
+          updateCountdown();
+          if (countdownSeconds <= 0) {
+          cancelAutoplayCountdown();
+          loadVideo(videoId);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+          }, 1000);
+          }
+
+          function updateCountdown() {
+          document.getElementById('countdown-number').textContent = countdownSeconds;
+          const progress = document.getElementById('countdown-progress');
+          const offset = 163.36 - (countdownSeconds / 5) * 163.36;
+          progress.style.strokeDashoffset = offset;
+          }
+
+          function cancelAutoplayCountdown() {
+          if (countdownInterval) {
+          clearInterval(countdownInterval);
+          countdownInterval = null;
+          }
+          document.getElementById('autoplay-overlay').classList.add('hidden');
+          }
+
+          function playNextVideo() {
+          const nextIndex = getNextVideoIndex();
+          if (nextIndex !== null) playVideoFromPlaylist(nextIndex);
+          }
+
+          function shufflePlaylist() {
+          if (!playlistData) return;
+
+          shuffleEnabled = !shuffleEnabled;
+          document.getElementById('shuffle-btn').classList.toggle('active', shuffleEnabled);
+
+          if (shuffleEnabled) {
+          shuffledOrder = [...Array(playlistData.videos.length).keys()];
+          for (let i = shuffledOrder.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffledOrder[i], shuffledOrder[j]] = [shuffledOrder[j], shuffledOrder[i]];
+          }
+          const currentIdx = shuffledOrder.indexOf(currentPlaylistIndex);
+          if (currentIdx > 0) {
+          shuffledOrder.splice(currentIdx, 1);
+          shuffledOrder.unshift(currentPlaylistIndex);
+          }
+          showToast('Shuffle enabled');
+          } else {
+          shuffledOrder = [...Array(playlistData.videos.length).keys()];
+          showToast('Shuffle disabled');
+          }
+
+          renderPlaylistVideos();
+          highlightCurrentVideo();
+          }
+
+          // Scroll handlers
+          function setupScrollHandlers() {
+          // Desktop comments scroll
+          window.addEventListener('scroll', () => {
+          if (!currentVideoId || window.innerWidth <= 768) return;
+
+          const commentsSection = document.getElementById('comments-section');
+          const rect = commentsSection.getBoundingClientRect();
+
+          if (rect.bottom <= window.innerHeight + 500 && commentsHasMore && !commentsLoading) {
+          loadMoreComments(false);
+          }
+          });
+
+          // Related videos scroll
+          const relatedVideos = document.getElementById('related-videos');
+          relatedVideos.addEventListener('scroll', () => {
+          if (!currentVideoId) return;
+
+          const { scrollTop, scrollHeight, clientHeight } = relatedVideos;
+          if (scrollTop + clientHeight >= scrollHeight - 200 && relatedHasMore && !relatedLoading) {
+          loadRelatedVideos(currentVideoId, false);
+          }
+          });
+
+          // For mobile, related videos are not in a scrollable container
+          // So we use window scroll
+          window.addEventListener('scroll', () => {
+          if (!currentVideoId || window.innerWidth > 768) return;
+
+          const relatedSection = document.getElementById('related-section');
+          const rect = relatedSection.getBoundingClientRect();
+
+          if (rect.bottom <= window.innerHeight + 300 && relatedHasMore && !relatedLoading) {
+          loadRelatedVideos(currentVideoId, false);
+          }
+          });
+          }
+
+          // Event listeners
+          function setupEventListeners() {
+          document.getElementById('shuffle-btn').onclick = shufflePlaylist;
+
+          document.getElementById('loop-toggle').onclick = function() {
+          loopEnabled = !loopEnabled;
+          this.classList.toggle('active', loopEnabled);
+          showToast(loopEnabled ? 'Loop enabled' : 'Loop disabled');
+          };
+
+          document.getElementById('autoplay-toggle').onclick = function() {
+          autoplayEnabled = !autoplayEnabled;
+          this.classList.toggle('active', autoplayEnabled);
+          showToast(autoplayEnabled ? 'Autoplay enabled' : 'Autoplay disabled');
+          };
+
+          document.getElementById('play-now-btn').onclick = () => {
+          cancelAutoplayCountdown();
+          if (playlistData) {
+          const nextIndex = getNextVideoIndex();
+          if (nextIndex !== null) playVideoFromPlaylist(nextIndex);
+          } else {
+          const firstRelated = document.querySelector('.related-video-item');
+          if (firstRelated) {
+            const videoId = firstRelated.href.split('v=')[1]?.split('&')[0];
+            if (videoId) { loadVideo(videoId); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+          }
+          }
+          };
+
+          document.getElementById('cancel-autoplay-btn').onclick = cancelAutoplayCountdown;
+
+          // Description
+          document.getElementById('description-box').onclick = function(e) {
+          if (e.target.classList.contains('hashtag') || e.target.id === 'desc-toggle') return;
+          if (!this.classList.contains('expanded')) {
+          document.getElementById('video-description').classList.add('expanded');
           this.classList.add('expanded');
-          toggle.textContent = 'Show less';
-          toggle.classList.remove('hidden');
-        }
-      };
-      
-      document.getElementById('desc-toggle').onclick = function(e) {
-        e.stopPropagation();
-        const desc = document.getElementById('video-description');
-        const box = document.getElementById('description-box');
-        desc.classList.toggle('expanded');
-        box.classList.toggle('expanded');
-        this.textContent = desc.classList.contains('expanded') ? 'Show less' : 'Show more';
-      };
-      
-      document.getElementById('like-btn').onclick = function() {
-        this.classList.toggle('liked');
-        showToast(this.classList.contains('liked') ? 'Added to liked videos' : 'Removed from liked videos');
-      };
-      
-      document.getElementById('subscribe-btn').onclick = function() {
-        this.classList.toggle('subscribed');
-        this.textContent = this.classList.contains('subscribed') ? 'Subscribed' : 'Subscribe';
-        showToast(this.classList.contains('subscribed') ? 'Subscribed!' : 'Unsubscribed');
-      };
-      
-      document.getElementById('share-btn').onclick = () => {
-        const url = window.location.href;
-        navigator.clipboard.writeText(url).then(() => {
-          showToast('Link copied to clipboard');
-        }).catch(() => {
-          showToast('Failed to copy link');
-        });
-      };
-      
-      document.addEventListener('keydown', (e) => {
-        if (e.target.tagName === 'INPUT') return;
-        
-        switch(e.key) {
-          case 'n':
-          case 'N':
-            if (e.shiftKey) playNextVideo();
+          document.getElementById('desc-toggle').textContent = 'Show less';
+          document.getElementById('desc-toggle').classList.remove('hidden');
+          }
+          };
+
+          document.getElementById('desc-toggle').onclick = function(e) {
+          e.stopPropagation();
+          const desc = document.getElementById('video-description');
+          const box = document.getElementById('description-box');
+          desc.classList.toggle('expanded');
+          box.classList.toggle('expanded');
+          this.textContent = desc.classList.contains('expanded') ? 'Show less' : 'Show more';
+          };
+
+          // Actions
+          document.getElementById('like-btn').onclick = function() {
+          this.classList.toggle('liked');
+          showToast(this.classList.contains('liked') ? 'Added to liked videos' : 'Removed from liked videos');
+          };
+
+          document.getElementById('subscribe-btn').onclick = function() {
+          this.classList.toggle('subscribed');
+          this.textContent = this.classList.contains('subscribed') ? 'Subscribed' : 'Subscribe';
+          showToast(this.classList.contains('subscribed') ? 'Subscribed!' : 'Unsubscribed');
+          };
+
+          document.getElementById('share-btn').onclick = () => {
+          navigator.clipboard.writeText(window.location.href)
+          .then(() => showToast('Link copied to clipboard'))
+          .catch(() => showToast('Failed to copy link'));
+          };
+
+          // Desktop comment input
+          const commentInput = document.getElementById('add-comment-input');
+          const commentActions = document.getElementById('add-comment-actions');
+          const commentSubmit = document.getElementById('comment-submit-btn');
+
+          commentInput.addEventListener('focus', () => commentActions.classList.add('show'));
+          commentInput.addEventListener('input', () => commentSubmit.classList.toggle('active', commentInput.value.trim().length > 0));
+
+          document.getElementById('comment-cancel-btn').onclick = () => {
+          commentInput.value = '';
+          commentInput.blur();
+          commentActions.classList.remove('show');
+          commentSubmit.classList.remove('active');
+          };
+
+          document.getElementById('comment-submit-btn').onclick = () => {
+          if (commentInput.value.trim()) {
+          showToast('Comments are view-only');
+          commentInput.value = '';
+          commentActions.classList.remove('show');
+          }
+          };
+
+          // Desktop sort
+          document.getElementById('comments-sort-top').onclick = function() {
+          if (commentsSortBy !== 'top') {
+          commentsSortBy = 'top';
+          this.classList.add('active');
+          document.getElementById('comments-sort-new').classList.remove('active');
+          reloadComments();
+          }
+          };
+
+          document.getElementById('comments-sort-new').onclick = function() {
+          if (commentsSortBy !== 'newest') {
+          commentsSortBy = 'newest';
+          this.classList.add('active');
+          document.getElementById('comments-sort-top').classList.remove('active');
+          reloadComments();
+          }
+          };
+
+          // Keyboard
+          document.addEventListener('keydown', (e) => {
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+          switch(e.key) {
+          case 'Escape':
+            if (mobileSearchOpen) closeMobileSearch();
+            if (mobileCommentsOpen) closeMobileComments();
+            cancelAutoplayCountdown();
             break;
-          case 'p':
-          case 'P':
-            if (e.shiftKey) {
-              const prevIndex = currentPlaylistIndex - 1;
-              if (prevIndex >= 0) playVideoFromPlaylist(prevIndex);
-            }
+          case 'n': case 'N':
+            if (e.shiftKey && playlistData) playNextVideo();
             break;
-          case 's':
-          case 'S':
+          case 'p': case 'P':
+            if (e.shiftKey && playlistData && currentPlaylistIndex > 0) playVideoFromPlaylist(currentPlaylistIndex - 1);
+            break;
+          case 's': case 'S':
             if (e.shiftKey) shufflePlaylist();
             break;
-          case 'l':
-          case 'L':
+          case 'l': case 'L':
             if (e.shiftKey) {
               loopEnabled = !loopEnabled;
               document.getElementById('loop-toggle').classList.toggle('active', loopEnabled);
               showToast(loopEnabled ? 'Loop enabled' : 'Loop disabled');
             }
             break;
-          case 'Escape':
-            if (mobileSearchOpen) closeMobileSearch();
-            break;
-        }
-      });
-      
-      window.addEventListener('popstate', () => {
-        const params = getUrlParams();
-        if (params.videoId && params.videoId !== currentVideoId) {
-          if (player) {
-            player.loadVideoById(params.videoId);
-            currentVideoId = params.videoId;
-            loadVideoData(params.videoId);
           }
-          if (params.playlistId && params.playlistId === currentPlaylistId) {
+          });
+
+          // Browser navigation
+          window.addEventListener('popstate', () => {
+          const params = getUrlParams();
+          if (params.videoId && params.videoId !== currentVideoId) {
+          loadVideo(params.videoId);
+          if (params.playlistId && params.playlistId !== currentPlaylistId) {
+            loadPlaylist(params.playlistId, params.index);
+          } else if (params.playlistId && playlistData) {
             currentPlaylistIndex = params.index || 0;
             updatePlaylistProgress();
             highlightCurrentVideo();
           }
-        }
-      });
-    }
+          }
+          });
+          }
 
-    // Initialize
-    document.addEventListener('DOMContentLoaded', () => {
-      setupEventListeners();
-      if (window.YT && window.YT.Player) {
-        onYouTubeIframeAPIReady();
-      }
-    });
-    
-    setTimeout(() => {
-      if (!playerReady) {
-        document.getElementById('loading').classList.add('hidden');
-        document.getElementById('content').classList.remove('hidden');
-      }
-    }, 3000);
-  </script>
-</body>
-</html>
+          // Init
+          document.addEventListener('DOMContentLoaded', () => {
+          setupEventListeners();
+          setupScrollHandlers();
+          if (window.YT?.Player) onYouTubeIframeAPIReady();
+          });
+
+          setTimeout(() => {
+          if (!playerReady) {
+          document.getElementById('loading').classList.add('hidden');
+          document.getElementById('content').classList.remove('hidden');
+          }
+          }, 3000);
+          </script>
+          </body>
+          </html>
