@@ -9,6 +9,7 @@ import {
   getTrending,
   getVideoInfo,
   getVideoTags,
+  getVideoComments,
   findRelatedByTags,
   searchByTag,
   getSearchCacheStatus,
@@ -46,7 +47,6 @@ router.get('/', async (req, res) => {
       });
     }
 
-    // Parse fetchTags boolean
     const shouldFetchTags = fetchTags === 'true' || fetchTags === '1' || 
                             fetch_tags === 'true' || fetch_tags === '1';
 
@@ -234,11 +234,24 @@ router.get('/trending', async (req, res) => {
 
 // ================== VIDEO INFO ROUTES ==================
 
-// Get full video info with tags
-// GET /api/search/video/:id
+// Get full video info with tags and optional comments
+// GET /api/search/video/:id?comments=true&commentStart=1&commentEnd=50&commentSort=top
 router.get('/video/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    const { 
+      comments,
+      includeComments,
+      include_comments,
+      commentStart,
+      comment_start,
+      commentEnd,
+      comment_end,
+      maxComments,
+      max_comments,
+      commentSort,
+      comment_sort
+    } = req.query;
 
     if (!id) {
       return res.status(400).json({ 
@@ -247,7 +260,20 @@ router.get('/video/:id', async (req, res) => {
       });
     }
 
-    const results = await getVideoInfo(id);
+    // Parse comment options
+    const shouldIncludeComments = comments !== 'false' && 
+                                  includeComments !== 'false' && 
+                                  include_comments !== 'false';
+
+    const options = {
+      includeComments: shouldIncludeComments,
+      commentStart: parseInt(commentStart || comment_start) || 1,
+      commentEnd: parseInt(commentEnd || comment_end) || 20,
+      maxComments: parseInt(maxComments || max_comments) || 100,
+      commentSort: commentSort || comment_sort || 'top'
+    };
+
+    const results = await getVideoInfo(id, options);
     res.json(results);
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
@@ -278,12 +304,23 @@ router.get('/video/:id/tags', async (req, res) => {
   }
 });
 
-// Find related videos based on video's tags
-// GET /api/search/video/:id/related?start=1&end=20
-router.get('/video/:id/related', async (req, res) => {
+// Get video comments with pagination
+// GET /api/search/video/:id/comments?start=1&end=50&sort=top&max=500
+router.get('/video/:id/comments', async (req, res) => {
   try {
     const { id } = req.params;
-    const { start, end, limit } = req.query;
+    const { 
+      start = 1, 
+      end = 20, 
+      sort = 'top',
+      sortBy,
+      sort_by,
+      max = 500,
+      maxComments,
+      max_comments,
+      refresh,
+      force_refresh
+    } = req.query;
 
     if (!id) {
       return res.status(400).json({ 
@@ -292,12 +329,41 @@ router.get('/video/:id/related', async (req, res) => {
       });
     }
 
-    // Support both end and limit parameters
+    const options = {
+      start: parseInt(start),
+      end: parseInt(end),
+      sortBy: sort || sortBy || sort_by || 'top',
+      maxComments: parseInt(max || maxComments || max_comments) || 500,
+      forceRefresh: refresh === 'true' || force_refresh === 'true'
+    };
+
+    const results = await getVideoComments(id, options);
+    res.json(results);
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Find related videos based on video's tags
+// GET /api/search/video/:id/related?start=1&end=20
+router.get('/video/:id/related', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { start, end, limit, maxQueries, max_queries } = req.query;
+
+    if (!id) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Video ID is required' 
+      });
+    }
+
     const endVal = end ? parseInt(end) : (limit ? parseInt(limit) : 20);
 
     const options = {
       start: start ? parseInt(start) : 1,
-      end: endVal
+      end: endVal,
+      maxQueries: parseInt(maxQueries || max_queries) || 4
     };
 
     const results = await findRelatedByTags(id, options);
@@ -350,26 +416,113 @@ router.delete('/cache', (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 });
+
 /* 
+============== API DOCUMENTATION ==============
 
-# Basic search
-/api/search?q=payal&start=1&end=20
+# SEARCH ENDPOINTS
 
-# Search with full tags (slower but complete)
-/api/search?q=payal&fetchTags=true
+## Basic search
+GET /api/search?q=payal&start=1&end=20
 
-# Get video info with tags
-/api/search/video/a-PAcmi5Kas
+## Search with full tags (slower but complete)
+GET /api/search?q=payal&fetchTags=true
 
-# Get only tags for a video
-/api/search/video/a-PAcmi5Kas/tags
+## Search videos only
+GET /api/search/videos?q=music&sort=view_count&start=1&end=50
 
-# Find related videos based on tags
-/api/search/video/a-PAcmi5Kas/related?limit=10
+## Search channels
+GET /api/search/channels?q=tseries
 
-# Search by hashtag
-/api/search/tag?q=music
-/api/search/tag?q=%23bollywood
+## Search playlists
+GET /api/search/playlists?q=workout+mix
+
+## Search by hashtag
+GET /api/search/tag?q=music
+GET /api/search/tag?q=%23bollywood
+
+## Get search suggestions
+GET /api/search/suggestions?q=how+to
+
+## Get trending videos
+GET /api/search/trending?region=US
+
+# VIDEO INFO ENDPOINTS
+
+## Get video info with default 20 comments
+GET /api/search/video/dQw4w9WgXcQ
+
+## Get video info with more comments
+GET /api/search/video/dQw4w9WgXcQ?commentEnd=100
+
+## Get video info without comments
+GET /api/search/video/dQw4w9WgXcQ?comments=false
+
+## Get video info with newest comments
+GET /api/search/video/dQw4w9WgXcQ?commentSort=newest&commentEnd=50
+
+## Get only video tags
+GET /api/search/video/dQw4w9WgXcQ/tags
+
+# Get first 20 comments (default)
+GET /api/search/video/dQw4w9WgXcQ/comments
+
+# Get comments 21-50
+GET /api/search/video/dQw4w9WgXcQ/comments?start=21&end=50
+
+# Get 100 newest comments
+GET /api/search/video/dQw4w9WgXcQ/comments?start=1&end=100&sort=newest
+
+# Get up to 500 comments
+GET /api/search/video/dQw4w9WgXcQ/comments?start=1&end=500&max=500
+
+# Get video info with 50 comments
+GET /api/search/video/dQw4w9WgXcQ?commentEnd=50
+
+# Get video info without comments
+GET /api/search/video/dQw4w9WgXcQ?comments=false
+
+# Force refresh comments cache
+GET /api/search/video/dQw4w9WgXcQ/comments?refresh=true
+
+## Get related videos
+GET /api/search/video/dQw4w9WgXcQ/related?start=1&end=20
+
+# CACHE ENDPOINTS
+
+## Get cache status
+GET /api/search/cache/status?q=music
+
+## Clear all cache
+DELETE /api/search/cache
+
+## Clear specific query cache
+DELETE /api/search/cache?q=music
+
+============== QUERY PARAMETERS ==============
+
+# Search Parameters
+- q / query: Search query (required)
+- type: all, video, channel, playlist
+- sort: relevance, upload_date, view_count, rating
+- duration: short, medium, long
+- uploadDate: hour, today, week, month, year
+- start: Start index (1-based)
+- end: End index
+- fetchTags: true/false - Fetch full video tags
+
+# Comment Parameters
+- start: Start index for comments (default: 1)
+- end: End index for comments (default: 20)
+- sort / sortBy: top, newest (default: top)
+- max / maxComments: Maximum comments to fetch (default: 500)
+- refresh: Force refresh cached comments (true/false)
+
+# Related Video Parameters
+- start: Start index (default: 1)
+- end / limit: End index / limit (default: 20)
+- maxQueries: Number of search queries to run (default: 4)
 
 */
+
 export default router;
