@@ -2346,7 +2346,7 @@
         document.getElementById('channel-name').textContent = video.channel.name || 'Channel';
         document.getElementById('channel-name').href = video.channel.url || '#';
         document.getElementById('channel-subs').textContent = video.channel.subscriberCount || '';
-        document.getElementById('channel-avatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(video.channel.name || 'C')}&background=ff0000&color=fff&size=48`;
+        document.getElementById('channel-avatar').src = video.channel.thumbnail || 'C';
       }
       
       document.getElementById('desc-meta').textContent = `${video.viewsFormatted || ''} views`;
