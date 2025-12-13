@@ -2043,24 +2043,101 @@ function buildSmartSearchQueries(videoInfo) {
 
 async function findRelatedByTags(videoId, options = {}) {
   try {
-    const { start = 1, end = 20, maxQueries = 4 } = options;
+    const { 
+      start = 1, 
+      end = 20, 
+      maxQueries = 4,
+      includeWatchNext = true,  // NEW: Use YouTube's related videos
+      resultsPerQuery = 30     // NEW: More results per query
+    } = options;
+    
     const limit = end - start + 1;
 
-    console.log(`🔗 Finding related videos for ${videoId}...`);
+    console.log(`🔗 Finding related videos for ${videoId} (requesting ${limit} videos)...`);
 
+    const youtube = await initYouTube();
+    
+    // First, try to get YouTube's actual related videos from watch_next_feed
+    let watchNextVideos = [];
+    
+    if (includeWatchNext) {
+      try {
+        const info = await youtube.getInfo(videoId);
+        
+        // Extract from watch_next_feed - this is YouTube's actual "related videos"
+        if (info.watch_next_feed && Array.isArray(info.watch_next_feed)) {
+          console.log(`📺 Found ${info.watch_next_feed.length} videos in watch_next_feed`);
+          
+          for (const item of info.watch_next_feed) {
+            if (item.id && item.id !== videoId) {
+              const formatted = formatVideo(item);
+              if (formatted) {
+                formatted.relatedVia = {
+                  query: 'watch_next_feed',
+                  type: 'youtube_related',
+                  weight: 15  // Highest weight - these are YouTube's picks
+                };
+                watchNextVideos.push(formatted);
+              }
+            }
+          }
+          console.log(`   ✅ Extracted ${watchNextVideos.length} related videos from YouTube`);
+        }
+        
+        // Also try related_chip_cloud for topic-based suggestions
+        if (info.related_chip_cloud?.chips) {
+          console.log(`🏷️ Found ${info.related_chip_cloud.chips.length} related chips/topics`);
+        }
+        
+      } catch (e) {
+        console.log(`   ⚠️ Could not get watch_next_feed: ${e.message}`);
+      }
+    }
+
+    // If we have enough from watch_next, just use those
+    if (watchNextVideos.length >= end) {
+      const startIndex = Math.max(0, start - 1);
+      const paginatedResults = watchNextVideos.slice(startIndex, startIndex + limit);
+      
+      return {
+        success: true,
+        originalVideo: { id: videoId },
+        source: 'watch_next_feed',
+        range: { start, end },
+        totalResults: paginatedResults.length,
+        totalFound: watchNextVideos.length,
+        results: paginatedResults,
+        videos: paginatedResults
+      };
+    }
+
+    // Get video info for search queries
     const videoInfo = await getVideoInfo(videoId, { includeComments: false });
 
     if (!videoInfo.success) {
+      // If we have watch_next videos, return those
+      if (watchNextVideos.length > 0) {
+        const startIndex = Math.max(0, start - 1);
+        return {
+          success: true,
+          originalVideo: { id: videoId },
+          source: 'watch_next_feed_only',
+          range: { start, end },
+          totalResults: watchNextVideos.length,
+          results: watchNextVideos.slice(startIndex, startIndex + limit),
+          videos: watchNextVideos.slice(startIndex, startIndex + limit)
+        };
+      }
       return { success: false, error: 'Could not get video info' };
     }
 
     const searchQueries = buildSmartSearchQueries(videoInfo);
 
-    // Even if no good queries, try with channel name or a generic search
+    // Fallback queries
     if (searchQueries.length === 0) {
       const channelName = videoInfo.video.channel.name;
       const title = videoInfo.video.title;
-      
+
       if (channelName && channelName !== 'Unknown') {
         searchQueries.push({
           query: channelName,
@@ -2068,9 +2145,9 @@ async function findRelatedByTags(videoId, options = {}) {
           weight: 5
         });
       }
-      
+
       if (title) {
-        const words = title.split(' ').slice(0, 3).join(' ');
+        const words = title.split(' ').filter(w => w.length > 3).slice(0, 4).join(' ');
         if (words.length > 3) {
           searchQueries.push({
             query: words,
@@ -2079,58 +2156,55 @@ async function findRelatedByTags(videoId, options = {}) {
           });
         }
       }
-      
-      // Last resort - search by video ID pattern (similar videos)
-      if (searchQueries.length === 0) {
-        searchQueries.push({
-          query: 'popular videos',
-          type: 'fallback',
-          weight: 1
-        });
-      }
     }
 
-    console.log(`📝 Generated ${searchQueries.length} search queries:`);
-    searchQueries.slice(0, maxQueries).forEach((q, i) => {
+    console.log(`📝 Generated ${searchQueries.length} search queries`);
+    
+    const queriesToRun = searchQueries.slice(0, maxQueries);
+    queriesToRun.forEach((q, i) => {
       console.log(`   ${i + 1}. [${q.type}] "${q.query}" (weight: ${q.weight})`);
     });
 
-    const allResults = [];
-    const seenIds = new Set([videoId]);
-    const queriesUsed = [];
-
-    const queriesToRun = searchQueries.slice(0, maxQueries);
+    // Collect all results - use separate seen sets per query initially
+    const allSearchResults = [];
+    const globalSeenIds = new Set([videoId]);
+    
+    // Add watch_next video IDs to seen set
+    watchNextVideos.forEach(v => globalSeenIds.add(v.id));
 
     const searchPromises = queriesToRun.map(async (queryInfo) => {
       try {
         const result = await search(queryInfo.query, { 
           type: 'video',
           start: 1,
-          end: Math.ceil(limit / queriesToRun.length) + 5
+          end: resultsPerQuery  // Get more results per query
         });
 
-        return {
-          ...queryInfo,
-          results: result.success ? result.videos : []
-        };
+        if (result.success && result.videos) {
+          return {
+            ...queryInfo,
+            results: result.videos.filter(v => v.id !== videoId)
+          };
+        }
+        return { ...queryInfo, results: [] };
       } catch (e) {
+        console.log(`   ⚠️ Query "${queryInfo.query}" failed: ${e.message}`);
         return { ...queryInfo, results: [] };
       }
     });
 
     const searchResults = await Promise.all(searchPromises);
 
+    // Process results with smarter deduplication
+    const queriesUsed = [];
+    
     for (const searchResult of searchResults) {
       if (searchResult.results && searchResult.results.length > 0) {
-        queriesUsed.push({
-          query: searchResult.query,
-          type: searchResult.type,
-          resultCount: searchResult.results.length
-        });
-
+        let addedFromThisQuery = 0;
+        
         for (const video of searchResult.results) {
-          if (!seenIds.has(video.id)) {
-            seenIds.add(video.id);
+          if (!globalSeenIds.has(video.id)) {
+            globalSeenIds.add(video.id);
 
             video.relatedVia = {
               query: searchResult.query,
@@ -2138,29 +2212,44 @@ async function findRelatedByTags(videoId, options = {}) {
               weight: searchResult.weight
             };
 
-            allResults.push(video);
+            allSearchResults.push(video);
+            addedFromThisQuery++;
           }
         }
+        
+        queriesUsed.push({
+          query: searchResult.query,
+          type: searchResult.type,
+          totalResults: searchResult.results.length,
+          uniqueAdded: addedFromThisQuery
+        });
       }
     }
 
-    allResults.sort((a, b) => {
+    // Combine watch_next videos with search results
+    // Watch_next first (higher weight), then search results
+    const combinedResults = [...watchNextVideos, ...allSearchResults];
+
+    // Sort by weight, then by verification, then filter shorts
+    combinedResults.sort((a, b) => {
       const weightDiff = (b.relatedVia?.weight || 0) - (a.relatedVia?.weight || 0);
       if (weightDiff !== 0) return weightDiff;
 
-      if (b.channel.isVerified && !a.channel.isVerified) return 1;
-      if (a.channel.isVerified && !b.channel.isVerified) return -1;
+      // Prefer verified channels
+      if (b.channel?.isVerified && !a.channel?.isVerified) return 1;
+      if (a.channel?.isVerified && !b.channel?.isVerified) return -1;
 
-      if (b.metadata.isShort && !a.metadata.isShort) return -1;
-      if (a.metadata.isShort && !b.metadata.isShort) return 1;
+      // Deprioritize shorts (unless specifically wanted)
+      if (b.metadata?.isShort && !a.metadata?.isShort) return -1;
+      if (a.metadata?.isShort && !b.metadata?.isShort) return 1;
 
       return 0;
     });
 
     const startIndex = Math.max(0, start - 1);
-    const paginatedResults = allResults.slice(startIndex, startIndex + limit);
+    const paginatedResults = combinedResults.slice(startIndex, startIndex + limit);
 
-    console.log(`✅ Found ${allResults.length} related videos, returning ${paginatedResults.length}`);
+    console.log(`✅ Found ${combinedResults.length} related videos (${watchNextVideos.length} from YouTube, ${allSearchResults.length} from search), returning ${paginatedResults.length}`);
 
     return {
       success: true,
@@ -2170,6 +2259,8 @@ async function findRelatedByTags(videoId, options = {}) {
         channel: videoInfo.video.channel.name
       },
       searchStrategy: {
+        watchNextCount: watchNextVideos.length,
+        searchResultsCount: allSearchResults.length,
         queriesUsed,
         totalQueries: searchQueries.length,
         queriesExecuted: queriesToRun.length
@@ -2183,7 +2274,8 @@ async function findRelatedByTags(videoId, options = {}) {
       },
       range: { start, end },
       totalResults: paginatedResults.length,
-      totalFound: allResults.length,
+      totalFound: combinedResults.length,
+      hasMore: combinedResults.length > end,
       results: paginatedResults,
       videos: paginatedResults
     };
