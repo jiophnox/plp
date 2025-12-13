@@ -1,6 +1,7 @@
 import express from 'express';
 import channelRoutes from './Routes/channelRoutes.js';
-import searchRoutes from './Routes/searchRoutes.js'
+import searchRoutes from './Routes/searchRoutes.js';
+import embedproxyRoutes from './Routes/embedproxyRouters.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -15,6 +16,7 @@ app.use(express.static(path.join(__dirname, 'Public')));
 // API routes
 app.use('/api/channel', channelRoutes);
 app.use('/api/search', searchRoutes);
+app.use('/api/embedproxy', embedproxyRoutes);
 
 // Home page route (ROOT)
 app.get('/', (req, res) => {
