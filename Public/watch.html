@@ -1797,6 +1797,228 @@
         width: 100px;
       }
     }
+
+    /* Proxy Player Styles */
+    .proxy-player-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #000;
+    }
+
+    .proxy-player-container video {
+      width: 100%;
+      height: 100%;
+      background: #000;
+    }
+
+    .proxy-player-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 5;
+    }
+
+    .proxy-player-overlay.hidden {
+      display: none;
+    }
+
+    .proxy-loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid #333;
+      border-top-color: #ff0000;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    /* Quality/Format Selector */
+    .format-selector {
+      position: absolute;
+      bottom: 60px;
+      right: 10px;
+      z-index: 20;
+    }
+
+    .format-btn {
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid #555;
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s;
+    }
+
+    .format-btn:hover {
+      background: rgba(50, 50, 50, 0.9);
+    }
+
+    .format-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    .format-menu {
+      position: absolute;
+      bottom: 100%;
+      right: 0;
+      background: rgba(20, 20, 20, 0.95);
+      border: 1px solid #333;
+      border-radius: 8px;
+      min-width: 200px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 8px;
+      display: none;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .format-menu.open {
+      display: block;
+    }
+
+    .format-menu-header {
+      padding: 10px 12px;
+      font-size: 12px;
+      color: #888;
+      border-bottom: 1px solid #333;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .format-menu-item {
+      padding: 10px 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      transition: background 0.2s;
+      border-bottom: 1px solid #222;
+    }
+
+    .format-menu-item:last-child {
+      border-bottom: none;
+    }
+
+    .format-menu-item:hover {
+      background: #333;
+    }
+
+    .format-menu-item.active {
+      background: #ff0000;
+      color: #fff;
+    }
+
+    .format-menu-item .quality {
+      font-weight: 500;
+    }
+
+    .format-menu-item .info {
+      font-size: 11px;
+      color: #888;
+    }
+
+    .format-menu-item.active .info {
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .format-group-title {
+      padding: 8px 12px;
+      font-size: 11px;
+      color: #ff0000;
+      background: #1a1a1a;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    /* Proxy player badge */
+    .proxy-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(255, 0, 0, 0.8);
+      color: #fff;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .proxy-badge.hidden {
+      display: none;
+    }
+
+    /* Error overlay */
+    .player-error-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 15;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .player-error-overlay.hidden {
+      display: none;
+    }
+
+    .player-error-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .player-error-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .player-error-message {
+      font-size: 14px;
+      color: #aaa;
+      margin-bottom: 20px;
+      max-width: 400px;
+    }
+
+    .player-error-btn {
+      background: #ff0000;
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .player-error-btn:hover {
+      background: #cc0000;
+    }
   </style>
 </head>
 <body>
@@ -1874,36 +2096,52 @@
         <!-- Player Section -->
         <div class="player-section">
           <div class="video-player-container" id="player-container">
+            <!-- Placeholder -->
             <div class="player-placeholder" id="player-placeholder">
               <div class="player-placeholder-icon">🎬</div>
               <h2>Ready to watch?</h2>
               <p>Search for a video or paste a YouTube URL to get started.</p>
             </div>
+
+            <!-- YouTube IFrame Player -->
             <div id="player"></div>
-            
+
+            <!-- Proxy Player (for blocked videos) -->
+            <div class="proxy-player-container hidden" id="proxy-player-container">
+              <video id="proxy-video" controls playsinline></video>
+
+              <!-- Loading overlay -->
+              <div class="proxy-player-overlay hidden" id="proxy-loading">
+                <div class="proxy-loading-spinner"></div>
+              </div>
+
+              <!-- Proxy badge -->
+              <div class="proxy-badge hidden" id="proxy-badge">
+                <span>🔓</span>
+                <span>Bypass Mode</span>
+              </div>
+
+              <!-- Format selector -->
+              <div class="format-selector hidden" id="format-selector">
+                <button class="format-btn" id="format-btn">
+                  <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                  <span id="current-quality">360p</span>
+                </button>
+                <div class="format-menu" id="format-menu"></div>
+              </div>
+            </div>
+
+            <!-- Error overlay -->
+            <div class="player-error-overlay hidden" id="player-error-overlay">
+              <div class="player-error-icon">⚠️</div>
+              <h3 class="player-error-title" id="error-title">Video Unavailable</h3>
+              <p class="player-error-message" id="error-message">This video cannot be played.</p>
+              <button class="player-error-btn" id="error-retry-btn">Try Alternative Player</button>
+            </div>
+
             <!-- Autoplay Overlay -->
             <div class="autoplay-overlay hidden" id="autoplay-overlay">
-              <div class="autoplay-content">
-                <p class="autoplay-label">Up Next</p>
-                <div class="autoplay-next-video">
-                  <div class="autoplay-thumb"><img id="autoplay-thumb" src="" alt=""></div>
-                  <div class="autoplay-info">
-                    <h4 class="autoplay-title" id="autoplay-title"></h4>
-                    <p class="autoplay-author" id="autoplay-author"></p>
-                  </div>
-                </div>
-                <div class="autoplay-controls">
-                  <div class="countdown-ring">
-                    <svg width="60" height="60">
-                      <circle class="bg" cx="30" cy="30" r="26"></circle>
-                      <circle class="progress" id="countdown-progress" cx="30" cy="30" r="26" stroke-dasharray="163.36" stroke-dashoffset="0"></circle>
-                    </svg>
-                    <span class="countdown-number" id="countdown-number">5</span>
-                  </div>
-                  <button class="autoplay-btn play-now-btn" id="play-now-btn">Play Now</button>
-                  <button class="autoplay-btn cancel-btn" id="cancel-autoplay-btn">Cancel</button>
-                </div>
-              </div>
+              <!-- ... existing autoplay content ... -->
             </div>
           </div>
 
@@ -2036,7 +2274,7 @@
   <script src="https://www.youtube.com/iframe_api"></script>
   
   <script>
-    const API_BASE = 'https://plp-s5su.onrender.com/api';
+    const API_BASE = 'https://9fecd8f8-cc38-4ee3-a55a-0e61e94dafe5-00-24aic6pbf1rh0.sisko.replit.dev/api';
 
     // State
     let player = null;
@@ -2069,6 +2307,14 @@
     let relatedStart = 1;
     let relatedEnd = 20;
 
+    // Proxy Player State
+    const EMBED_PROXY_API = 'https://9fecd8f8-cc38-4ee3-a55a-0e61e94dafe5-00-24aic6pbf1rh0.sisko.replit.dev/api/embedproxy';
+    let isUsingProxyPlayer = false;
+    let proxyFormats = [];
+    let currentProxyFormat = null;
+    let embedCheckTimeout = null;
+    let proxyPlayerReady = false;
+
     // DOM
     const menuToggle = document.getElementById('menu-toggle');
     const leftMenu = document.getElementById('left-menu');
@@ -2084,6 +2330,362 @@
     const mobileCommentsModal = document.getElementById('mobile-comments-modal');
     const mobileCommentsClose = document.getElementById('mobile-comments-close');
     const mobileCommentsContent = document.getElementById('mobile-comments-content');
+
+    // Proxy Player DOM
+    const proxyPlayerContainer = document.getElementById('proxy-player-container');
+    const proxyVideo = document.getElementById('proxy-video');
+    const proxyLoading = document.getElementById('proxy-loading');
+    const proxyBadge = document.getElementById('proxy-badge');
+    const formatSelector = document.getElementById('format-selector');
+    const formatBtn = document.getElementById('format-btn');
+    const formatMenu = document.getElementById('format-menu');
+    const playerErrorOverlay = document.getElementById('player-error-overlay');
+    const errorRetryBtn = document.getElementById('error-retry-btn');
+
+    // ==================== PROXY PLAYER FUNCTIONS ====================
+
+    // Check if YouTube embed is blocked and switch to proxy if needed
+    function setupEmbedErrorDetection() {
+      // Clear any existing timeout
+      if (embedCheckTimeout) {
+        clearTimeout(embedCheckTimeout);
+      }
+
+      // Give YouTube player time to load or fail
+      embedCheckTimeout = setTimeout(() => {
+        if (player && currentVideoId) {
+          try {
+            const state = player.getPlayerState();
+            // -1 = unstarted, but if we've waited and still unstarted, might be blocked
+            // We'll also check for specific error states
+          } catch (e) {
+            console.log('Player state check failed, might be blocked');
+            tryProxyPlayer(currentVideoId);
+          }
+        }
+      }, 5000);
+    }
+
+    // Handle YouTube player errors
+    function handleYouTubeError(event) {
+      const errorCode = event.data;
+      console.log('YouTube Error Code:', errorCode);
+
+      // Error codes:
+      // 2 – invalid video ID
+      // 5 – HTML5 player error
+      // 100 – video not found (removed or private)
+      // 101/150 – embed not allowed
+
+      if (errorCode === 101 || errorCode === 150 || errorCode === 5) {
+        console.log('Embed blocked, switching to proxy player...');
+        showToast('Video embed blocked. Switching to alternative player...');
+        tryProxyPlayer(currentVideoId);
+      } else if (errorCode === 100 || errorCode === 2) {
+        showPlayerError('Video Not Found', 'This video may have been removed or is not available.');
+      }
+    }
+
+    // Try to play video using proxy
+    async function tryProxyPlayer(videoId) {
+      if (!videoId) return;
+
+      console.log('Attempting proxy player for:', videoId);
+
+      // Hide YouTube player, show proxy container
+      hideYouTubePlayer();
+      showProxyLoading();
+
+      try {
+        const response = await fetch(`${EMBED_PROXY_API}/info/${videoId}`);
+        const data = await response.json();
+
+        if (!data || data.error) {
+          throw new Error(data?.error || 'Failed to fetch video info');
+        }
+
+        if (!data.formats || data.formats.length === 0) {
+          throw new Error('No playable formats found');
+        }
+
+        proxyFormats = data.formats;
+
+        // Find best format (prefer format 18 - 360p with audio, or any combined format)
+        let bestFormat = proxyFormats.find(f => f.format_id === '18');
+
+        if (!bestFormat) {
+          // Find any format with both video and audio
+          bestFormat = proxyFormats.find(f => f.hasVideo && f.hasAudio);
+        }
+
+        if (!bestFormat) {
+          // Fallback to highest quality video-only + separate audio
+          bestFormat = proxyFormats
+            .filter(f => f.hasVideo)
+            .sort((a, b) => (b.height || 0) - (a.height || 0))[0];
+        }
+
+        if (!bestFormat) {
+          throw new Error('No suitable format found');
+        }
+
+        // Build format menu
+        buildFormatMenu(proxyFormats);
+
+        // Play the best format
+        playProxyFormat(bestFormat);
+
+        isUsingProxyPlayer = true;
+        showToast('Playing via alternative player');
+
+      } catch (error) {
+        console.error('Proxy player error:', error);
+        hideProxyLoading();
+        showPlayerError('Playback Error', error.message || 'Could not load video. Please try again later.');
+      }
+    }
+
+    // Play a specific format
+    function playProxyFormat(format) {
+      if (!format || !format.directUrl) {
+        console.error('Invalid format:', format);
+        return;
+      }
+
+      currentProxyFormat = format;
+
+      // Show loading
+      proxyLoading.classList.remove('hidden');
+
+      // Update quality button text
+      const qualityText = format.height ? `${format.height}p` : 
+                          format.abr ? `${Math.round(format.abr)}kbps` : 'Auto';
+      document.getElementById('current-quality').textContent = qualityText;
+
+      // Update active state in menu
+      document.querySelectorAll('.format-menu-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.formatId === format.format_id);
+      });
+
+      // Set video source
+      const currentTime = proxyVideo.currentTime || 0;
+      const wasPlaying = !proxyVideo.paused;
+
+      proxyVideo.src = format.directUrl;
+      proxyVideo.load();
+
+      // Restore playback position if switching formats
+      proxyVideo.onloadedmetadata = () => {
+        if (currentTime > 0) {
+          proxyVideo.currentTime = currentTime;
+        }
+        proxyLoading.classList.add('hidden');
+        if (wasPlaying || currentTime === 0) {
+          proxyVideo.play().catch(e => console.log('Autoplay prevented'));
+        }
+      };
+
+      proxyVideo.onerror = () => {
+        proxyLoading.classList.add('hidden');
+        showToast('Error playing this format. Try another quality.');
+      };
+
+      // Show proxy player UI
+      proxyPlayerContainer.classList.remove('hidden');
+      proxyBadge.classList.remove('hidden');
+      formatSelector.classList.remove('hidden');
+      playerErrorOverlay.classList.add('hidden');
+
+      console.log('Playing format:', format.format_id, qualityText);
+    }
+
+    // Build the format selection menu
+    function buildFormatMenu(formats) {
+      formatMenu.innerHTML = '';
+
+      // Separate formats by type
+      const combined = formats.filter(f => f.hasVideo && f.hasAudio)
+        .sort((a, b) => (b.height || 0) - (a.height || 0));
+      const videoOnly = formats.filter(f => f.hasVideo && !f.hasAudio)
+        .sort((a, b) => (b.height || 0) - (a.height || 0));
+      const audioOnly = formats.filter(f => !f.hasVideo && f.hasAudio)
+        .sort((a, b) => (b.abr || 0) - (a.abr || 0));
+
+      // Add combined formats (video + audio)
+      if (combined.length > 0) {
+        const header = document.createElement('div');
+        header.className = 'format-group-title';
+        header.textContent = '🎬 Video + Audio';
+        formatMenu.appendChild(header);
+
+        combined.forEach(f => {
+          formatMenu.appendChild(createFormatMenuItem(f));
+        });
+      }
+
+      // Add video-only formats
+      if (videoOnly.length > 0) {
+        const header = document.createElement('div');
+        header.className = 'format-group-title';
+        header.textContent = '📹 Video Only';
+        formatMenu.appendChild(header);
+
+        // Limit to top 5 qualities
+        videoOnly.slice(0, 5).forEach(f => {
+          formatMenu.appendChild(createFormatMenuItem(f));
+        });
+      }
+
+      // Add audio-only formats
+      if (audioOnly.length > 0) {
+        const header = document.createElement('div');
+        header.className = 'format-group-title';
+        header.textContent = '🔊 Audio Only';
+        formatMenu.appendChild(header);
+
+        // Limit to top 3 qualities
+        audioOnly.slice(0, 3).forEach(f => {
+          formatMenu.appendChild(createFormatMenuItem(f));
+        });
+      }
+    }
+
+    // Create a format menu item
+    function createFormatMenuItem(format) {
+      const item = document.createElement('div');
+      item.className = 'format-menu-item';
+      item.dataset.formatId = format.format_id;
+
+      let qualityLabel = '';
+      let infoLabel = '';
+
+      if (format.hasVideo && format.height) {
+        qualityLabel = `${format.height}p`;
+        infoLabel = format.ext.toUpperCase();
+        if (format.hasAudio) {
+          infoLabel += ' + Audio';
+        }
+      } else if (format.hasAudio && format.abr) {
+        qualityLabel = `${Math.round(format.abr)} kbps`;
+        infoLabel = format.ext.toUpperCase();
+      } else {
+        qualityLabel = format.format_id;
+        infoLabel = format.ext?.toUpperCase() || '';
+      }
+
+      // Add file size if available
+      if (format.filesize) {
+        const sizeMB = (format.filesize / (1024 * 1024)).toFixed(1);
+        infoLabel += ` • ${sizeMB} MB`;
+      }
+
+      item.innerHTML = `
+        <span class="quality">${qualityLabel}</span>
+        <span class="info">${infoLabel}</span>
+      `;
+
+      item.onclick = () => {
+        playProxyFormat(format);
+        formatMenu.classList.remove('open');
+      };
+
+      return item;
+    }
+
+    // Toggle format menu
+    function toggleFormatMenu() {
+      formatMenu.classList.toggle('open');
+    }
+
+    // Hide YouTube player
+    function hideYouTubePlayer() {
+      const ytPlayer = document.getElementById('player');
+      if (ytPlayer) {
+        ytPlayer.style.display = 'none';
+      }
+      if (player) {
+        try {
+          player.pauseVideo();
+        } catch (e) {}
+      }
+    }
+
+    // Show YouTube player
+    function showYouTubePlayer() {
+      const ytPlayer = document.getElementById('player');
+      if (ytPlayer) {
+        ytPlayer.style.display = 'block';
+      }
+      proxyPlayerContainer.classList.add('hidden');
+      proxyBadge.classList.add('hidden');
+      formatSelector.classList.add('hidden');
+      isUsingProxyPlayer = false;
+    }
+
+    // Show proxy loading state
+    function showProxyLoading() {
+      proxyPlayerContainer.classList.remove('hidden');
+      proxyLoading.classList.remove('hidden');
+      playerErrorOverlay.classList.add('hidden');
+    }
+
+    // Hide proxy loading state
+    function hideProxyLoading() {
+      proxyLoading.classList.add('hidden');
+    }
+
+    // Show player error
+    function showPlayerError(title, message) {
+      document.getElementById('error-title').textContent = title;
+      document.getElementById('error-message').textContent = message;
+      playerErrorOverlay.classList.remove('hidden');
+      proxyPlayerContainer.classList.remove('hidden');
+      proxyLoading.classList.add('hidden');
+    }
+
+    // Reset player state
+    function resetPlayer() {
+      // Reset proxy player
+      if (proxyVideo) {
+        proxyVideo.pause();
+        proxyVideo.src = '';
+      }
+      proxyPlayerContainer.classList.add('hidden');
+      proxyBadge.classList.add('hidden');
+      formatSelector.classList.add('hidden');
+      proxyLoading.classList.add('hidden');
+      playerErrorOverlay.classList.add('hidden');
+      formatMenu.classList.remove('open');
+
+      isUsingProxyPlayer = false;
+      proxyFormats = [];
+      currentProxyFormat = null;
+
+      // Show YouTube player
+      showYouTubePlayer();
+    }
+
+    // Handle proxy video ended
+    function handleProxyVideoEnded() {
+      if (!autoplayEnabled) return;
+
+      if (playlistData) {
+        const nextIndex = getNextVideoIndex();
+        if (nextIndex !== null) {
+          startAutoplayCountdown(nextIndex);
+          return;
+        }
+      }
+
+      // Try to play next related video
+      const firstRelated = document.querySelector('.related-video-item');
+      if (firstRelated) {
+        const videoId = firstRelated.href.split('v=')[1]?.split('&')[0];
+        if (videoId) startAutoplayCountdownRelated(videoId, firstRelated);
+      }
+    }
+
+    
 
     // Menu
     function toggleMenu() {
@@ -2265,27 +2867,53 @@
 
     function initPlayer(videoId) {
       document.getElementById('player-placeholder').classList.add('hidden');
-      if (player) { player.loadVideoById(videoId); return; }
-      
+      resetPlayer(); // Reset proxy player state
+
+      if (player) {
+        player.loadVideoById(videoId);
+        setupEmbedErrorDetection();
+        return;
+      }
+
       player = new YT.Player('player', {
-        height: '100%', width: '100%', videoId,
-        playerVars: { autoplay: 1, rel: 0, modestbranding: 1, playsinline: 1, enablejsapi: 1 },
+        height: '100%',
+        width: '100%',
+        videoId,
+        playerVars: {
+          autoplay: 1,
+          rel: 0,
+          modestbranding: 1,
+          playsinline: 1,
+          enablejsapi: 1
+        },
         events: {
-          onReady: (e) => e.target.playVideo(),
+          onReady: (e) => {
+            e.target.playVideo();
+            setupEmbedErrorDetection();
+          },
           onStateChange: (e) => {
             if (e.data === YT.PlayerState.ENDED) handleVideoEnded();
-            if (e.data === YT.PlayerState.PLAYING) cancelAutoplayCountdown();
+            if (e.data === YT.PlayerState.PLAYING) {
+              cancelAutoplayCountdown();
+              if (embedCheckTimeout) {
+                clearTimeout(embedCheckTimeout);
+              }
+            }
           },
-          onError: () => { showToast('Error playing video'); if (playlistData && autoplayEnabled) setTimeout(playNextVideo, 2000); }
+          onError: handleYouTubeError // Add error handler
         }
       });
     }
 
     // Load video
     async function loadVideo(videoId) {
-      currentVideoId = videoId;
-      updateURL(videoId, currentPlaylistId);
-      initPlayer(videoId);
+    currentVideoId = videoId;
+    updateURL(videoId, currentPlaylistId);
+
+    // Reset proxy player before loading new video
+    resetPlayer();
+
+    initPlayer(videoId);
       
       // Reset
       commentsStart = 21;
@@ -3054,6 +3682,58 @@ async function loadRelatedVideos(videoId, reset = false) {
           document.getElementById('content').classList.remove('hidden');
           }
           }, 3000);
+
+    // Add these in setupEventListeners() or at the end of the script
+
+    // Format menu toggle
+    formatBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleFormatMenu();
+    });
+
+    // Close format menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!formatSelector.contains(e.target)) {
+        formatMenu.classList.remove('open');
+      }
+    });
+
+    // Error retry button
+    errorRetryBtn.addEventListener('click', () => {
+      if (currentVideoId) {
+        tryProxyPlayer(currentVideoId);
+      }
+    });
+
+    // Proxy video ended event
+    proxyVideo.addEventListener('ended', handleProxyVideoEnded);
+
+    // Proxy video error
+    proxyVideo.addEventListener('error', (e) => {
+      console.error('Proxy video error:', e);
+      if (currentProxyFormat) {
+        showToast('Playback error. Try selecting a different quality.');
+      }
+    });
+
+    // Keyboard shortcut to manually switch to proxy player
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      // Press 'b' to toggle bypass/proxy player
+      if (e.key === 'b' || e.key === 'B') {
+        if (!isUsingProxyPlayer && currentVideoId) {
+          showToast('Switching to bypass player...');
+          tryProxyPlayer(currentVideoId);
+        } else if (isUsingProxyPlayer) {
+          showToast('Switching back to YouTube player...');
+          resetPlayer();
+          if (player && currentVideoId) {
+            player.loadVideoById(currentVideoId);
+          }
+        }
+      }
+    });
           </script>
           </body>
           </html>
