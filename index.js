@@ -1,7 +1,7 @@
 import express from 'express';
 import channelRoutes from './Routes/channelRoutes.js';
 import searchRoutes from './Routes/searchRoutes.js';
-import embedproxyRoutes from './Routes/embedproxyRouters.js';
+import embedproxyRoutes from './Routes/embedproxyRoutes.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
