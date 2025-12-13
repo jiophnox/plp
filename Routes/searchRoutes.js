@@ -236,6 +236,7 @@ router.get('/trending', async (req, res) => {
 
 // Get full video info with tags and optional comments
 // GET /api/search/video/:id?comments=true&commentStart=1&commentEnd=50&commentSort=top
+// In searchroutes.js
 router.get('/video/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -250,7 +251,8 @@ router.get('/video/:id', async (req, res) => {
       maxComments,
       max_comments,
       commentSort,
-      comment_sort
+      comment_sort,
+      debug  // Add debug parameter
     } = req.query;
 
     if (!id) {
@@ -260,7 +262,6 @@ router.get('/video/:id', async (req, res) => {
       });
     }
 
-    // Parse comment options
     const shouldIncludeComments = comments !== 'false' && 
                                   includeComments !== 'false' && 
                                   include_comments !== 'false';
@@ -270,7 +271,8 @@ router.get('/video/:id', async (req, res) => {
       commentStart: parseInt(commentStart || comment_start) || 1,
       commentEnd: parseInt(commentEnd || comment_end) || 20,
       maxComments: parseInt(maxComments || max_comments) || 100,
-      commentSort: commentSort || comment_sort || 'top'
+      commentSort: commentSort || comment_sort || 'top',
+      debug: debug === 'true' || debug === '1'  // Enable debug mode
     };
 
     const results = await getVideoInfo(id, options);
