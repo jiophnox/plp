@@ -2140,8 +2140,29 @@
             </div>
 
             <!-- Autoplay Overlay -->
+            <!-- Autoplay Overlay -->
             <div class="autoplay-overlay hidden" id="autoplay-overlay">
-              <!-- ... existing autoplay content ... -->
+              <div class="autoplay-content">
+                <p class="autoplay-label">Up Next</p>
+                <div class="autoplay-next-video">
+                  <div class="autoplay-thumb"><img id="autoplay-thumb" src="" alt=""></div>
+                  <div class="autoplay-info">
+                    <h4 class="autoplay-title" id="autoplay-title"></h4>
+                    <p class="autoplay-author" id="autoplay-author"></p>
+                  </div>
+                </div>
+                <div class="autoplay-controls">
+                  <div class="countdown-ring">
+                    <svg width="60" height="60">
+                      <circle class="bg" cx="30" cy="30" r="26"></circle>
+                      <circle class="progress" id="countdown-progress" cx="30" cy="30" r="26" stroke-dasharray="163.36" stroke-dashoffset="0"></circle>
+                    </svg>
+                    <span class="countdown-number" id="countdown-number">5</span>
+                  </div>
+                  <button class="autoplay-btn play-now-btn" id="play-now-btn">Play Now</button>
+                  <button class="autoplay-btn cancel-btn" id="cancel-autoplay-btn">Cancel</button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -3474,43 +3495,48 @@ async function loadRelatedVideos(videoId, reset = false) {
           }
 
           // Scroll handlers
-          function setupScrollHandlers() {
-          // Desktop comments scroll
-          window.addEventListener('scroll', () => {
-          if (!currentVideoId || window.innerWidth <= 768) return;
+    // Scroll handlers
+    function setupScrollHandlers() {
+      // Desktop comments scroll - window scroll
+      window.addEventListener('scroll', () => {
+        if (!currentVideoId || window.innerWidth <= 768) return;
 
-          const commentsSection = document.getElementById('comments-section');
+        const commentsSection = document.getElementById('comments-section');
+        if (commentsSection) {
           const rect = commentsSection.getBoundingClientRect();
-
           if (rect.bottom <= window.innerHeight + 500 && commentsHasMore && !commentsLoading) {
-          loadMoreComments(false);
+            loadMoreComments(false);
           }
-          });
+        }
+      });
 
-          // Related videos scroll
-          const relatedVideos = document.getElementById('related-videos');
-          relatedVideos.addEventListener('scroll', () => {
-          if (!currentVideoId) return;
+      // Related videos scroll - internal scroll for desktop (>1000px)
+      const relatedVideos = document.getElementById('related-videos');
+      if (relatedVideos) {
+        relatedVideos.addEventListener('scroll', () => {
+          // Only works when container has max-height and overflow (desktop >1000px)
+          if (!currentVideoId || window.innerWidth <= 1000) return;
 
           const { scrollTop, scrollHeight, clientHeight } = relatedVideos;
           if (scrollTop + clientHeight >= scrollHeight - 200 && relatedHasMore && !relatedLoading) {
-          loadRelatedVideos(currentVideoId, false);
+            loadRelatedVideos(currentVideoId, false);
           }
-          });
+        });
+      }
 
-          // For mobile, related videos are not in a scrollable container
-          // So we use window scroll
-          window.addEventListener('scroll', () => {
-          if (!currentVideoId || window.innerWidth > 768) return;
+      // Related videos scroll - window scroll for tablet/mobile (<=1000px)
+      window.addEventListener('scroll', () => {
+        if (!currentVideoId || window.innerWidth > 1000) return;
 
-          const relatedSection = document.getElementById('related-section');
+        const relatedSection = document.getElementById('related-section');
+        if (relatedSection) {
           const rect = relatedSection.getBoundingClientRect();
-
           if (rect.bottom <= window.innerHeight + 300 && relatedHasMore && !relatedLoading) {
-          loadRelatedVideos(currentVideoId, false);
+            loadRelatedVideos(currentVideoId, false);
           }
-          });
-          }
+        }
+      });
+    }
 
           // Event listeners
           function setupEventListeners() {
