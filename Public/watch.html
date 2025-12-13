@@ -2295,7 +2295,7 @@
   <script src="https://www.youtube.com/iframe_api"></script>
   
   <script>
-    const API_BASE = 'https://plp-s5su.onrender.com/api';
+    const API_BASE = 'https://9fecd8f8-cc38-4ee3-a55a-0e61e94dafe5-00-24aic6pbf1rh0.sisko.replit.dev/api';
 
     // State
     let player = null;
@@ -2329,12 +2329,62 @@
     let relatedEnd = 20;
 
     // Proxy Player State
-    const EMBED_PROXY_API = 'https://plp-s5su.onrender.com/api/embedproxy';
+    const EMBED_PROXY_API = 'https://9fecd8f8-cc38-4ee3-a55a-0e61e94dafe5-00-24aic6pbf1rh0.sisko.replit.dev/api/embedproxy';
     let isUsingProxyPlayer = false;
     let proxyFormats = [];
     let currentProxyFormat = null;
     let embedCheckTimeout = null;
     let proxyPlayerReady = false;
+
+    // ==================== WATCH HISTORY CACHE ====================
+    const WATCH_HISTORY_KEY = 'youtube_watch_history';
+    const MAX_HISTORY_SIZE = 50; // Maximum number of video IDs to store
+
+    // Get watch history from localStorage
+    function getWatchHistory() {
+      try {
+        const history = localStorage.getItem(WATCH_HISTORY_KEY);
+        return history ? JSON.parse(history) : [];
+      } catch (e) {
+        console.error('Error reading watch history:', e);
+        return [];
+      }
+    }
+
+    // Add video ID to watch history
+    function addToWatchHistory(videoId) {
+      if (!videoId) return;
+
+      try {
+        let history = getWatchHistory();
+
+        // Remove if already exists (to move it to front)
+        history = history.filter(id => id !== videoId);
+
+        // Add to beginning
+        history.unshift(videoId);
+
+        // Limit size
+        if (history.length > MAX_HISTORY_SIZE) {
+          history = history.slice(0, MAX_HISTORY_SIZE);
+        }
+
+        localStorage.setItem(WATCH_HISTORY_KEY, JSON.stringify(history));
+        console.log('Added to watch history:', videoId);
+      } catch (e) {
+        console.error('Error saving to watch history:', e);
+      }
+    }
+
+    // Clear watch history
+    function clearWatchHistory() {
+      try {
+        localStorage.removeItem(WATCH_HISTORY_KEY);
+        console.log('Watch history cleared');
+      } catch (e) {
+        console.error('Error clearing watch history:', e);
+      }
+    }
 
     // DOM
     const menuToggle = document.getElementById('menu-toggle');
@@ -2928,13 +2978,16 @@
 
     // Load video
     async function loadVideo(videoId) {
-    currentVideoId = videoId;
-    updateURL(videoId, currentPlaylistId);
+      currentVideoId = videoId;
+      updateURL(videoId, currentPlaylistId);
 
-    // Reset proxy player before loading new video
-    resetPlayer();
+      // ADD THIS LINE - Save to watch history
+      addToWatchHistory(videoId);
 
-    initPlayer(videoId);
+      // Reset proxy player before loading new video
+      resetPlayer();
+
+      initPlayer(videoId);
       
       // Reset
       commentsStart = 21;
