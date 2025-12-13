@@ -83,9 +83,8 @@ function extractText(field) {
  * Robust video info extractor - tries multiple sources
  */
 function extractVideoInfoRobust(info, videoId) {
-  // Log available keys for debugging
   const availableKeys = Object.keys(info || {});
-  console.log(`📋 Available info keys: ${availableKeys.slice(0, 10).join(', ')}...`);
+  console.log(`📋 Available info keys: ${availableKeys.join(', ')}`);
   
   // Helper to safely get nested properties
   const safeGet = (obj, path, defaultVal = null) => {
@@ -102,76 +101,98 @@ function extractVideoInfoRobust(info, videoId) {
     }
   };
 
-  // Helper to parse view count from text like "1,234,567 views"
-  const parseViewCount = (text) => {
-    if (!text) return 0;
+  // Helper to parse view count from text like "297,923,075 views" or "297M views"
+  const parseViewCount = (input) => {
+    if (!input) return 0;
+    if (typeof input === 'number' && input > 0) return input;
+    
+    let text = input;
+    
+    // Handle object with text property
+    if (typeof input === 'object') {
+      text = input.text || input.simpleText || String(input);
+    }
+    
     const str = String(text).toLowerCase();
     
-    // Handle "1.2M views" format
-    if (str.includes('m')) {
-      const num = parseFloat(str.replace(/[^0-9.]/g, ''));
-      return Math.round(num * 1000000);
-    }
-    if (str.includes('k')) {
-      const num = parseFloat(str.replace(/[^0-9.]/g, ''));
-      return Math.round(num * 1000);
-    }
-    if (str.includes('b')) {
-      const num = parseFloat(str.replace(/[^0-9.]/g, ''));
-      return Math.round(num * 1000000000);
+    // Try to extract number with suffix (297M, 1.5B, 45K)
+    const suffixMatch = str.match(/([\d,.]+)\s*([kmb])/i);
+    if (suffixMatch) {
+      const num = parseFloat(suffixMatch[1].replace(/,/g, ''));
+      const suffix = suffixMatch[2].toLowerCase();
+      const multipliers = { k: 1000, m: 1000000, b: 1000000000 };
+      return Math.round(num * (multipliers[suffix] || 1));
     }
     
-    // Parse regular number
-    const num = parseInt(str.replace(/[^0-9]/g, ''), 10);
-    return isNaN(num) ? 0 : num;
+    // Try to extract plain number (297,923,075 views)
+    const plainMatch = str.match(/([\d,]+)/);
+    if (plainMatch) {
+      const num = parseInt(plainMatch[1].replace(/,/g, ''), 10);
+      if (!isNaN(num)) return num;
+    }
+    
+    return 0;
   };
 
   // Helper to parse duration from various formats
   const parseDuration = (val) => {
     if (!val) return 0;
-    
-    // Already a number (seconds)
-    if (typeof val === 'number') return val;
+    if (typeof val === 'number' && val > 0) return val;
     
     const str = String(val);
     
-    // Format: "PT3M54S" (ISO 8601)
+    // ISO 8601: PT3M54S
     const isoMatch = str.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
     if (isoMatch) {
-      const hours = parseInt(isoMatch[1] || 0);
-      const mins = parseInt(isoMatch[2] || 0);
-      const secs = parseInt(isoMatch[3] || 0);
-      return hours * 3600 + mins * 60 + secs;
+      return (parseInt(isoMatch[1] || 0) * 3600) + 
+             (parseInt(isoMatch[2] || 0) * 60) + 
+             parseInt(isoMatch[3] || 0);
     }
     
     // Format: "3:54" or "1:03:54"
-    const parts = str.split(':').map(p => parseInt(p) || 0);
-    if (parts.length === 3) {
-      return parts[0] * 3600 + parts[1] * 60 + parts[2];
-    }
-    if (parts.length === 2) {
-      return parts[0] * 60 + parts[1];
+    if (str.includes(':')) {
+      const parts = str.split(':').map(p => parseInt(p) || 0);
+      if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+      if (parts.length === 2) return parts[0] * 60 + parts[1];
     }
     
-    // Milliseconds
-    if (str.length > 6 && /^\d+$/.test(str)) {
-      return Math.floor(parseInt(str) / 1000);
+    // Milliseconds (large number)
+    if (/^\d{4,}$/.test(str)) {
+      const ms = parseInt(str);
+      return ms > 10000 ? Math.floor(ms / 1000) : ms;
     }
     
-    // Plain seconds
     const secs = parseInt(str);
     return isNaN(secs) ? 0 : secs;
   };
 
-  // Try multiple sources for each field
+  // Get duration from streaming formats
+  const getDurationFromFormats = () => {
+    const sources = [
+      safeGet(info, 'streaming_data.formats'),
+      safeGet(info, 'streaming_data.adaptive_formats'),
+      safeGet(info, 'streamingData.formats'),
+      safeGet(info, 'streamingData.adaptiveFormats')
+    ];
+    
+    for (const formats of sources) {
+      if (Array.isArray(formats) && formats.length > 0) {
+        for (const format of formats) {
+          const duration = format.approxDurationMs || format.approx_duration_ms;
+          if (duration) {
+            return Math.floor(parseInt(duration) / 1000);
+          }
+        }
+      }
+    }
+    return 0;
+  };
+
   const extractors = {
     title: () => {
       return extractText(safeGet(info, 'basic_info.title')) ||
              extractText(safeGet(info, 'primary_info.title')) ||
              extractText(safeGet(info, 'video_details.title')) ||
-             extractText(safeGet(info, 'videoDetails.title')) ||
-             extractText(safeGet(info, 'player_overlays.title')) ||
-             extractText(info.title) ||
              '';
     },
     
@@ -179,20 +200,13 @@ function extractVideoInfoRobust(info, videoId) {
       return extractText(safeGet(info, 'basic_info.short_description')) ||
              extractText(safeGet(info, 'basic_info.description')) ||
              extractText(safeGet(info, 'secondary_info.description')) ||
-             extractText(safeGet(info, 'secondary_info.description.text')) ||
-             extractText(safeGet(info, 'video_details.short_description')) ||
-             extractText(safeGet(info, 'videoDetails.shortDescription')) ||
              '';
     },
     
     channelName: () => {
       return extractText(safeGet(info, 'basic_info.author')) ||
              extractText(safeGet(info, 'basic_info.channel.name')) ||
-             extractText(safeGet(info, 'secondary_info.owner.author.name')) ||
-             extractText(safeGet(info, 'secondary_info.owner.title')) ||
-             extractText(safeGet(info, 'videoDetails.author')) ||
-             extractText(safeGet(info, 'channel.name')) ||
-             extractText(safeGet(info, 'author.name')) ||
+             safeGet(info, 'secondary_info.owner.author.name') ||
              'Unknown';
     },
     
@@ -200,104 +214,126 @@ function extractVideoInfoRobust(info, videoId) {
       return safeGet(info, 'basic_info.channel_id') ||
              safeGet(info, 'basic_info.channel.id') ||
              safeGet(info, 'secondary_info.owner.author.id') ||
-             safeGet(info, 'secondary_info.owner.endpoint.browseEndpoint.browseId') ||
-             safeGet(info, 'secondary_info.owner.navigationEndpoint.browseEndpoint.browseId') ||
-             safeGet(info, 'videoDetails.channelId') ||
-             safeGet(info, 'channel.id') ||
-             safeGet(info, 'author.id') ||
+             safeGet(info, 'secondary_info.owner.author.endpoint.payload.browseId') ||
              null;
     },
     
     duration: () => {
-      // Try basic_info first
+      // Method 1: basic_info.duration
       let duration = safeGet(info, 'basic_info.duration');
-      if (duration && duration > 0) return duration;
+      if (duration && duration > 0) {
+        console.log(`   ✅ Duration from basic_info: ${duration}s`);
+        return duration;
+      }
       
-      // Try video_details
-      duration = safeGet(info, 'video_details.length_seconds');
-      if (duration && duration > 0) return parseDuration(duration);
+      // Method 2: streaming_data formats
+      duration = getDurationFromFormats();
+      if (duration > 0) {
+        console.log(`   ✅ Duration from streaming_data: ${duration}s`);
+        return duration;
+      }
       
-      duration = safeGet(info, 'videoDetails.lengthSeconds');
-      if (duration && duration > 0) return parseDuration(duration);
+      // Method 3: video_details
+      duration = parseDuration(safeGet(info, 'video_details.length_seconds'));
+      if (duration > 0) {
+        console.log(`   ✅ Duration from video_details: ${duration}s`);
+        return duration;
+      }
       
-      // Try streaming_data formats
-      const formats = safeGet(info, 'streaming_data.formats') || 
-                     safeGet(info, 'streaming_data.adaptive_formats') ||
-                     safeGet(info, 'streamingData.formats') ||
-                     safeGet(info, 'streamingData.adaptiveFormats') || [];
+      // Method 4: microformat
+      duration = parseDuration(safeGet(info, 'microformat.playerMicroformatRenderer.lengthSeconds'));
+      if (duration > 0) {
+        console.log(`   ✅ Duration from microformat: ${duration}s`);
+        return duration;
+      }
       
-      if (formats.length > 0) {
-        const approxMs = formats[0].approxDurationMs || formats[0].approx_duration_ms;
-        if (approxMs) {
-          return Math.floor(parseInt(approxMs) / 1000);
+      // Method 5: player_overlays (sometimes has duration)
+      const playerOverlays = safeGet(info, 'player_overlays');
+      if (playerOverlays) {
+        // Try to find duration in overlays
+        const overlayDuration = safeGet(playerOverlays, 'end_screen.elements.0.video_info.length_text');
+        if (overlayDuration) {
+          duration = parseDuration(extractText(overlayDuration));
+          if (duration > 0) {
+            console.log(`   ✅ Duration from player_overlays: ${duration}s`);
+            return duration;
+          }
         }
       }
       
-      // Try primary_info length
-      duration = safeGet(info, 'primary_info.length');
-      if (duration) return parseDuration(extractText(duration));
-      
-      // Try player_config
-      duration = safeGet(info, 'player_config.duration');
-      if (duration) return parseDuration(duration);
-      
-      // Try microformat
-      duration = safeGet(info, 'microformat.playerMicroformatRenderer.lengthSeconds');
-      if (duration) return parseDuration(duration);
-      
+      console.log('   ⚠️ Duration not available (streaming_data not returned by YouTube)');
       return 0;
     },
     
     viewCount: () => {
-      // Try basic_info first
+      // Method 1: primary_info.view_count.view_count.text (CORRECT PATH!)
+      // Structure: { view_count: { text: "297,923,075 views" } }
+      const viewCountObj = safeGet(info, 'primary_info.view_count');
+      
+      if (viewCountObj) {
+        // Try the nested view_count.text first (full number)
+        let views = parseViewCount(safeGet(viewCountObj, 'view_count.text'));
+        if (views > 0) {
+          console.log(`   ✅ Views from primary_info.view_count.view_count.text: ${views}`);
+          return views;
+        }
+        
+        // Try short_view_count.text (297M views)
+        views = parseViewCount(safeGet(viewCountObj, 'short_view_count.text'));
+        if (views > 0) {
+          console.log(`   ✅ Views from primary_info.view_count.short_view_count.text: ${views}`);
+          return views;
+        }
+        
+        // Try original_view_count (might be a string number)
+        views = parseViewCount(viewCountObj.original_view_count);
+        if (views > 0) {
+          console.log(`   ✅ Views from primary_info.view_count.original_view_count: ${views}`);
+          return views;
+        }
+      }
+      
+      // Method 2: basic_info.view_count
       let views = safeGet(info, 'basic_info.view_count');
-      if (views && views > 0) return views;
+      if (views && views > 0) {
+        console.log(`   ✅ Views from basic_info.view_count: ${views}`);
+        return views;
+      }
       
-      // Try video_details
-      views = safeGet(info, 'video_details.view_count');
-      if (views) return parseViewCount(views);
+      // Method 3: video_details.view_count
+      views = parseViewCount(safeGet(info, 'video_details.view_count'));
+      if (views > 0) {
+        console.log(`   ✅ Views from video_details: ${views}`);
+        return views;
+      }
       
-      views = safeGet(info, 'videoDetails.viewCount');
-      if (views) return parseViewCount(views);
+      // Method 4: microformat
+      views = parseViewCount(safeGet(info, 'microformat.playerMicroformatRenderer.viewCount'));
+      if (views > 0) {
+        console.log(`   ✅ Views from microformat: ${views}`);
+        return views;
+      }
       
-      // Try primary_info view_count (often as text)
-      const viewCountText = extractText(safeGet(info, 'primary_info.view_count')) ||
-                           extractText(safeGet(info, 'primary_info.views')) ||
-                           extractText(safeGet(info, 'primary_info.short_view_count'));
-      if (viewCountText) return parseViewCount(viewCountText);
-      
-      // Try secondary_info
-      views = extractText(safeGet(info, 'secondary_info.view_count'));
-      if (views) return parseViewCount(views);
-      
-      // Try microformat
-      views = safeGet(info, 'microformat.playerMicroformatRenderer.viewCount');
-      if (views) return parseViewCount(views);
-      
+      console.log('   ⚠️ Views not found');
       return 0;
     },
     
     likeCount: () => {
       return safeGet(info, 'basic_info.like_count') ||
              safeGet(info, 'video_details.like_count') ||
-             safeGet(info, 'like_count') ||
              0;
     },
     
     thumbnail: () => {
-      // Try various thumbnail sources
       const sources = [
         safeGet(info, 'basic_info.thumbnail'),
         safeGet(info, 'video_details.thumbnail.thumbnails'),
-        safeGet(info, 'videoDetails.thumbnail.thumbnails'),
-        safeGet(info, 'thumbnail.thumbnails'),
         safeGet(info, 'microformat.playerMicroformatRenderer.thumbnail.thumbnails'),
-        safeGet(info, 'thumbnails')
+        safeGet(info, 'secondary_info.owner.author.thumbnails') // fallback to channel thumb
       ];
       
       for (const thumbnails of sources) {
         if (Array.isArray(thumbnails) && thumbnails.length > 0) {
-          // Get highest quality
           const sorted = [...thumbnails].sort((a, b) => (b.width || 0) - (a.width || 0));
           if (sorted[0]?.url) return sorted[0].url;
         }
@@ -309,9 +345,7 @@ function extractVideoInfoRobust(info, videoId) {
     publishDate: () => {
       return safeGet(info, 'basic_info.publish_date') ||
              extractText(safeGet(info, 'primary_info.published')) ||
-             extractText(safeGet(info, 'primary_info.date_text')) ||
-             safeGet(info, 'videoDetails.publishDate') ||
-             safeGet(info, 'microformat.playerMicroformatRenderer.publishDate') ||
+             extractText(safeGet(info, 'primary_info.relative_date')) ||
              null;
     },
     
@@ -324,89 +358,61 @@ function extractVideoInfoRobust(info, videoId) {
     category: () => {
       return safeGet(info, 'basic_info.category') ||
              safeGet(info, 'microformat.playerMicroformatRenderer.category') ||
-             safeGet(info, 'category') ||
              null;
     },
     
     tags: () => {
-      const sources = [
-        safeGet(info, 'basic_info.tags'),
-        safeGet(info, 'video_details.keywords'),
-        safeGet(info, 'videoDetails.keywords'),
-        safeGet(info, 'microformat.playerMicroformatRenderer.tags'),
-        safeGet(info, 'tags'),
-        safeGet(info, 'keywords')
-      ];
-      
-      for (const tags of sources) {
-        if (Array.isArray(tags) && tags.length > 0) {
-          return tags;
-        }
-      }
-      return [];
+      const tags = safeGet(info, 'basic_info.tags') ||
+                  safeGet(info, 'video_details.keywords') ||
+                  [];
+      return Array.isArray(tags) ? tags : [];
     },
     
     keywords: () => {
-      const sources = [
-        safeGet(info, 'basic_info.keywords'),
-        safeGet(info, 'video_details.keywords'),
-        safeGet(info, 'videoDetails.keywords'),
-        safeGet(info, 'keywords')
-      ];
-      
-      for (const keywords of sources) {
-        if (Array.isArray(keywords) && keywords.length > 0) {
-          return keywords;
-        }
-      }
-      return [];
+      const keywords = safeGet(info, 'basic_info.keywords') ||
+                      safeGet(info, 'video_details.keywords') ||
+                      [];
+      return Array.isArray(keywords) ? keywords : [];
     },
     
     isLive: () => {
-      return safeGet(info, 'basic_info.is_live') ||
-             safeGet(info, 'video_details.is_live') ||
-             safeGet(info, 'videoDetails.isLive') ||
-             safeGet(info, 'playability_status.live_streamability') !== undefined ||
-             false;
+      // Only true if explicitly set to true
+      return safeGet(info, 'basic_info.is_live') === true ||
+             safeGet(info, 'video_details.is_live') === true ||
+             safeGet(info, 'primary_info.badges')?.some(b => 
+               b.style?.includes('LIVE') || b.label?.includes('LIVE')
+             ) || false;
     },
     
     isPrivate: () => {
-      return safeGet(info, 'basic_info.is_private') ||
-             safeGet(info, 'video_details.is_private') ||
-             safeGet(info, 'videoDetails.isPrivate') ||
-             false;
+      return safeGet(info, 'basic_info.is_private') === true ||
+             safeGet(info, 'basic_info.is_unlisted') === true;
     },
     
     isFamilySafe: () => {
-      const safe = safeGet(info, 'basic_info.is_family_safe') ??
-                  safeGet(info, 'microformat.playerMicroformatRenderer.isFamilySafe') ??
-                  true;
+      const safe = safeGet(info, 'basic_info.is_family_safe');
       return safe !== false;
     },
     
     channelUrl: () => {
-      const url = safeGet(info, 'basic_info.channel.url') ||
-                 safeGet(info, 'secondary_info.owner.author.url') ||
-                 safeGet(info, 'secondary_info.owner.endpoint.browseEndpoint.canonicalBaseUrl') ||
-                 safeGet(info, 'channel.url') ||
-                 safeGet(info, 'author.url');
-      
-      if (url) return url;
-      
-      // Build from channel ID
-      const channelId = extractors.channelId();
-      if (channelId) {
-        return `https://www.youtube.com/channel/${channelId}`;
-      }
-      return null;
+      return safeGet(info, 'secondary_info.owner.author.url') ||
+             safeGet(info, 'basic_info.channel.url') ||
+             safeGet(info, 'secondary_info.owner.author.endpoint.metadata.url') ||
+             null;
     },
     
     subscriberCount: () => {
-      return extractText(safeGet(info, 'basic_info.channel.subscriber_count')) ||
-             extractText(safeGet(info, 'secondary_info.owner.subscriber_count')) ||
-             extractText(safeGet(info, 'secondary_info.owner.subscribers')) ||
-             extractText(safeGet(info, 'channel.subscriber_count')) ||
+      return extractText(safeGet(info, 'secondary_info.owner.subscriber_count')) ||
+             extractText(safeGet(info, 'basic_info.channel.subscriber_count')) ||
              null;
+    },
+    
+    isVerified: () => {
+      return safeGet(info, 'secondary_info.owner.author.is_verified') === true;
+    },
+    
+    isVerifiedArtist: () => {
+      return safeGet(info, 'secondary_info.owner.author.is_verified_artist') === true;
     }
   };
   
@@ -421,18 +427,14 @@ function extractVideoInfoRobust(info, videoId) {
     }
   }
   
-  // Log extraction results for debugging
-  console.log(`📊 Extracted - Title: "${(result.title || '').substring(0, 30)}...", Duration: ${result.duration}s, Views: ${result.viewCount}, Channel: ${result.channelName}`);
+  console.log(`📊 Final: Title="${(result.title || '').substring(0, 30)}...", Duration=${result.duration}s, Views=${result.viewCount}`);
   
-  // Build list of successfully extracted fields
-  const extractedFields = Object.entries(result)
-    .filter(([k, v]) => v !== null && v !== '' && v !== 0 && !(Array.isArray(v) && v.length === 0))
+  result._extractedFields = Object.entries(result)
+    .filter(([k, v]) => v !== null && v !== '' && v !== 0 && v !== false && !(Array.isArray(v) && v.length === 0))
     .map(([k]) => k);
   
-  result._extractedFields = extractedFields;
-  
   return result;
-}
+        }
 
 /**
  * Deep inspect the info object to find where data is hiding
@@ -488,6 +490,71 @@ function debugInspectInfo(info, videoId) {
   searchObject(info);
   
   return findings;
+}
+
+/**
+ * Fetch duration using noembed (public API, no auth needed)
+ */
+async function fetchVideoDurationFallback(videoId) {
+  try {
+    // Try returnyoutubedislike API (also has duration sometimes)
+    const response = await fetch(
+      `https://returnyoutubedislikeapi.com/votes?videoId=${videoId}`,
+      { signal: AbortSignal.timeout(3000) }
+    );
+    
+    if (response.ok) {
+      const data = await response.json();
+      // This API doesn't have duration, but has views/likes/dislikes
+      return {
+        views: data.viewCount || 0,
+        likes: data.likes || 0,
+        dislikes: data.dislikes || 0
+      };
+    }
+  } catch (e) {
+    console.log('Fallback API failed:', e.message);
+  }
+  return null;
+}
+
+/**
+ * Try to get duration by fetching the watch page HTML
+ */
+async function fetchDurationFromWatchPage(videoId) {
+  try {
+    const response = await fetch(
+      `https://www.youtube.com/watch?v=${videoId}`,
+      {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        },
+        signal: AbortSignal.timeout(5000)
+      }
+    );
+    
+    if (!response.ok) return null;
+    
+    const html = await response.text();
+    
+    // Try to find duration in the page
+    // Pattern: "lengthSeconds":"234"
+    const durationMatch = html.match(/"lengthSeconds"\s*:\s*"(\d+)"/);
+    if (durationMatch) {
+      return parseInt(durationMatch[1]);
+    }
+    
+    // Pattern: "approxDurationMs":"234000"
+    const durationMsMatch = html.match(/"approxDurationMs"\s*:\s*"(\d+)"/);
+    if (durationMsMatch) {
+      return Math.floor(parseInt(durationMsMatch[1]) / 1000);
+    }
+    
+    return null;
+  } catch (e) {
+    console.log('Watch page fetch failed:', e.message);
+    return null;
+  }
 }
 
 function extractBadges(item) {
@@ -1058,7 +1125,7 @@ async function getVideoInfo(videoId, options = {}) {
       commentEnd = 20,
       maxComments = 100,
       commentSort = 'top',
-      debug = false  // Add debug option
+      debug = false
     } = options;
 
     console.log(`📹 Getting video info for ${videoId}...`);
@@ -1069,7 +1136,8 @@ async function getVideoInfo(videoId, options = {}) {
     try {
       info = await youtube.getInfo(videoId);
     } catch (infoError) {
-      console.error(`❌ Failed to get video info: ${infoError.message}`);
+      console.error(`❌ getInfo failed: ${infoError.message}`);
+      // Try with fresh instance
       const freshYt = await initYouTube(true);
       info = await freshYt.getInfo(videoId);
     }
@@ -1078,14 +1146,19 @@ async function getVideoInfo(videoId, options = {}) {
       return { success: false, error: 'Could not retrieve video info' };
     }
 
-    // Debug inspection if requested
-    let debugFindings = null;
-    if (debug) {
-      debugFindings = debugInspectInfo(info, videoId);
-    }
-
     // Use robust extractor
     const extracted = extractVideoInfoRobust(info, videoId);
+
+    // If duration is still 0, try fallback
+    let duration = extracted.duration;
+    if (duration === 0) {
+      console.log('   🔄 Trying fallback for duration...');
+      const fallbackDuration = await fetchDurationFromWatchPage(videoId);
+      if (fallbackDuration && fallbackDuration > 0) {
+        duration = fallbackDuration;
+        console.log(`   ✅ Duration from fallback: ${duration}s`);
+      }
+    }
 
     const title = extracted.title || '';
     const description = extracted.description || '';
@@ -1138,15 +1211,15 @@ async function getVideoInfo(videoId, options = {}) {
       ...relatedTopics
     ])]);
 
-    const response = {
+    return {
       success: true,
       video: {
         id: videoId,
         title,
         description,
         thumbnail: extracted.thumbnail,
-        duration: extracted.duration || 0,
-        durationFormatted: formatDuration(extracted.duration || 0),
+        duration: duration,
+        durationFormatted: formatDuration(duration),
         views: extracted.viewCount || 0,
         viewsFormatted: formatViews(extracted.viewCount || 0),
         likes: extracted.likeCount || 0,
@@ -1158,7 +1231,9 @@ async function getVideoInfo(videoId, options = {}) {
           name: channelName,
           id: extracted.channelId,
           url: extracted.channelUrl,
-          subscriberCount: extracted.subscriberCount
+          subscriberCount: extracted.subscriberCount,
+          isVerified: extracted.isVerified || false,
+          isVerifiedArtist: extracted.isVerifiedArtist || false
         },
 
         credits: {
@@ -1200,24 +1275,16 @@ async function getVideoInfo(videoId, options = {}) {
         }
       },
       
-      _debug: {
+      _debug: debug ? {
         extractedFields: extracted._extractedFields || [],
         infoKeys: Object.keys(info || {}),
         hasBasicInfo: !!info?.basic_info,
         hasPrimaryInfo: !!info?.primary_info,
         hasSecondaryInfo: !!info?.secondary_info,
-        hasVideoDetails: !!info?.video_details || !!info?.videoDetails,
-        hasStreamingData: !!info?.streaming_data || !!info?.streamingData,
-        hasMicroformat: !!info?.microformat
-      }
+        hasStreamingData: !!info?.streaming_data && info.streaming_data !== 'NOT AVAILABLE',
+        usedDurationFallback: extracted.duration === 0 && duration > 0
+      } : undefined
     };
-
-    // Add debug findings if requested
-    if (debug && debugFindings) {
-      response._debug.findings = debugFindings;
-    }
-
-    return response;
 
   } catch (error) {
     console.error('❌ Get video info error:', error);
