@@ -282,6 +282,116 @@ router.get('/video/:id', async (req, res) => {
   }
 });
 
+// In searchroutes.js - Add this debug route
+router.get('/video/:id/debug', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { Innertube } = await import('youtubei.js');
+    
+    const youtube = await Innertube.create({
+      retrieve_player: true,
+      generate_session_locally: true,
+      lang: 'en',
+      location: 'US'
+    });
+    
+    const info = await youtube.getInfo(id);
+    
+    // Extract key structures for debugging
+    const debugData = {
+      // Basic Info structure
+      basic_info: info.basic_info ? {
+        keys: Object.keys(info.basic_info),
+        title: info.basic_info.title,
+        duration: info.basic_info.duration,
+        view_count: info.basic_info.view_count,
+        author: info.basic_info.author,
+        channel: info.basic_info.channel,
+        raw_view_count: JSON.stringify(info.basic_info.view_count)?.substring(0, 200)
+      } : null,
+      
+      // Primary Info structure
+      primary_info: info.primary_info ? {
+        keys: Object.keys(info.primary_info),
+        title: extractTextDebug(info.primary_info.title),
+        view_count: info.primary_info.view_count,
+        view_count_keys: info.primary_info.view_count ? Object.keys(info.primary_info.view_count) : null,
+        view_count_raw: JSON.stringify(info.primary_info.view_count)?.substring(0, 500),
+        short_view_count: info.primary_info.short_view_count,
+        published: extractTextDebug(info.primary_info.published),
+        date_text: extractTextDebug(info.primary_info.date_text)
+      } : null,
+      
+      // Secondary Info
+      secondary_info: info.secondary_info ? {
+        keys: Object.keys(info.secondary_info),
+        owner: info.secondary_info.owner ? {
+          keys: Object.keys(info.secondary_info.owner),
+          author: info.secondary_info.owner.author,
+          subscriber_count: extractTextDebug(info.secondary_info.owner.subscriber_count)
+        } : null
+      } : null,
+      
+      // Streaming Data
+      streaming_data: info.streaming_data ? {
+        keys: Object.keys(info.streaming_data),
+        formats_count: info.streaming_data.formats?.length,
+        adaptive_formats_count: info.streaming_data.adaptive_formats?.length,
+        first_format: info.streaming_data.formats?.[0] ? {
+          keys: Object.keys(info.streaming_data.formats[0]),
+          approxDurationMs: info.streaming_data.formats[0].approxDurationMs,
+          approx_duration_ms: info.streaming_data.formats[0].approx_duration_ms,
+          duration: info.streaming_data.formats[0].duration
+        } : null
+      } : 'NOT AVAILABLE',
+      
+      // Player Config
+      player_config: info.player_config ? {
+        keys: Object.keys(info.player_config)
+      } : 'NOT AVAILABLE',
+      
+      // Microformat
+      microformat: info.microformat ? {
+        keys: Object.keys(info.microformat),
+        playerMicroformatRenderer: info.microformat.playerMicroformatRenderer ? {
+          lengthSeconds: info.microformat.playerMicroformatRenderer.lengthSeconds,
+          viewCount: info.microformat.playerMicroformatRenderer.viewCount
+        } : null
+      } : 'NOT AVAILABLE',
+      
+      // Page structure
+      page: info.page ? {
+        keys: Object.keys(info.page)
+      } : null,
+      
+      // Try getBasicInfo
+      all_top_level_keys: Object.keys(info)
+    };
+    
+    // Helper function for debug
+    function extractTextDebug(field) {
+      if (!field) return null;
+      if (typeof field === 'string') return field;
+      if (field.text) return field.text;
+      if (field.runs) return field.runs.map(r => r.text).join('');
+      return JSON.stringify(field)?.substring(0, 200);
+    }
+    
+    res.json({
+      success: true,
+      videoId: id,
+      debug: debugData
+    });
+    
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      error: error.message,
+      stack: error.stack
+    });
+  }
+});
+
 // Get only video tags
 // GET /api/search/video/:id/tags
 router.get('/video/:id/tags', async (req, res) => {
