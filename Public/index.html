@@ -1,1 +1,1418 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      background-color: #0f0f0f;
+      color: #fff;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: #0f0f0f;
+      border-bottom: 1px solid #272727;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 1000;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+    }
+
+    .menu-toggle:hover {
+      background: #272727;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+      color: #fff;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: #ff0000;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Search Bar - Desktop */
+    .header-center {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      max-width: 600px;
+      padding: 0 16px;
+    }
+
+    .search-container {
+      display: flex;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .search-input-wrapper {
+      flex: 1;
+      position: relative;
+      display: flex;
+    }
+
+    .search-input {
+      width: 100%;
+      height: 40px;
+      background: #121212;
+      border: 1px solid #303030;
+      border-radius: 20px 0 0 20px;
+      padding: 0 16px;
+      font-size: 16px;
+      color: #fff;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: #1c62b9;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,.3);
+    }
+
+    .search-input::placeholder {
+      color: #888;
+    }
+
+    .search-btn {
+      height: 40px;
+      width: 64px;
+      background: #222;
+      border: 1px solid #303030;
+      border-left: none;
+      border-radius: 0 20px 20px 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .search-btn:hover {
+      background: #333;
+    }
+
+    .search-btn svg {
+      width: 24px;
+      height: 24px;
+      fill: #fff;
+    }
+
+    /* Header Right */
+    .header-right {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-shrink: 0;
+      min-width: 40px;
+    }
+
+    .mobile-search-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: #fff;
+      padding: 8px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .mobile-search-btn:hover {
+      background: #272727;
+    }
+
+    .mobile-search-btn svg {
+      width: 24px;
+      height: 24px;
+      fill: #fff;
+      display: block;
+    }
+
+    /* Mobile Search Bar */
+    .mobile-search-container {
+      display: none;
+      position: fixed;
+      top: 56px;
+      left: 0;
+      right: 0;
+      background: #0f0f0f;
+      padding: 12px 16px;
+      border-bottom: 1px solid #272727;
+      z-index: 999;
+      animation: slideDown 0.2s ease;
+    }
+
+    .mobile-search-container.open {
+      display: block;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .mobile-search-wrapper {
+      display: flex;
+      gap: 8px;
+    }
+
+    .mobile-search-input {
+      flex: 1;
+      height: 40px;
+      background: #121212;
+      border: 1px solid #303030;
+      border-radius: 20px;
+      padding: 0 16px;
+      font-size: 16px;
+      color: #fff;
+      outline: none;
+    }
+
+    .mobile-search-input:focus {
+      border-color: #1c62b9;
+    }
+
+    .mobile-search-input::placeholder {
+      color: #888;
+    }
+
+    .mobile-search-submit {
+      height: 40px;
+      width: 40px;
+      background: #222;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+
+    .mobile-search-submit:hover {
+      background: #333;
+    }
+
+    .mobile-search-submit svg {
+      width: 20px;
+      height: 20px;
+      fill: #fff;
+    }
+
+    .mobile-search-close {
+      height: 40px;
+      width: 40px;
+      background: none;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 24px;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+
+    .mobile-search-close:hover {
+      background: #272727;
+    }
+
+    /* Left Menu */
+    .left-menu {
+      position: fixed;
+      top: 56px;
+      left: 0;
+      width: 150px;
+      height: calc(100vh - 56px);
+      background: #0f0f0f;
+      border-right: 1px solid #272727;
+      padding: 12px 0;
+      overflow-y: auto;
+      z-index: 999;
+      transition: transform 0.3s ease;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .left-menu::-webkit-scrollbar {
+      display: none;
+    }
+
+    .menu-overlay {
+      display: none;
+      position: fixed;
+      top: 56px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 998;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      color: #fff;
+      text-decoration: none;
+      font-size: 13px;
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+
+    .menu-item:hover {
+      background: #272727;
+    }
+
+    .menu-item.active {
+      background: #272727;
+    }
+
+    .menu-item-icon {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .menu-divider {
+      height: 1px;
+      background: #272727;
+      margin: 12px 0;
+    }
+
+    .menu-section-title {
+      padding: 8px 16px;
+      font-size: 11px;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Main Content Wrapper */
+    .main-wrapper {
+      margin-left: 150px;
+      padding-top: 56px;
+      min-height: 100vh;
+    }
+
+    /* Home Content */
+    .home-container {
+      padding: 24px;
+      max-width: 2000px;
+      margin: 0 auto;
+    }
+
+    /* Video Grid */
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    .video-card {
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.2s;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .video-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .video-card:hover .video-thumbnail img {
+      transform: scale(1.05);
+    }
+
+    .video-thumbnail {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #272727;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .video-thumbnail img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .video-duration {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .video-info {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+    }
+
+    .channel-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #333;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .channel-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .video-details {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .video-title {
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.4;
+      color: #f1f1f1;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+
+    .video-channel {
+      font-size: 12px;
+      color: #aaa;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 2px;
+    }
+
+    .video-channel.verified::after {
+      content: '✓';
+      font-size: 11px;
+    }
+
+    .video-meta {
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #323232;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 3000;
+      transition: transform 0.3s ease;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Skeleton Loading */
+    .skeleton {
+      animation: skeleton-loading 1s linear infinite alternate;
+    }
+
+    @keyframes skeleton-loading {
+      0% { background-color: #272727; }
+      100% { background-color: #3f3f3f; }
+    }
+
+    .video-card-skeleton {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .video-card-skeleton .video-thumbnail {
+      background: #272727;
+      animation: skeleton-loading 1s linear infinite alternate;
+    }
+
+    .video-card-skeleton .channel-avatar {
+      animation: skeleton-loading 1s linear infinite alternate;
+    }
+
+    .video-card-skeleton .skeleton-title {
+      height: 14px;
+      background: #272727;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      animation: skeleton-loading 1s linear infinite alternate;
+    }
+
+    .video-card-skeleton .skeleton-title.short {
+      width: 60%;
+    }
+
+    .video-card-skeleton .skeleton-channel {
+      height: 12px;
+      width: 50%;
+      background: #272727;
+      border-radius: 4px;
+      margin-bottom: 6px;
+      animation: skeleton-loading 1s linear infinite alternate;
+    }
+
+    .video-card-skeleton .skeleton-meta {
+      height: 12px;
+      width: 40%;
+      background: #272727;
+      border-radius: 4px;
+      animation: skeleton-loading 1s linear infinite alternate;
+    }
+
+    /* End of content message */
+    .end-message {
+      text-align: center;
+      padding: 32px;
+      color: #717171;
+      font-size: 14px;
+    }
+
+    /* Hidden */
+    .hidden {
+      display: none !important;
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .video-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      }
+    }
+
+    @media (max-width: 768px) {
+      .left-menu {
+        transform: translateX(-100%);
+        width: 200px;
+      }
+
+      .left-menu.open {
+        transform: translateX(0);
+      }
+
+      .menu-overlay.open {
+        display: block;
+      }
+
+      .main-wrapper {
+        margin-left: 0;
+      }
+
+      .header-center {
+        display: none;
+      }
+
+      .mobile-search-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .menu-toggle {
+        display: block;
+      }
+
+      .home-container {
+        padding: 16px;
+      }
+
+      .video-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .video-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .home-container {
+        padding: 12px;
+      }
+
+      .video-thumbnail {
+        border-radius: 0;
+        margin: 0 -12px;
+        width: calc(100% + 24px);
+      }
+
+      .video-info {
+        padding: 12px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <button class="menu-toggle" id="menu-toggle" aria-label="Toggle menu">☰</button>
+      <a href="/" class="logo">
+        <div class="logo-icon">▶</div>
+        <span>YouTube</span>
+      </a>
+    </div>
+
+    <div class="header-center">
+      <form class="search-container" id="desktop-search-form">
+        <div class="search-input-wrapper">
+          <input type="text" class="search-input" id="desktop-search-input" placeholder="Search" autocomplete="off">
+        </div>
+        <button type="submit" class="search-btn" aria-label="Search">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
+        </button>
+      </form>
+    </div>
+
+    <div class="header-right">
+      <button class="mobile-search-btn" id="mobile-search-btn" aria-label="Search">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Search Bar -->
+  <div class="mobile-search-container" id="mobile-search-container">
+    <form class="mobile-search-wrapper" id="mobile-search-form">
+      <input type="text" class="mobile-search-input" id="mobile-search-input" placeholder="Search" autocomplete="off">
+      <button type="submit" class="mobile-search-submit" aria-label="Search">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
+      </button>
+      <button type="button" class="mobile-search-close" id="mobile-search-close" aria-label="Close">✕</button>
+    </form>
+  </div>
+
+  <!-- Left Menu -->
+  <nav class="left-menu" id="left-menu">
+    <a href="/" class="menu-item active"><span class="menu-item-icon">🏠</span><span>Home</span></a>
+    <a href="/shorts" class="menu-item"><span class="menu-item-icon">⚡</span><span>Shorts</span></a>
+    <a href="/subscriptions" class="menu-item"><span class="menu-item-icon">📺</span><span>Subscriptions</span></a>
+    <div class="menu-divider"></div>
+    <div class="menu-section-title">You</div>
+    <a href="/history" class="menu-item"><span class="menu-item-icon">⏱️</span><span>History</span></a>
+    <a href="/playlists" class="menu-item"><span class="menu-item-icon">📁</span><span>Playlists</span></a>
+    <a href="/watch-later" class="menu-item"><span class="menu-item-icon">⏰</span><span>Watch later</span></a>
+    <a href="/liked" class="menu-item"><span class="menu-item-icon">👍</span><span>Liked videos</span></a>
+    <div class="menu-divider"></div>
+    <div class="menu-section-title">Explore</div>
+    <a href="/trending" class="menu-item"><span class="menu-item-icon">🔥</span><span>Trending</span></a>
+    <a href="/music" class="menu-item"><span class="menu-item-icon">🎵</span><span>Music</span></a>
+    <a href="/gaming" class="menu-item"><span class="menu-item-icon">🎮</span><span>Gaming</span></a>
+    <a href="/sports" class="menu-item"><span class="menu-item-icon">⚽</span><span>Sports</span></a>
+  </nav>
+
+  <div class="menu-overlay" id="menu-overlay"></div>
+
+  <!-- Main Wrapper -->
+  <div class="main-wrapper">
+    <!-- Content -->
+    <div id="content">
+      <div class="home-container" id="home-container">
+        <!-- Video Grid -->
+        <div class="video-grid" id="video-grid"></div>
+        
+        <!-- End Message -->
+        <div class="end-message hidden" id="end-message">No more videos to load</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"><span id="toast-message"></span></div>
+
+  <script>
+    const API_BASE = 'https://9fecd8f8-cc38-4ee3-a55a-0e61e94dafe5-00-24aic6pbf1rh0.sisko.replit.dev/api';
+    const WATCH_HISTORY_KEY = 'youtube_watch_history';
+    const MIN_HISTORY_COUNT = 10;
+
+    // Results limits
+    const MIN_RESULTS_PER_SOURCE = 3;
+    const MAX_RESULTS_PER_SOURCE = 6;
+    const VIDEOS_PER_LOAD = 18;
+    const SKELETON_COUNT = 12;
+    const MAX_SOURCES_PER_LOAD = 6;
+
+    // Default keywords/channels to use when watch history < 10
+    const DEFAULT_KEYWORDS = [
+      'T-Series latest',
+      '7clouds music',
+      'YRF music',
+      'MrBeast',
+      'CarryMinati',
+      'PewDiePie',
+      'Cocomelon nursery rhymes',
+      'SET India',
+      'Zee Music Company',
+      'Sony Music India',
+      'Dude Perfect',
+      'Like Nastya',
+      'Kids Diana Show',
+      'Vlad and Niki',
+      'Lofi Girl',
+      'Bollywood Songs 2024',
+      'Trending Music 2024',
+      'Gaming Highlights',
+      'Tech Reviews 2024',
+      'Comedy Videos Hindi',
+      'Cooking Recipes Indian',
+      'Travel Vlogs',
+      'Fitness Workout',
+      'BLACKPINK',
+      'BTS Official',
+      'Ed Sheeran',
+      'Alan Walker',
+      'Marshmello',
+      'NCS Music',
+      'Trap Nation',
+      'Minecraft gameplay',
+      'GTA V funny moments',
+      'Free Fire highlights',
+      'PUBG Mobile',
+      'Fortnite',
+      'iPhone 15 review',
+      'Android tips tricks',
+      'Python tutorial beginners',
+      'JavaScript tutorial',
+      'React tutorial 2024',
+      'AI Technology news',
+      'Space documentary',
+      'Nature documentary 4K',
+      'History documentary',
+      'Science experiments',
+      'DIY Projects home',
+      'Home decoration ideas',
+      'Motivational speech',
+      'TED Talks',
+      'Joe Rogan podcast',
+      'MKBHD',
+      'Marques Brownlee',
+      'Unbox Therapy',
+      'Linus Tech Tips',
+      'Veritasium',
+      'Kurzgesagt',
+      'Vsauce',
+      'Mark Rober',
+      'SmarterEveryDay',
+      'Corridor Crew',
+      'Red Bull extreme sports',
+      'NBA highlights',
+      'Football skills',
+      'Cricket highlights IPL',
+      'WWE highlights',
+      'UFC fights',
+      'Chess tutorials',
+      'Drawing tutorials',
+      'Piano tutorials',
+      'Guitar lessons',
+      'Dance tutorials',
+      'Yoga for beginners',
+      'Meditation music',
+      'ASMR',
+      'Satisfying videos',
+      'Oddly satisfying',
+      'Life hacks',
+      'Magic tricks revealed',
+      'Stand up comedy',
+      'Late night show',
+      'Movie trailers 2024',
+      'Anime episodes',
+      'K-drama clips',
+      'Mukbang',
+      'Street food',
+      'Gordon Ramsay',
+      'MasterChef',
+      'Car reviews',
+      'Supercar',
+      'Lamborghini',
+      'Ferrari',
+      'Tesla',
+      'Electric vehicles',
+      'Cryptocurrency news',
+      'Stock market',
+      'Real estate investing',
+      'Passive income ideas',
+      'Entrepreneurship'
+    ];
+
+    // State
+    let allVideos = [];
+    let displayedVideos = 0;
+    let isLoading = false;
+    let hasMoreVideos = true;
+    let currentSourceIndex = 0;
+    let seenVideoIds = new Set();
+    let menuOpen = false;
+    let mobileSearchOpen = false;
+
+    // Sources management
+    let videoSources = [];
+    let keywordSources = [];
+    let allSources = [];
+    let sourcePagination = {};
+    let exhaustedSources = new Set();
+
+    // DOM Elements
+    const menuToggle = document.getElementById('menu-toggle');
+    const leftMenu = document.getElementById('left-menu');
+    const menuOverlay = document.getElementById('menu-overlay');
+    const mobileSearchBtn = document.getElementById('mobile-search-btn');
+    const mobileSearchContainer = document.getElementById('mobile-search-container');
+    const mobileSearchClose = document.getElementById('mobile-search-close');
+    const desktopSearchForm = document.getElementById('desktop-search-form');
+    const desktopSearchInput = document.getElementById('desktop-search-input');
+    const mobileSearchForm = document.getElementById('mobile-search-form');
+    const mobileSearchInput = document.getElementById('mobile-search-input');
+    const videoGrid = document.getElementById('video-grid');
+    const homeContainer = document.getElementById('home-container');
+    const endMessage = document.getElementById('end-message');
+
+    // ==================== WATCH HISTORY ====================
+
+    function getWatchHistory() {
+      try {
+        const history = localStorage.getItem(WATCH_HISTORY_KEY);
+        return history ? JSON.parse(history) : [];
+      } catch (e) {
+        console.error('Error reading watch history:', e);
+        return [];
+      }
+    }
+
+    // ==================== MENU ====================
+
+    function toggleMenu() {
+      menuOpen = !menuOpen;
+      leftMenu.classList.toggle('open', menuOpen);
+      menuOverlay.classList.toggle('open', menuOpen);
+      document.body.style.overflow = menuOpen ? 'hidden' : '';
+    }
+
+    menuToggle.addEventListener('click', toggleMenu);
+    menuOverlay.addEventListener('click', toggleMenu);
+
+    // ==================== MOBILE SEARCH ====================
+
+    function openMobileSearch() {
+      mobileSearchOpen = true;
+      mobileSearchContainer.classList.add('open');
+      mobileSearchInput.focus();
+    }
+
+    function closeMobileSearch() {
+      mobileSearchOpen = false;
+      mobileSearchContainer.classList.remove('open');
+      mobileSearchInput.value = '';
+    }
+
+    mobileSearchBtn.addEventListener('click', openMobileSearch);
+    mobileSearchClose.addEventListener('click', closeMobileSearch);
+
+    // Close mobile search on escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (mobileSearchOpen) closeMobileSearch();
+        if (menuOpen) toggleMenu();
+      }
+    });
+
+    // ==================== SEARCH ====================
+
+    function performSearch(query) {
+      if (query && query.trim()) {
+        window.location.href = `/search?q=${encodeURIComponent(query.trim())}`;
+      }
+    }
+
+    desktopSearchForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      performSearch(desktopSearchInput.value);
+    });
+
+    mobileSearchForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      performSearch(mobileSearchInput.value);
+      closeMobileSearch();
+    });
+
+    // ==================== HELPERS ====================
+
+    function fixThumbnailUrl(url) {
+      if (!url) return 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 9"><rect fill="%23333" width="16" height="9"/></svg>';
+      if (url.startsWith('//')) return 'https:' + url;
+      return url;
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toast-message');
+      if (toast && toastMessage) {
+        toastMessage.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 4000);
+      }
+    }
+
+    function shuffleArray(array) {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // ==================== VIDEO CARDS ====================
+
+    function createVideoCard(video) {
+      if (!video || !video.id) return null;
+
+      const card = document.createElement('a');
+      card.className = 'video-card';
+      card.href = `/watch?v=${video.id}`;
+
+      const thumbnail = video.thumbnail || video.img || '';
+      const title = video.title || 'Untitled';
+      const channelName = video.channel?.name || video.author || '';
+      const channelThumb = video.channel?.thumbnail || '';
+      const duration = video.duration || video.durationFormatted || '';
+      const views = video.views || video.viewsFormatted || '';
+      const published = video.published || video.uploadDate || '';
+      const verified = video.channel?.isVerified || video.channel?.isArtist;
+
+      card.innerHTML = `
+        <div class="video-thumbnail">
+          <img src="${fixThumbnailUrl(thumbnail)}" alt="${escapeHtml(title)}" loading="lazy" 
+               onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 9%22><rect fill=%22%23333%22 width=%2216%22 height=%229%22/></svg>'">
+          ${duration ? `<span class="video-duration">${duration}</span>` : ''}
+        </div>
+        <div class="video-info">
+          <div class="channel-avatar">
+            ${channelThumb ? `<img src="${fixThumbnailUrl(channelThumb)}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
+          </div>
+          <div class="video-details">
+            <h3 class="video-title">${escapeHtml(title)}</h3>
+            <p class="video-channel ${verified ? 'verified' : ''}">${escapeHtml(channelName)}</p>
+            <p class="video-meta">${views}${views && published ? ' • ' : ''}${published}</p>
+          </div>
+        </div>
+      `;
+
+      return card;
+    }
+
+    function createSkeletonCard() {
+      const card = document.createElement('div');
+      card.className = 'video-card video-card-skeleton';
+      card.innerHTML = `
+        <div class="video-thumbnail"></div>
+        <div class="video-info">
+          <div class="channel-avatar"></div>
+          <div class="video-details">
+            <div class="skeleton-title"></div>
+            <div class="skeleton-title short"></div>
+            <div class="skeleton-channel"></div>
+            <div class="skeleton-meta"></div>
+          </div>
+        </div>
+      `;
+      return card;
+    }
+
+    function showSkeletons(count = SKELETON_COUNT) {
+      const fragment = document.createDocumentFragment();
+      for (let i = 0; i < count; i++) {
+        fragment.appendChild(createSkeletonCard());
+      }
+      videoGrid.appendChild(fragment);
+    }
+
+    function removeSkeletons() {
+      const skeletons = videoGrid.querySelectorAll('.video-card-skeleton');
+      skeletons.forEach(el => el.remove());
+    }
+
+    // ==================== LOAD VIDEOS ====================
+
+    // Load related videos for a video ID (3-6 results)
+    async function loadRelatedVideosForId(videoId) {
+      try {
+        const limit = getRandomInt(MIN_RESULTS_PER_SOURCE, MAX_RESULTS_PER_SOURCE);
+        const response = await fetch(`${API_BASE}/search/video/${videoId}/related?start=1&end=${limit + 5}`);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.results?.length > 0) {
+          const videos = data.results.filter(v => v && v.id && v.type !== 'playlist');
+          // Return only 3-6 random videos from results
+          const shuffledVideos = shuffleArray(videos);
+          return {
+            videos: shuffledVideos.slice(0, limit),
+            hasMore: false // Only one fetch per video source
+          };
+        } else if (data.results?.length > 0) {
+          const videos = data.results.filter(v => v && v.id && v.type !== 'playlist');
+          const shuffledVideos = shuffleArray(videos);
+          return {
+            videos: shuffledVideos.slice(0, limit),
+            hasMore: false
+          };
+        }
+
+        return { videos: [], hasMore: false };
+      } catch (error) {
+        console.error(`Error loading related videos for ${videoId}:`, error);
+        return { videos: [], hasMore: false };
+      }
+    }
+
+    // Load search results for a keyword (3-6 results)
+    async function loadSearchResultsForKeyword(keyword) {
+      try {
+        const limit = getRandomInt(MIN_RESULTS_PER_SOURCE, MAX_RESULTS_PER_SOURCE);
+        const response = await fetch(`${API_BASE}/search?q=${encodeURIComponent(keyword)}&start=1&end=${limit + 5}`);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.results?.length > 0) {
+          const videos = data.results.filter(v => v && v.id && v.type === 'video');
+          // Return only 3-6 random videos from results
+          const shuffledVideos = shuffleArray(videos);
+          return {
+            videos: shuffledVideos.slice(0, limit),
+            hasMore: false // Only one fetch per keyword
+          };
+        } else if (data.results?.length > 0) {
+          const videos = data.results.filter(v => v && v.id && v.type === 'video');
+          const shuffledVideos = shuffleArray(videos);
+          return {
+            videos: shuffledVideos.slice(0, limit),
+            hasMore: false
+          };
+        }
+
+        return { videos: [], hasMore: false };
+      } catch (error) {
+        console.error(`Error loading search results for ${keyword}:`, error);
+        return { videos: [], hasMore: false };
+      }
+    }
+
+    function getNextAvailableSource() {
+      let attempts = 0;
+      const maxAttempts = allSources.length;
+
+      while (attempts < maxAttempts) {
+        if (currentSourceIndex >= allSources.length) {
+          currentSourceIndex = 0;
+        }
+
+        const source = allSources[currentSourceIndex];
+
+        if (!exhaustedSources.has(source.key)) {
+          return source;
+        }
+
+        currentSourceIndex++;
+        attempts++;
+      }
+
+      return null;
+    }
+
+    async function loadVideosFromSource(source) {
+      // Mark source as exhausted immediately (each source only gives 3-6 results)
+      exhaustedSources.add(source.key);
+
+      let result;
+      if (source.type === 'video') {
+        result = await loadRelatedVideosForId(source.value);
+      } else {
+        result = await loadSearchResultsForKeyword(source.value);
+      }
+
+      return result;
+    }
+
+    async function loadMoreVideos() {
+      if (isLoading || !hasMoreVideos) return;
+
+      // Check if all sources are exhausted
+      if (exhaustedSources.size >= allSources.length) {
+        hasMoreVideos = false;
+        if (allVideos.length > 0) {
+          endMessage.classList.remove('hidden');
+        }
+        return;
+      }
+
+      isLoading = true;
+      showSkeletons(SKELETON_COUNT);
+
+      let videosLoaded = 0;
+      let sourcesProcessed = 0;
+
+      // Process multiple sources in parallel for faster loading
+      const sourcesToProcess = [];
+
+      while (sourcesToProcess.length < MAX_SOURCES_PER_LOAD) {
+        const source = getNextAvailableSource();
+        if (!source) break;
+
+        sourcesToProcess.push(source);
+        currentSourceIndex++;
+      }
+
+      if (sourcesToProcess.length === 0) {
+        hasMoreVideos = false;
+        removeSkeletons();
+        if (allVideos.length > 0) {
+          endMessage.classList.remove('hidden');
+        }
+        isLoading = false;
+        return;
+      }
+
+      try {
+        // Fetch from multiple sources in parallel
+        const results = await Promise.allSettled(
+          sourcesToProcess.map(source => loadVideosFromSource(source))
+        );
+
+        // Process results
+        for (const result of results) {
+          if (result.status === 'fulfilled' && result.value.videos.length > 0) {
+            const newVideos = result.value.videos.filter(video => {
+              if (!video || !video.id) return false;
+              if (seenVideoIds.has(video.id)) return false;
+              if (videoSources.includes(video.id)) return false;
+              seenVideoIds.add(video.id);
+              return true;
+            });
+
+            for (const video of newVideos) {
+              allVideos.push(video);
+              videosLoaded++;
+            }
+          }
+          sourcesProcessed++;
+        }
+
+      } catch (error) {
+        console.error('Error loading videos:', error);
+      }
+
+      // Remove skeletons
+      removeSkeletons();
+
+      // Display the new videos
+      if (videosLoaded > 0) {
+        displayNewVideos();
+      }
+
+      // Check if we need to load more
+      if (exhaustedSources.size >= allSources.length) {
+        hasMoreVideos = false;
+        if (allVideos.length > 0) {
+          endMessage.classList.remove('hidden');
+        }
+      }
+
+      isLoading = false;
+
+      // If we didn't load enough videos and there are more sources, load more
+      if (videosLoaded < VIDEOS_PER_LOAD && hasMoreVideos) {
+        // Small delay to prevent too rapid API calls
+        setTimeout(() => loadMoreVideos(), 100);
+      }
+    }
+
+    function displayNewVideos() {
+      const fragment = document.createDocumentFragment();
+
+      for (let i = displayedVideos; i < allVideos.length; i++) {
+        const card = createVideoCard(allVideos[i]);
+        if (card) {
+          fragment.appendChild(card);
+        }
+      }
+
+      videoGrid.appendChild(fragment);
+      displayedVideos = allVideos.length;
+    }
+
+    function prepareSources(watchHistory) {
+      allSources = [];
+      exhaustedSources.clear();
+
+      const historyCount = watchHistory.length;
+
+      if (historyCount >= MIN_HISTORY_COUNT) {
+        // Have enough watch history - use only video IDs
+        console.log(`Watch history: ${historyCount} videos (>= ${MIN_HISTORY_COUNT}), using history only`);
+
+        videoSources = [...watchHistory];
+        keywordSources = [];
+
+        // Shuffle for variety
+        const shuffledHistory = shuffleArray(videoSources);
+
+        shuffledHistory.forEach(videoId => {
+          allSources.push({
+            type: 'video',
+            value: videoId,
+            key: `video_${videoId}`
+          });
+        });
+
+      } else {
+        // Watch history < 10 - combine history with keywords
+        console.log(`Watch history: ${historyCount} videos (< ${MIN_HISTORY_COUNT}), combining with keywords`);
+
+        videoSources = [...watchHistory];
+
+        // Use all keywords shuffled
+        keywordSources = shuffleArray([...DEFAULT_KEYWORDS]);
+
+        // Create interleaved sources for variety
+        const tempSources = [];
+
+        // Add video sources
+        videoSources.forEach(videoId => {
+          tempSources.push({
+            type: 'video',
+            value: videoId,
+            key: `video_${videoId}`,
+            priority: 1 // Higher priority for watch history
+          });
+        });
+
+        // Add keyword sources
+        keywordSources.forEach(keyword => {
+          tempSources.push({
+            type: 'keyword',
+            value: keyword,
+            key: `keyword_${keyword}`,
+            priority: 2
+          });
+        });
+
+        // Interleave: put 1-2 video sources first, then mix
+        if (videoSources.length > 0) {
+          const priorityCount = Math.min(2, videoSources.length);
+          const prioritySources = tempSources.filter(s => s.type === 'video').slice(0, priorityCount);
+          const remainingSources = shuffleArray(
+            tempSources.filter(s => !prioritySources.includes(s))
+          );
+          allSources = [...prioritySources, ...remainingSources];
+        } else {
+          allSources = shuffleArray(tempSources);
+        }
+      }
+
+      // Add watch history videos to seen set
+      watchHistory.forEach(id => seenVideoIds.add(id));
+
+      console.log(`Total sources: ${allSources.length} | Video: ${videoSources.length} | Keywords: ${keywordSources.length}`);
+    }
+
+    async function initializeHomePage() {
+      const watchHistory = getWatchHistory();
+
+      // Prepare sources based on watch history count
+      prepareSources(watchHistory);
+
+      // Load initial videos
+      await loadMoreVideos();
+    }
+
+    // ==================== INFINITE SCROLL ====================
+
+    function setupInfiniteScroll() {
+      // Use Intersection Observer for better performance
+      const observerOptions = {
+        root: null,
+        rootMargin: '600px',
+        threshold: 0
+      };
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && !isLoading && hasMoreVideos) {
+            loadMoreVideos();
+          }
+        });
+      }, observerOptions);
+
+      // Create sentinel element
+      const sentinel = document.createElement('div');
+      sentinel.id = 'scroll-sentinel';
+      sentinel.style.height = '1px';
+      sentinel.style.width = '100%';
+      homeContainer.appendChild(sentinel);
+      observer.observe(sentinel);
+
+      // Fallback scroll handler with throttling
+      let scrollTimeout;
+      window.addEventListener('scroll', () => {
+        if (scrollTimeout) return;
+
+        scrollTimeout = setTimeout(() => {
+          scrollTimeout = null;
+
+          if (isLoading || !hasMoreVideos) return;
+
+          const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+
+          if (scrollTop + clientHeight >= scrollHeight - 1000) {
+            loadMoreVideos();
+          }
+        }, 100);
+      });
+    }
+
+    // ==================== EVENT LISTENERS ====================
+
+    // Resize handler
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+
+      resizeTimeout = setTimeout(() => {
+        if (window.innerWidth > 768) {
+          if (menuOpen) toggleMenu();
+          if (mobileSearchOpen) closeMobileSearch();
+        }
+      }, 150);
+    });
+
+    // Handle visibility change (pause/resume loading)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && !isLoading && hasMoreVideos) {
+        // Check if we need more videos when page becomes visible
+        const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+        if (scrollTop + clientHeight >= scrollHeight - 1000) {
+          loadMoreVideos();
+        }
+      }
+    });
+
+    // ==================== INIT ====================
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeHomePage();
+      setupInfiniteScroll();
+    });
+
+    // Backup init if DOMContentLoaded already fired
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      setTimeout(() => {
+        if (allSources.length === 0) {
+          initializeHomePage();
+          setupInfiniteScroll();
+        }
+      }, 100);
+    }
+  </script>
+</body>
+</html>
