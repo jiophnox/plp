@@ -85,169 +85,327 @@ function extractText(field) {
 function extractVideoInfoRobust(info, videoId) {
   // Log available keys for debugging
   const availableKeys = Object.keys(info || {});
-  console.log(`📋 Available info keys: ${availableKeys.join(', ')}`);
+  console.log(`📋 Available info keys: ${availableKeys.slice(0, 10).join(', ')}...`);
   
+  // Helper to safely get nested properties
+  const safeGet = (obj, path, defaultVal = null) => {
+    try {
+      const keys = path.split('.');
+      let result = obj;
+      for (const key of keys) {
+        if (result === null || result === undefined) return defaultVal;
+        result = result[key];
+      }
+      return result ?? defaultVal;
+    } catch (e) {
+      return defaultVal;
+    }
+  };
+
+  // Helper to parse view count from text like "1,234,567 views"
+  const parseViewCount = (text) => {
+    if (!text) return 0;
+    const str = String(text).toLowerCase();
+    
+    // Handle "1.2M views" format
+    if (str.includes('m')) {
+      const num = parseFloat(str.replace(/[^0-9.]/g, ''));
+      return Math.round(num * 1000000);
+    }
+    if (str.includes('k')) {
+      const num = parseFloat(str.replace(/[^0-9.]/g, ''));
+      return Math.round(num * 1000);
+    }
+    if (str.includes('b')) {
+      const num = parseFloat(str.replace(/[^0-9.]/g, ''));
+      return Math.round(num * 1000000000);
+    }
+    
+    // Parse regular number
+    const num = parseInt(str.replace(/[^0-9]/g, ''), 10);
+    return isNaN(num) ? 0 : num;
+  };
+
+  // Helper to parse duration from various formats
+  const parseDuration = (val) => {
+    if (!val) return 0;
+    
+    // Already a number (seconds)
+    if (typeof val === 'number') return val;
+    
+    const str = String(val);
+    
+    // Format: "PT3M54S" (ISO 8601)
+    const isoMatch = str.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+    if (isoMatch) {
+      const hours = parseInt(isoMatch[1] || 0);
+      const mins = parseInt(isoMatch[2] || 0);
+      const secs = parseInt(isoMatch[3] || 0);
+      return hours * 3600 + mins * 60 + secs;
+    }
+    
+    // Format: "3:54" or "1:03:54"
+    const parts = str.split(':').map(p => parseInt(p) || 0);
+    if (parts.length === 3) {
+      return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    }
+    if (parts.length === 2) {
+      return parts[0] * 60 + parts[1];
+    }
+    
+    // Milliseconds
+    if (str.length > 6 && /^\d+$/.test(str)) {
+      return Math.floor(parseInt(str) / 1000);
+    }
+    
+    // Plain seconds
+    const secs = parseInt(str);
+    return isNaN(secs) ? 0 : secs;
+  };
+
   // Try multiple sources for each field
   const extractors = {
     title: () => {
-      return extractText(info.basic_info?.title) ||
-             extractText(info.primary_info?.title) ||
-             extractText(info.video_details?.title) ||
+      return extractText(safeGet(info, 'basic_info.title')) ||
+             extractText(safeGet(info, 'primary_info.title')) ||
+             extractText(safeGet(info, 'video_details.title')) ||
+             extractText(safeGet(info, 'videoDetails.title')) ||
+             extractText(safeGet(info, 'player_overlays.title')) ||
              extractText(info.title) ||
-             extractText(info.videoDetails?.title) ||
              '';
     },
     
     description: () => {
-      return extractText(info.basic_info?.short_description) ||
-             extractText(info.basic_info?.description) ||
-             extractText(info.secondary_info?.description?.text) ||
-             extractText(info.video_details?.short_description) ||
-             extractText(info.videoDetails?.shortDescription) ||
-             extractText(info.description) ||
+      return extractText(safeGet(info, 'basic_info.short_description')) ||
+             extractText(safeGet(info, 'basic_info.description')) ||
+             extractText(safeGet(info, 'secondary_info.description')) ||
+             extractText(safeGet(info, 'secondary_info.description.text')) ||
+             extractText(safeGet(info, 'video_details.short_description')) ||
+             extractText(safeGet(info, 'videoDetails.shortDescription')) ||
              '';
     },
     
     channelName: () => {
-      return extractText(info.basic_info?.author) ||
-             extractText(info.basic_info?.channel?.name) ||
-             extractText(info.secondary_info?.owner?.author?.name) ||
-             extractText(info.videoDetails?.author) ||
-             extractText(info.channel?.name) ||
-             extractText(info.author?.name) ||
-             extractText(info.owner?.author?.name) ||
+      return extractText(safeGet(info, 'basic_info.author')) ||
+             extractText(safeGet(info, 'basic_info.channel.name')) ||
+             extractText(safeGet(info, 'secondary_info.owner.author.name')) ||
+             extractText(safeGet(info, 'secondary_info.owner.title')) ||
+             extractText(safeGet(info, 'videoDetails.author')) ||
+             extractText(safeGet(info, 'channel.name')) ||
+             extractText(safeGet(info, 'author.name')) ||
              'Unknown';
     },
     
     channelId: () => {
-      return info.basic_info?.channel_id ||
-             info.basic_info?.channel?.id ||
-             info.videoDetails?.channelId ||
-             info.channel?.id ||
-             info.author?.id ||
-             info.owner?.author?.id ||
+      return safeGet(info, 'basic_info.channel_id') ||
+             safeGet(info, 'basic_info.channel.id') ||
+             safeGet(info, 'secondary_info.owner.author.id') ||
+             safeGet(info, 'secondary_info.owner.endpoint.browseEndpoint.browseId') ||
+             safeGet(info, 'secondary_info.owner.navigationEndpoint.browseEndpoint.browseId') ||
+             safeGet(info, 'videoDetails.channelId') ||
+             safeGet(info, 'channel.id') ||
+             safeGet(info, 'author.id') ||
              null;
     },
     
     duration: () => {
-      return info.basic_info?.duration ||
-             info.video_details?.length_seconds ||
-             info.videoDetails?.lengthSeconds ||
-             info.duration ||
-             info.length_seconds ||
-             0;
+      // Try basic_info first
+      let duration = safeGet(info, 'basic_info.duration');
+      if (duration && duration > 0) return duration;
+      
+      // Try video_details
+      duration = safeGet(info, 'video_details.length_seconds');
+      if (duration && duration > 0) return parseDuration(duration);
+      
+      duration = safeGet(info, 'videoDetails.lengthSeconds');
+      if (duration && duration > 0) return parseDuration(duration);
+      
+      // Try streaming_data formats
+      const formats = safeGet(info, 'streaming_data.formats') || 
+                     safeGet(info, 'streaming_data.adaptive_formats') ||
+                     safeGet(info, 'streamingData.formats') ||
+                     safeGet(info, 'streamingData.adaptiveFormats') || [];
+      
+      if (formats.length > 0) {
+        const approxMs = formats[0].approxDurationMs || formats[0].approx_duration_ms;
+        if (approxMs) {
+          return Math.floor(parseInt(approxMs) / 1000);
+        }
+      }
+      
+      // Try primary_info length
+      duration = safeGet(info, 'primary_info.length');
+      if (duration) return parseDuration(extractText(duration));
+      
+      // Try player_config
+      duration = safeGet(info, 'player_config.duration');
+      if (duration) return parseDuration(duration);
+      
+      // Try microformat
+      duration = safeGet(info, 'microformat.playerMicroformatRenderer.lengthSeconds');
+      if (duration) return parseDuration(duration);
+      
+      return 0;
     },
     
     viewCount: () => {
-      const views = info.basic_info?.view_count ||
-                   info.video_details?.view_count ||
-                   info.videoDetails?.viewCount ||
-                   info.view_count ||
-                   info.views ||
-                   0;
-      return typeof views === 'string' ? parseInt(views.replace(/[^0-9]/g, '')) || 0 : views;
+      // Try basic_info first
+      let views = safeGet(info, 'basic_info.view_count');
+      if (views && views > 0) return views;
+      
+      // Try video_details
+      views = safeGet(info, 'video_details.view_count');
+      if (views) return parseViewCount(views);
+      
+      views = safeGet(info, 'videoDetails.viewCount');
+      if (views) return parseViewCount(views);
+      
+      // Try primary_info view_count (often as text)
+      const viewCountText = extractText(safeGet(info, 'primary_info.view_count')) ||
+                           extractText(safeGet(info, 'primary_info.views')) ||
+                           extractText(safeGet(info, 'primary_info.short_view_count'));
+      if (viewCountText) return parseViewCount(viewCountText);
+      
+      // Try secondary_info
+      views = extractText(safeGet(info, 'secondary_info.view_count'));
+      if (views) return parseViewCount(views);
+      
+      // Try microformat
+      views = safeGet(info, 'microformat.playerMicroformatRenderer.viewCount');
+      if (views) return parseViewCount(views);
+      
+      return 0;
     },
     
     likeCount: () => {
-      return info.basic_info?.like_count ||
-             info.video_details?.like_count ||
-             info.like_count ||
-             info.likes ||
+      return safeGet(info, 'basic_info.like_count') ||
+             safeGet(info, 'video_details.like_count') ||
+             safeGet(info, 'like_count') ||
              0;
     },
     
     thumbnail: () => {
-      const thumbnails = info.basic_info?.thumbnail ||
-                        info.video_details?.thumbnail?.thumbnails ||
-                        info.videoDetails?.thumbnail?.thumbnails ||
-                        info.thumbnail?.thumbnails ||
-                        info.thumbnails ||
-                        [];
+      // Try various thumbnail sources
+      const sources = [
+        safeGet(info, 'basic_info.thumbnail'),
+        safeGet(info, 'video_details.thumbnail.thumbnails'),
+        safeGet(info, 'videoDetails.thumbnail.thumbnails'),
+        safeGet(info, 'thumbnail.thumbnails'),
+        safeGet(info, 'microformat.playerMicroformatRenderer.thumbnail.thumbnails'),
+        safeGet(info, 'thumbnails')
+      ];
       
-      if (Array.isArray(thumbnails) && thumbnails.length > 0) {
-        // Get highest quality
-        const sorted = [...thumbnails].sort((a, b) => (b.width || 0) - (a.width || 0));
-        return sorted[0]?.url || `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
+      for (const thumbnails of sources) {
+        if (Array.isArray(thumbnails) && thumbnails.length > 0) {
+          // Get highest quality
+          const sorted = [...thumbnails].sort((a, b) => (b.width || 0) - (a.width || 0));
+          if (sorted[0]?.url) return sorted[0].url;
+        }
       }
+      
       return `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
     },
     
     publishDate: () => {
-      return info.basic_info?.publish_date ||
-             info.primary_info?.published?.text ||
-             info.videoDetails?.publishDate ||
-             info.publish_date ||
+      return safeGet(info, 'basic_info.publish_date') ||
+             extractText(safeGet(info, 'primary_info.published')) ||
+             extractText(safeGet(info, 'primary_info.date_text')) ||
+             safeGet(info, 'videoDetails.publishDate') ||
+             safeGet(info, 'microformat.playerMicroformatRenderer.publishDate') ||
              null;
     },
     
     uploadDate: () => {
-      return info.basic_info?.upload_date ||
-             info.microformat?.playerMicroformatRenderer?.uploadDate ||
-             info.upload_date ||
+      return safeGet(info, 'basic_info.upload_date') ||
+             safeGet(info, 'microformat.playerMicroformatRenderer.uploadDate') ||
              null;
     },
     
     category: () => {
-      return info.basic_info?.category ||
-             info.microformat?.playerMicroformatRenderer?.category ||
-             info.category ||
+      return safeGet(info, 'basic_info.category') ||
+             safeGet(info, 'microformat.playerMicroformatRenderer.category') ||
+             safeGet(info, 'category') ||
              null;
     },
     
     tags: () => {
-      const tags = info.basic_info?.tags ||
-                  info.video_details?.keywords ||
-                  info.videoDetails?.keywords ||
-                  info.tags ||
-                  info.keywords ||
-                  [];
-      return Array.isArray(tags) ? tags : [];
+      const sources = [
+        safeGet(info, 'basic_info.tags'),
+        safeGet(info, 'video_details.keywords'),
+        safeGet(info, 'videoDetails.keywords'),
+        safeGet(info, 'microformat.playerMicroformatRenderer.tags'),
+        safeGet(info, 'tags'),
+        safeGet(info, 'keywords')
+      ];
+      
+      for (const tags of sources) {
+        if (Array.isArray(tags) && tags.length > 0) {
+          return tags;
+        }
+      }
+      return [];
     },
     
     keywords: () => {
-      const keywords = info.basic_info?.keywords ||
-                      info.video_details?.keywords ||
-                      info.videoDetails?.keywords ||
-                      info.keywords ||
-                      [];
-      return Array.isArray(keywords) ? keywords : [];
+      const sources = [
+        safeGet(info, 'basic_info.keywords'),
+        safeGet(info, 'video_details.keywords'),
+        safeGet(info, 'videoDetails.keywords'),
+        safeGet(info, 'keywords')
+      ];
+      
+      for (const keywords of sources) {
+        if (Array.isArray(keywords) && keywords.length > 0) {
+          return keywords;
+        }
+      }
+      return [];
     },
     
     isLive: () => {
-      return info.basic_info?.is_live ||
-             info.video_details?.is_live ||
-             info.videoDetails?.isLive ||
-             info.is_live ||
+      return safeGet(info, 'basic_info.is_live') ||
+             safeGet(info, 'video_details.is_live') ||
+             safeGet(info, 'videoDetails.isLive') ||
+             safeGet(info, 'playability_status.live_streamability') !== undefined ||
              false;
     },
     
     isPrivate: () => {
-      return info.basic_info?.is_private ||
-             info.video_details?.is_private ||
-             info.videoDetails?.isPrivate ||
-             info.is_private ||
+      return safeGet(info, 'basic_info.is_private') ||
+             safeGet(info, 'video_details.is_private') ||
+             safeGet(info, 'videoDetails.isPrivate') ||
              false;
     },
     
     isFamilySafe: () => {
-      const safe = info.basic_info?.is_family_safe ??
-                  info.microformat?.playerMicroformatRenderer?.isFamilySafe ??
-                  info.is_family_safe ??
+      const safe = safeGet(info, 'basic_info.is_family_safe') ??
+                  safeGet(info, 'microformat.playerMicroformatRenderer.isFamilySafe') ??
                   true;
       return safe !== false;
     },
     
     channelUrl: () => {
-      return info.basic_info?.channel?.url ||
-             info.channel?.url ||
-             info.author?.url ||
-             (extractors.channelId() ? `https://www.youtube.com/channel/${extractors.channelId()}` : null);
+      const url = safeGet(info, 'basic_info.channel.url') ||
+                 safeGet(info, 'secondary_info.owner.author.url') ||
+                 safeGet(info, 'secondary_info.owner.endpoint.browseEndpoint.canonicalBaseUrl') ||
+                 safeGet(info, 'channel.url') ||
+                 safeGet(info, 'author.url');
+      
+      if (url) return url;
+      
+      // Build from channel ID
+      const channelId = extractors.channelId();
+      if (channelId) {
+        return `https://www.youtube.com/channel/${channelId}`;
+      }
+      return null;
     },
     
     subscriberCount: () => {
-      return info.basic_info?.channel?.subscriber_count ||
-             info.secondary_info?.owner?.subscriber_count?.text ||
-             info.channel?.subscriber_count ||
+      return extractText(safeGet(info, 'basic_info.channel.subscriber_count')) ||
+             extractText(safeGet(info, 'secondary_info.owner.subscriber_count')) ||
+             extractText(safeGet(info, 'secondary_info.owner.subscribers')) ||
+             extractText(safeGet(info, 'channel.subscriber_count')) ||
              null;
     }
   };
@@ -264,9 +422,72 @@ function extractVideoInfoRobust(info, videoId) {
   }
   
   // Log extraction results for debugging
-  console.log(`📊 Extracted - Title: "${result.title?.substring(0, 50)}...", Views: ${result.viewCount}, Channel: ${result.channelName}`);
+  console.log(`📊 Extracted - Title: "${(result.title || '').substring(0, 30)}...", Duration: ${result.duration}s, Views: ${result.viewCount}, Channel: ${result.channelName}`);
+  
+  // Build list of successfully extracted fields
+  const extractedFields = Object.entries(result)
+    .filter(([k, v]) => v !== null && v !== '' && v !== 0 && !(Array.isArray(v) && v.length === 0))
+    .map(([k]) => k);
+  
+  result._extractedFields = extractedFields;
   
   return result;
+}
+
+/**
+ * Deep inspect the info object to find where data is hiding
+ * Only use this for debugging - remove in production
+ */
+function debugInspectInfo(info, videoId) {
+  const findings = {
+    duration: [],
+    views: [],
+    channelId: [],
+    category: []
+  };
+  
+  const searchObject = (obj, path = '', depth = 0) => {
+    if (depth > 5 || !obj || typeof obj !== 'object') return;
+    
+    for (const [key, value] of Object.entries(obj)) {
+      const currentPath = path ? `${path}.${key}` : key;
+      
+      // Look for duration-related keys
+      if (/duration|length/i.test(key) && value) {
+        findings.duration.push({ path: currentPath, value: String(value).substring(0, 50) });
+      }
+      
+      // Look for view-related keys
+      if (/view.*count|views/i.test(key) && value) {
+        findings.views.push({ path: currentPath, value: String(value).substring(0, 50) });
+      }
+      
+      // Look for channel ID
+      if (/channel.*id|browseId/i.test(key) && value && typeof value === 'string') {
+        findings.channelId.push({ path: currentPath, value });
+      }
+      
+      // Look for category
+      if (/category/i.test(key) && value) {
+        findings.category.push({ path: currentPath, value: String(value).substring(0, 50) });
+      }
+      
+      // Recurse into objects and arrays
+      if (typeof value === 'object' && value !== null) {
+        if (Array.isArray(value)) {
+          value.slice(0, 2).forEach((item, i) => {
+            searchObject(item, `${currentPath}[${i}]`, depth + 1);
+          });
+        } else {
+          searchObject(value, currentPath, depth + 1);
+        }
+      }
+    }
+  };
+  
+  searchObject(info);
+  
+  return findings;
 }
 
 function extractBadges(item) {
@@ -829,9 +1050,6 @@ async function batchGetVideoTags(videoIds, maxConcurrent = 3) {
   return results;
 }
 
-/**
- * Get full video info with robust extraction
- */
 async function getVideoInfo(videoId, options = {}) {
   try {
     const { 
@@ -839,7 +1057,8 @@ async function getVideoInfo(videoId, options = {}) {
       commentStart = 1,
       commentEnd = 20,
       maxComments = 100,
-      commentSort = 'top'
+      commentSort = 'top',
+      debug = false  // Add debug option
     } = options;
 
     console.log(`📹 Getting video info for ${videoId}...`);
@@ -851,13 +1070,18 @@ async function getVideoInfo(videoId, options = {}) {
       info = await youtube.getInfo(videoId);
     } catch (infoError) {
       console.error(`❌ Failed to get video info: ${infoError.message}`);
-      // Try with a fresh instance
       const freshYt = await initYouTube(true);
       info = await freshYt.getInfo(videoId);
     }
 
     if (!info) {
       return { success: false, error: 'Could not retrieve video info' };
+    }
+
+    // Debug inspection if requested
+    let debugFindings = null;
+    if (debug) {
+      debugFindings = debugInspectInfo(info, videoId);
     }
 
     // Use robust extractor
@@ -914,7 +1138,7 @@ async function getVideoInfo(videoId, options = {}) {
       ...relatedTopics
     ])]);
 
-    return {
+    const response = {
       success: true,
       video: {
         id: videoId,
@@ -976,15 +1200,24 @@ async function getVideoInfo(videoId, options = {}) {
         }
       },
       
-      // Debug info - remove in production
       _debug: {
-        extractedFields: Object.keys(extracted).filter(k => extracted[k]),
+        extractedFields: extracted._extractedFields || [],
         infoKeys: Object.keys(info || {}),
         hasBasicInfo: !!info?.basic_info,
         hasPrimaryInfo: !!info?.primary_info,
-        hasVideoDetails: !!info?.video_details || !!info?.videoDetails
+        hasSecondaryInfo: !!info?.secondary_info,
+        hasVideoDetails: !!info?.video_details || !!info?.videoDetails,
+        hasStreamingData: !!info?.streaming_data || !!info?.streamingData,
+        hasMicroformat: !!info?.microformat
       }
     };
+
+    // Add debug findings if requested
+    if (debug && debugFindings) {
+      response._debug.findings = debugFindings;
+    }
+
+    return response;
 
   } catch (error) {
     console.error('❌ Get video info error:', error);
