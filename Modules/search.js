@@ -79,9 +79,6 @@ function extractText(field) {
   return null;
 }
 
-/**
- * Robust video info extractor - tries multiple sources
- */
 function extractVideoInfoRobust(info, videoId) {
   const availableKeys = Object.keys(info || {});
   console.log(`📋 Available info keys: ${availableKeys.join(', ')}`);
@@ -108,14 +105,12 @@ function extractVideoInfoRobust(info, videoId) {
     
     let text = input;
     
-    // Handle object with text property
     if (typeof input === 'object') {
       text = input.text || input.simpleText || String(input);
     }
     
     const str = String(text).toLowerCase();
     
-    // Try to extract number with suffix (297M, 1.5B, 45K)
     const suffixMatch = str.match(/([\d,.]+)\s*([kmb])/i);
     if (suffixMatch) {
       const num = parseFloat(suffixMatch[1].replace(/,/g, ''));
@@ -124,7 +119,6 @@ function extractVideoInfoRobust(info, videoId) {
       return Math.round(num * (multipliers[suffix] || 1));
     }
     
-    // Try to extract plain number (297,923,075 views)
     const plainMatch = str.match(/([\d,]+)/);
     if (plainMatch) {
       const num = parseInt(plainMatch[1].replace(/,/g, ''), 10);
@@ -134,14 +128,12 @@ function extractVideoInfoRobust(info, videoId) {
     return 0;
   };
 
-  // Helper to parse duration from various formats
   const parseDuration = (val) => {
     if (!val) return 0;
     if (typeof val === 'number' && val > 0) return val;
     
     const str = String(val);
     
-    // ISO 8601: PT3M54S
     const isoMatch = str.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
     if (isoMatch) {
       return (parseInt(isoMatch[1] || 0) * 3600) + 
@@ -149,14 +141,12 @@ function extractVideoInfoRobust(info, videoId) {
              parseInt(isoMatch[3] || 0);
     }
     
-    // Format: "3:54" or "1:03:54"
     if (str.includes(':')) {
       const parts = str.split(':').map(p => parseInt(p) || 0);
       if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
       if (parts.length === 2) return parts[0] * 60 + parts[1];
     }
     
-    // Milliseconds (large number)
     if (/^\d{4,}$/.test(str)) {
       const ms = parseInt(str);
       return ms > 10000 ? Math.floor(ms / 1000) : ms;
@@ -166,7 +156,6 @@ function extractVideoInfoRobust(info, videoId) {
     return isNaN(secs) ? 0 : secs;
   };
 
-  // Get duration from streaming formats
   const getDurationFromFormats = () => {
     const sources = [
       safeGet(info, 'streaming_data.formats'),
@@ -218,39 +207,79 @@ function extractVideoInfoRobust(info, videoId) {
              null;
     },
     
+    // NEW: Channel thumbnail extractor
+    channelThumbnail: () => {
+      const sources = [
+        safeGet(info, 'secondary_info.owner.author.thumbnails'),
+        safeGet(info, 'basic_info.channel.thumbnails'),
+        safeGet(info, 'channel.thumbnails'),
+        safeGet(info, 'author.thumbnails')
+      ];
+      
+      for (const thumbnails of sources) {
+        if (Array.isArray(thumbnails) && thumbnails.length > 0) {
+          // Get highest quality thumbnail
+          const sorted = [...thumbnails].sort((a, b) => (b.width || 0) - (a.width || 0));
+          if (sorted[0]?.url) return sorted[0].url;
+        }
+      }
+      return null;
+    },
+    
+    // NEW: Channel handle extractor (just @username)
+    channelHandle: () => {
+      // Try to get from canonicalBaseUrl (e.g., "/@7clouds")
+      const canonicalBase = safeGet(info, 'secondary_info.owner.author.endpoint.payload.canonicalBaseUrl');
+      if (canonicalBase) {
+        // Remove leading "/" if present
+        return canonicalBase.startsWith('/') ? canonicalBase.substring(1) : canonicalBase;
+      }
+      
+      // Try to extract from full URL
+      const url = safeGet(info, 'secondary_info.owner.author.url') ||
+                 safeGet(info, 'basic_info.channel.url') ||
+                 safeGet(info, 'secondary_info.owner.author.endpoint.metadata.url');
+      
+      if (url) {
+        // Match @username pattern
+        const handleMatch = url.match(/@[\w.-]+/);
+        if (handleMatch) {
+          return handleMatch[0];
+        }
+        
+        // If URL is like /channel/UCxxxx, return null (no handle)
+      }
+      
+      return null;
+    },
+    
     duration: () => {
-      // Method 1: basic_info.duration
       let duration = safeGet(info, 'basic_info.duration');
       if (duration && duration > 0) {
         console.log(`   ✅ Duration from basic_info: ${duration}s`);
         return duration;
       }
       
-      // Method 2: streaming_data formats
       duration = getDurationFromFormats();
       if (duration > 0) {
         console.log(`   ✅ Duration from streaming_data: ${duration}s`);
         return duration;
       }
       
-      // Method 3: video_details
       duration = parseDuration(safeGet(info, 'video_details.length_seconds'));
       if (duration > 0) {
         console.log(`   ✅ Duration from video_details: ${duration}s`);
         return duration;
       }
       
-      // Method 4: microformat
       duration = parseDuration(safeGet(info, 'microformat.playerMicroformatRenderer.lengthSeconds'));
       if (duration > 0) {
         console.log(`   ✅ Duration from microformat: ${duration}s`);
         return duration;
       }
       
-      // Method 5: player_overlays (sometimes has duration)
       const playerOverlays = safeGet(info, 'player_overlays');
       if (playerOverlays) {
-        // Try to find duration in overlays
         const overlayDuration = safeGet(playerOverlays, 'end_screen.elements.0.video_info.length_text');
         if (overlayDuration) {
           duration = parseDuration(extractText(overlayDuration));
@@ -266,26 +295,21 @@ function extractVideoInfoRobust(info, videoId) {
     },
     
     viewCount: () => {
-      // Method 1: primary_info.view_count.view_count.text (CORRECT PATH!)
-      // Structure: { view_count: { text: "297,923,075 views" } }
       const viewCountObj = safeGet(info, 'primary_info.view_count');
       
       if (viewCountObj) {
-        // Try the nested view_count.text first (full number)
         let views = parseViewCount(safeGet(viewCountObj, 'view_count.text'));
         if (views > 0) {
           console.log(`   ✅ Views from primary_info.view_count.view_count.text: ${views}`);
           return views;
         }
         
-        // Try short_view_count.text (297M views)
         views = parseViewCount(safeGet(viewCountObj, 'short_view_count.text'));
         if (views > 0) {
           console.log(`   ✅ Views from primary_info.view_count.short_view_count.text: ${views}`);
           return views;
         }
         
-        // Try original_view_count (might be a string number)
         views = parseViewCount(viewCountObj.original_view_count);
         if (views > 0) {
           console.log(`   ✅ Views from primary_info.view_count.original_view_count: ${views}`);
@@ -293,21 +317,18 @@ function extractVideoInfoRobust(info, videoId) {
         }
       }
       
-      // Method 2: basic_info.view_count
       let views = safeGet(info, 'basic_info.view_count');
       if (views && views > 0) {
         console.log(`   ✅ Views from basic_info.view_count: ${views}`);
         return views;
       }
       
-      // Method 3: video_details.view_count
       views = parseViewCount(safeGet(info, 'video_details.view_count'));
       if (views > 0) {
         console.log(`   ✅ Views from video_details: ${views}`);
         return views;
       }
       
-      // Method 4: microformat
       views = parseViewCount(safeGet(info, 'microformat.playerMicroformatRenderer.viewCount'));
       if (views > 0) {
         console.log(`   ✅ Views from microformat: ${views}`);
@@ -328,8 +349,7 @@ function extractVideoInfoRobust(info, videoId) {
       const sources = [
         safeGet(info, 'basic_info.thumbnail'),
         safeGet(info, 'video_details.thumbnail.thumbnails'),
-        safeGet(info, 'microformat.playerMicroformatRenderer.thumbnail.thumbnails'),
-        safeGet(info, 'secondary_info.owner.author.thumbnails') // fallback to channel thumb
+        safeGet(info, 'microformat.playerMicroformatRenderer.thumbnail.thumbnails')
       ];
       
       for (const thumbnails of sources) {
@@ -376,7 +396,6 @@ function extractVideoInfoRobust(info, videoId) {
     },
     
     isLive: () => {
-      // Only true if explicitly set to true
       return safeGet(info, 'basic_info.is_live') === true ||
              safeGet(info, 'video_details.is_live') === true ||
              safeGet(info, 'primary_info.badges')?.some(b => 
@@ -394,7 +413,8 @@ function extractVideoInfoRobust(info, videoId) {
       return safe !== false;
     },
     
-    channelUrl: () => {
+    // Keep full URL for internal use if needed
+    channelFullUrl: () => {
       return safeGet(info, 'secondary_info.owner.author.url') ||
              safeGet(info, 'basic_info.channel.url') ||
              safeGet(info, 'secondary_info.owner.author.endpoint.metadata.url') ||
@@ -434,7 +454,7 @@ function extractVideoInfoRobust(info, videoId) {
     .map(([k]) => k);
   
   return result;
-        }
+}
 
 /**
  * Deep inspect the info object to find where data is hiding
@@ -1116,7 +1136,6 @@ async function batchGetVideoTags(videoIds, maxConcurrent = 3) {
 
   return results;
 }
-
 async function getVideoInfo(videoId, options = {}) {
   try {
     const { 
@@ -1137,7 +1156,6 @@ async function getVideoInfo(videoId, options = {}) {
       info = await youtube.getInfo(videoId);
     } catch (infoError) {
       console.error(`❌ getInfo failed: ${infoError.message}`);
-      // Try with fresh instance
       const freshYt = await initYouTube(true);
       info = await freshYt.getInfo(videoId);
     }
@@ -1227,10 +1245,14 @@ async function getVideoInfo(videoId, options = {}) {
         published: extracted.publishDate || null,
         uploadDate: extracted.uploadDate || null,
 
+        // UPDATED: Channel object with thumbnail and handle
         channel: {
           name: channelName,
           id: extracted.channelId,
-          url: extracted.channelUrl,
+          handle: extracted.channelHandle || null,  // e.g., "@MusicRemaster"
+          url: extracted.channelHandle || null,     // Just the handle, e.g., "@MusicRemaster"
+          fullUrl: extracted.channelFullUrl || null, // Full URL if needed
+          thumbnail: extracted.channelThumbnail || null,  // Channel profile picture
           subscriberCount: extracted.subscriberCount,
           isVerified: extracted.isVerified || false,
           isVerifiedArtist: extracted.isVerifiedArtist || false
